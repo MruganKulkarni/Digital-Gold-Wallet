@@ -8,7 +8,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/digitalgoldwallet
     username: root
-    password: mrugan123
+    password: your_actual_mysql_password
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
