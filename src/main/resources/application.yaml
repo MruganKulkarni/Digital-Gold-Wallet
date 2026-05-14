@@ -6,20 +6,21 @@ spring:
     name: digital-gold-wallet
 
   datasource:
-    url: jdbc:mysql://localhost:3306/digital_gold_wallet
+    url: jdbc:mysql://localhost:3306/digitalgoldwallet
     username: root
-    password: your_password
+    password: your_actual_mysql_password
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
 
     show-sql: true
 
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
 
   thymeleaf:
     cache: false
