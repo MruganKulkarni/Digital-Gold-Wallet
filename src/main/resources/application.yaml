@@ -6,9 +6,9 @@ spring:
     name: digital-gold-wallet
 
   datasource:
-    url: jdbc:mysql://localhost:3306/digitalgoldwallet
-    username: root
-    password: your_actual_mysql_password
+    url: jdbc:mysql://54.206.64.234:3306/digitalgoldwallet
+    username: digitalgoldwallet
+    password: myPass@123
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
