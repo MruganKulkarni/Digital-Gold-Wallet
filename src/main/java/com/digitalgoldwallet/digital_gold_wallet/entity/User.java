@@ -7,13 +7,12 @@ import java.math.BigDecimal;
 /*
  * User Entity Class
  *
- * This class maps to the "users" table in MySQL.
- * Each object represents one row in database.
+ * This class maps to the "users" table in database.
  */
 
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements Comparable<User> {
 
     /*
      * Primary Key
@@ -31,36 +30,31 @@ public class User {
 
     /*
      * User email
-     * unique = true ensures duplicate emails are not allowed
      */
     @Column(nullable = false, unique = true)
     private String email;
 
     /*
-     * Wallet balance of user
+     * Wallet balance
      */
     @Column(nullable = false)
     private BigDecimal balance = BigDecimal.ZERO;
 
     /*
      * Many users can belong to one address
-     *
-     * FetchType.LAZY:
-     * Address loads only when needed
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "address_id")
     private Address address;
 
     /*
-     * Default constructor
-     * Required by Hibernate/JPA
+     * Default Constructor
      */
     public User() {
     }
 
     /*
-     * Parameterized constructor
+     * Parameterized Constructor
      */
     public User(Integer userId,
                 String name,
@@ -117,5 +111,55 @@ public class User {
 
     public void setAddress(Address address) {
         this.address = address;
+    }
+
+    /*
+     * equals()
+     *
+     * Used to compare two User objects logically
+     * using userId.
+     */
+    @Override
+    public boolean equals(Object obj) {
+
+        // checks if same object reference
+        if (this == obj) {
+            return true;
+        }
+
+        // checks null and class type
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+
+        // type casting
+        User user = (User) obj;
+
+        // compare user IDs
+        return userId != null && userId.equals(user.userId);
+    }
+
+    /*
+     * hashCode()
+     *
+     * Generates hash value for User object.
+     */
+    @Override
+    public int hashCode() {
+
+        // generate hash using userId
+        return userId != null ? userId.hashCode() : 0;
+    }
+
+    /*
+     * compareTo()
+     *
+     * Used for sorting User objects alphabetically by name.
+     */
+    @Override
+    public int compareTo(User otherUser) {
+
+        // compare user names
+        return this.name.compareTo(otherUser.name);
     }
 }
