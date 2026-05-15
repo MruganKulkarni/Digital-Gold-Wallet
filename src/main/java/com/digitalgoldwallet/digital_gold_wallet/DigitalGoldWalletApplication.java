@@ -1,56 +1,151 @@
 package com.digitalgoldwallet.digital_gold_wallet; // package declaration
 
-import com.digitalgoldwallet.digital_gold_wallet.entity.Vendor; // importing Vendor entity
-import com.digitalgoldwallet.digital_gold_wallet.repository.VendorRepository; // importing VendorRepository
+import com.digitalgoldwallet.digital_gold_wallet.entity.Address; // importing Address entity
+import com.digitalgoldwallet.digital_gold_wallet.entity.User; // importing User entity
+import com.digitalgoldwallet.digital_gold_wallet.repository.AddressRepository; // importing AddressRepository
+import com.digitalgoldwallet.digital_gold_wallet.repository.UserRepository; // importing UserRepository
+
 import org.springframework.boot.CommandLineRunner; // runs code after Spring Boot starts
-import org.springframework.boot.SpringApplication; // used to launch Spring Boot app
-import org.springframework.boot.autoconfigure.SpringBootApplication; // marks this as Spring Boot main class
-import org.springframework.context.annotation.Bean; // marks method as a Spring bean
+import org.springframework.boot.SpringApplication; // launches Spring Boot application
+import org.springframework.boot.autoconfigure.SpringBootApplication; // marks this as Spring Boot application
+import org.springframework.context.annotation.Bean; // used to create Spring beans
 
-import java.math.BigDecimal; // used for gold price and quantity
+import java.math.BigDecimal; // used for wallet balance
 
-@SpringBootApplication // enables auto-configuration, component scan, etc
+@SpringBootApplication
 public class DigitalGoldWalletApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(DigitalGoldWalletApplication.class, args); // launches the application
+
+		// starts Spring Boot application
+		SpringApplication.run(DigitalGoldWalletApplication.class, args);
 	}
 
-	@Bean // tells Spring to manage this as a bean
-	public CommandLineRunner testVendorCRUD(VendorRepository vendorRepository) {
-		// CommandLineRunner runs this code automatically after app starts
+	@Bean
+	public CommandLineRunner testUserCRUD(UserRepository userRepository,
+										  AddressRepository addressRepository) {
+
+		// runs automatically after application starts
 		return args -> {
 
-			// ---- CREATE ----
-			Vendor vendor = new Vendor(); // creating new Vendor object
-			vendor.setVendorName("Test Gold Bro"); // setting vendor name
-			vendor.setDescription("Testing CRUD for Day 2"); // setting description
-			vendor.setContactPersonName("Sparsh Garg"); // setting contact person
-			vendor.setContactEmail("sparsh@test.com"); // setting contact email
-			vendor.setContactPhone("9999999999"); // setting phone number
-			vendor.setTotalGoldQuantity(new BigDecimal("500.00")); // setting gold quantity
-			vendor.setCurrentGoldPrice(new BigDecimal("6400.00")); // setting gold price
-			vendorRepository.save(vendor); // saves vendor to DB
-			System.out.println("✅ CREATE: Vendor saved with ID = " + vendor.getVendorId());
+			// ---------------- CREATE ADDRESS ----------------
 
-			// ---- READ ----
-			Vendor found = vendorRepository.findById(vendor.getVendorId()).orElse(null);
-			// fetches vendor from DB by ID
-			System.out.println("✅ READ: Vendor found = " + found.getVendorName());
+			Address address = new Address();
 
-			// ---- UPDATE ----
-			found.setCurrentGoldPrice(new BigDecimal("6500.00")); // updating gold price
-			vendorRepository.save(found); // saves updated vendor back to DB
-			System.out.println("✅ UPDATE: Gold price updated to = " + found.getCurrentGoldPrice());
+			address.setStreet("Anna Nagar");
+			address.setCity("Chennai");
+			address.setState("Tamil Nadu");
+			address.setPostalCode("600040");
+			address.setCountry("India");
 
-			// ---- DELETE ----
-			vendorRepository.deleteById(found.getVendorId()); // deletes vendor from DB by ID
-			System.out.println("✅ DELETE: Vendor deleted successfully");
+			// save address into database
+			addressRepository.save(address);
 
-			// ---- VERIFY ----
-			boolean exists = vendorRepository.existsById(found.getVendorId());
-			// checks if vendor still exists after deletion
-			System.out.println("✅ VERIFY: Vendor exists after delete = " + exists); // should print false
+			System.out.println("CREATE SUCCESS: Address saved successfully");
+
+
+			// ---------------- CREATE USER ----------------
+
+			User user = new User();
+
+			user.setName("Varsha Karthikeyan");
+			user.setEmail("varsha@test.com");
+			user.setBalance(new BigDecimal("5000.00"));
+			user.setAddress(address);
+
+			// save user into database
+			userRepository.save(user);
+
+			System.out.println("CREATE SUCCESS: User saved with ID = "
+					+ user.getUserId());
+
+
+			// ---------------- READ USER ----------------
+
+			User foundUser = userRepository.findById(user.getUserId())
+					.orElse(null);
+
+			/*
+			 * Checking whether user exists
+			 */
+			if (foundUser != null) {
+
+				System.out.println("READ SUCCESS: User found = "
+						+ foundUser.getName());
+
+			} else {
+
+				System.out.println("READ FAILED: User with ID "
+						+ user.getUserId() + " is null");
+			}
+
+
+			// ---------------- UPDATE USER ----------------
+
+			if (foundUser != null) {
+
+				foundUser.setBalance(new BigDecimal("10000.00"));
+
+				// save updated user
+				userRepository.save(foundUser);
+
+				System.out.println("UPDATE SUCCESS: User balance updated to = "
+						+ foundUser.getBalance());
+
+			} else {
+
+				System.out.println("UPDATE FAILED: User object is null");
+			}
+
+
+			// ---------------- CUSTOM QUERY TEST ----------------
+
+			System.out.println("CUSTOM QUERY TEST: Users with balance > 1000");
+
+			userRepository.findUsersWithBalanceGreaterThan(
+							new BigDecimal("1000"))
+					.forEach(u -> {
+
+						if (u != null) {
+
+							System.out.println("CUSTOM QUERY SUCCESS: User Found = "
+									+ u.getName());
+
+						} else {
+
+							System.out.println("CUSTOM QUERY FAILED: User is null");
+						}
+					});
+
+
+			// ---------------- DELETE USER ----------------
+
+			if (foundUser != null) {
+
+				userRepository.deleteById(foundUser.getUserId());
+
+				System.out.println("DELETE SUCCESS: User deleted successfully");
+
+			} else {
+
+				System.out.println("DELETE FAILED: User object is null");
+			}
+
+
+			// ---------------- VERIFY DELETE ----------------
+
+			if (foundUser != null) {
+
+				boolean exists = userRepository.existsById(
+						foundUser.getUserId());
+
+				System.out.println("VERIFY DELETE: User exists after delete = "
+						+ exists);
+
+			} else {
+
+				System.out.println("VERIFY FAILED: Cannot verify null user");
+			}
 		};
 	}
 }
