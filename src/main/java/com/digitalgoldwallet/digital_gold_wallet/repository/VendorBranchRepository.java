@@ -15,11 +15,10 @@ public interface VendorBranchRepository extends JpaRepository<VendorBranch, Inte
 
     List<VendorBranch> findByVendorVendorId(Integer vendorId); // finds all branches of a specific vendor
 
-    boolean existsByVendorVendorIdAndAddressAddressId(Integer vendorId, Integer addressId);
-    // checks if a branch already exists at same vendor + address combination
+    boolean existsByVendorVendorIdAndAddressAddressId(Integer vendorId, Integer addressId); // checks if branch already exists at same vendor + address combination
 
     @Query("SELECT vb FROM VendorBranch vb WHERE vb.vendor.vendorId = :vendorId ORDER BY vb.quantity DESC")
-        // JPQL: get all branches of a vendor sorted by gold quantity (highest first)
+        // JPQL: get all branches of a vendor sorted by gold quantity highest first
     List<VendorBranch> findBranchesByVendorIdOrderByQuantity(@Param("vendorId") Integer vendorId);
 
     @Query(value = "SELECT quantity FROM vendor_branches WHERE branch_id = :branchId", nativeQuery = true)
@@ -31,6 +30,6 @@ public interface VendorBranchRepository extends JpaRepository<VendorBranch, Inte
             "LEFT JOIN virtual_gold_holdings vgh ON vb.branch_id = vgh.branch_id " +
             "WHERE vb.branch_id = :branchId " +
             "GROUP BY vb.branch_id", nativeQuery = true)
-        // native SQL: gets available gold vs allocated gold for inventory report (Section 2.9 of guide)
+        // native SQL: gets available gold vs allocated gold for inventory report
     Object[] getInventoryStatus(@Param("branchId") Integer branchId); // returns [available, allocated] as array
 }

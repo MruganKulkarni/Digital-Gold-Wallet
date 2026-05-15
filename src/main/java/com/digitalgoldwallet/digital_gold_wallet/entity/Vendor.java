@@ -8,10 +8,11 @@ import jakarta.validation.constraints.NotNull; // validation: field cannot be nu
 import java.math.BigDecimal; // used for precise decimal numbers
 import java.time.LocalDateTime; // used for timestamp fields
 import java.util.List; // used for one-to-many list of branches
+import java.util.Objects; // used for equals and hashCode
 
 @Entity // marks this class as a JPA entity
 @Table(name = "vendors") // maps to "vendors" table in MySQL
-public class Vendor { // no more @Data, @NoArgsConstructor, @AllArgsConstructor from Lombok
+public class Vendor {
 
     @Id // marks this as primary key
     @GeneratedValue(strategy = GenerationType.IDENTITY) // auto increment
@@ -163,6 +164,34 @@ public class Vendor { // no more @Data, @NoArgsConstructor, @AllArgsConstructor 
 
     public void setBranches(List<VendorBranch> branches) { // sets list of branches
         this.branches = branches;
+    }
+
+    // ---- EQUALS ----
+    @Override
+    public boolean equals(Object o) { // checks if two Vendor objects are equal based on vendorId
+        if (this == o) return true; // same object reference
+        if (o == null || getClass() != o.getClass()) return false; // null or different class
+        Vendor vendor = (Vendor) o; // cast to Vendor
+        return Objects.equals(vendorId, vendor.vendorId); // compare by vendorId only
+    }
+
+    // ---- HASHCODE ----
+    @Override
+    public int hashCode() { // generates hash based on vendorId
+        return Objects.hash(vendorId); // uses vendorId for hash
+    }
+
+    // ---- TOSTRING ----
+    @Override
+    public String toString() { // returns string representation of Vendor
+        return "Vendor{" +
+                "vendorId=" + vendorId + // vendor id
+                ", vendorName='" + vendorName + '\'' + // vendor name
+                ", contactEmail='" + contactEmail + '\'' + // contact email
+                ", totalGoldQuantity=" + totalGoldQuantity + // total gold quantity
+                ", currentGoldPrice=" + currentGoldPrice + // current gold price
+                ", createdAt=" + createdAt + // creation timestamp
+                '}';
     }
 
     @PrePersist // runs automatically just before saving to DB
