@@ -7,15 +7,16 @@ import java.util.List;
 /*
  * Address Entity Class
  *
- * Maps to addresses table.
+ * This class maps to the "addresses" table in database.
  */
 
 @Entity
 @Table(name = "addresses")
-public class Address {
+public class Address implements Comparable<Address> {
 
     /*
      * Primary Key
+     * Auto incremented address ID
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,13 +42,13 @@ public class Address {
     private List<User> users;
 
     /*
-     * Default constructor
+     * Default Constructor
      */
     public Address() {
     }
 
     /*
-     * Parameterized constructor
+     * Parameterized Constructor
      */
     public Address(Integer addressId,
                    String street,
@@ -124,5 +125,56 @@ public class Address {
 
     public void setUsers(List<User> users) {
         this.users = users;
+    }
+
+    /*
+     * equals()
+     *
+     * Used to compare two Address objects logically
+     * using addressId.
+     */
+    @Override
+    public boolean equals(Object obj) {
+
+        // checks if same object reference
+        if (this == obj) {
+            return true;
+        }
+
+        // checks null and class type
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+
+        // type casting
+        Address address = (Address) obj;
+
+        // compare address IDs
+        return addressId != null
+                && addressId.equals(address.addressId);
+    }
+
+    /*
+     * hashCode()
+     *
+     * Generates hash value for Address object.
+     */
+    @Override
+    public int hashCode() {
+
+        // generate hash using addressId
+        return addressId != null ? addressId.hashCode() : 0;
+    }
+
+    /*
+     * compareTo()
+     *
+     * Used for sorting Address objects alphabetically by city.
+     */
+    @Override
+    public int compareTo(Address otherAddress) {
+
+        // compare city names
+        return this.city.compareTo(otherAddress.city);
     }
 }
