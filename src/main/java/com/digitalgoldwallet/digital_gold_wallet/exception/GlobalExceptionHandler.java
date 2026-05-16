@@ -477,4 +477,139 @@ public class GlobalExceptionHandler {
                 HttpStatus.INTERNAL_SERVER_ERROR
         );
     }
+    /*
+     * ============================================================
+     * HANDLE TransactionHistoryNotFoundException
+     * ============================================================
+     */
+
+    @ExceptionHandler(
+            TransactionHistoryNotFoundException.class
+    )
+    public ResponseEntity<Map<String,Object>>
+    handleTransactionHistoryNotFoundException(
+            TransactionHistoryNotFoundException ex
+    ){
+
+        Map<String,Object> error=
+                new HashMap<>();
+
+        error.put(
+                "timestamp",
+                LocalDateTime.now()
+        );
+
+        error.put(
+                "status",
+                HttpStatus.NOT_FOUND.value()
+        );
+
+        error.put(
+                "error",
+                "Transaction History Not Found"
+        );
+
+        error.put(
+                "message",
+                ex.getMessage()
+        );
+
+        return new ResponseEntity<>(
+                error,
+                HttpStatus.NOT_FOUND
+        );
+
+    }
+
+
+
+    /*
+     * ============================================================
+     * HANDLE PhysicalGoldTransactionNotFoundException
+     * ============================================================
+     */
+
+    @ExceptionHandler(
+            PhysicalGoldTransactionNotFoundException.class
+    )
+    public ResponseEntity<Map<String,Object>>
+    handlePhysicalTransactionException(
+            PhysicalGoldTransactionNotFoundException ex
+    ){
+
+        Map<String,Object> error=
+                new HashMap<>();
+
+        error.put(
+                "timestamp",
+                LocalDateTime.now()
+        );
+
+        error.put(
+                "status",
+                HttpStatus.NOT_FOUND.value()
+        );
+
+        error.put(
+                "error",
+                "Physical Transaction Not Found"
+        );
+
+        error.put(
+                "message",
+                ex.getMessage()
+        );
+
+        return new ResponseEntity<>(
+                error,
+                HttpStatus.NOT_FOUND
+        );
+
+    }
+
+
+
+    /*
+     * ============================================================
+     * HANDLE VirtualHoldingNotFoundException
+     * ============================================================
+     */
+
+    @ExceptionHandler(
+            VirtualGoldHoldingNotFoundException.class
+    )
+    public ResponseEntity<Map<String,Object>>
+    handleHoldingException(
+            VirtualGoldHoldingNotFoundException ex
+    ){
+
+        Map<String,Object> error=
+                new HashMap<>();
+
+        error.put(
+                "timestamp",
+                LocalDateTime.now()
+        );
+
+        error.put(
+                "status",
+                HttpStatus.NOT_FOUND.value()
+        );
+
+        error.put(
+                "error",
+                "Virtual Holding Not Found"
+        );
+
+        error.put(
+                "message",
+                ex.getMessage()
+        );
+
+        return new ResponseEntity<>(
+                error,
+                HttpStatus.NOT_FOUND
+        );
+
+    }
 }
