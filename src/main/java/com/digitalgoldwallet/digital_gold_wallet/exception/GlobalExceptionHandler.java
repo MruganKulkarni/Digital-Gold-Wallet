@@ -12,136 +12,469 @@ import java.util.HashMap; // used to store field-level error messages
 import java.util.Map; // used for key-value error map
 
 /*
- * Global Exception Handler
- * Catches all custom exceptions thrown across the application
- * Returns structured JSON error responses instead of stack traces
+ * ============================================================
+ * GLOBAL EXCEPTION HANDLER
+ * ============================================================
+ *
+ * Handles all custom exceptions globally
+ * Returns structured JSON responses
+ * Prevents raw stack traces from reaching client
+ *
+ * Applied globally to all REST controllers
+ *
+ * ============================================================
  */
-@RestControllerAdvice // applies to all @RestController classes globally
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
     /*
-     * Handles VendorNotFoundException
-     * Returns 404 NOT FOUND with error message
+     * ============================================================
+     * HANDLE VendorNotFoundException
+     * ============================================================
      */
-    @ExceptionHandler(VendorNotFoundException.class) // catches VendorNotFoundException only
-    public ResponseEntity<Map<String, Object>> handleVendorNotFoundException(
-            VendorNotFoundException ex) { // receives the thrown exception
+    @ExceptionHandler(VendorNotFoundException.class)
+    public ResponseEntity<Map<String, Object>>
+    handleVendorNotFoundException(
+            VendorNotFoundException ex
+    ) {
 
-        Map<String, Object> error = new HashMap<>(); // creates error response map
-        error.put("timestamp", LocalDateTime.now()); // adds current timestamp
-        error.put("status", HttpStatus.NOT_FOUND.value()); // adds 404 status code
-        error.put("error", "Vendor Not Found"); // adds error type
-        error.put("message", ex.getMessage()); // adds exception message
+        Map<String, Object> error =
+                new HashMap<>();
 
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND); // returns 404 response
+        error.put(
+                "timestamp",
+                LocalDateTime.now()
+        );
+
+        error.put(
+                "status",
+                HttpStatus.NOT_FOUND.value()
+        );
+
+        error.put(
+                "error",
+                "Vendor Not Found"
+        );
+
+        error.put(
+                "message",
+                ex.getMessage()
+        );
+
+        return new ResponseEntity<>(
+                error,
+                HttpStatus.NOT_FOUND
+        );
     }
 
     /*
-     * Handles VendorBranchNotFoundException
-     * Returns 404 NOT FOUND with error message
+     * ============================================================
+     * HANDLE VendorBranchNotFoundException
+     * ============================================================
      */
-    @ExceptionHandler(VendorBranchNotFoundException.class) // catches VendorBranchNotFoundException only
-    public ResponseEntity<Map<String, Object>> handleVendorBranchNotFoundException(
-            VendorBranchNotFoundException ex) { // receives the thrown exception
+    @ExceptionHandler(
+            VendorBranchNotFoundException.class
+    )
+    public ResponseEntity<Map<String, Object>>
+    handleVendorBranchNotFoundException(
+            VendorBranchNotFoundException ex
+    ) {
 
-        Map<String, Object> error = new HashMap<>(); // creates error response map
-        error.put("timestamp", LocalDateTime.now()); // adds current timestamp
-        error.put("status", HttpStatus.NOT_FOUND.value()); // adds 404 status code
-        error.put("error", "Vendor Branch Not Found"); // adds error type
-        error.put("message", ex.getMessage()); // adds exception message
+        Map<String, Object> error =
+                new HashMap<>();
 
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND); // returns 404 response
+        error.put(
+                "timestamp",
+                LocalDateTime.now()
+        );
+
+        error.put(
+                "status",
+                HttpStatus.NOT_FOUND.value()
+        );
+
+        error.put(
+                "error",
+                "Vendor Branch Not Found"
+        );
+
+        error.put(
+                "message",
+                ex.getMessage()
+        );
+
+        return new ResponseEntity<>(
+                error,
+                HttpStatus.NOT_FOUND
+        );
     }
 
     /*
-     * Handles DuplicateVendorException
-     * Returns 409 CONFLICT with error message
+     * ============================================================
+     * HANDLE DuplicateVendorException
+     * ============================================================
      */
-    @ExceptionHandler(DuplicateVendorException.class) // catches DuplicateVendorException only
-    public ResponseEntity<Map<String, Object>> handleDuplicateVendorException(
-            DuplicateVendorException ex) { // receives the thrown exception
+    @ExceptionHandler(
+            DuplicateVendorException.class
+    )
+    public ResponseEntity<Map<String, Object>>
+    handleDuplicateVendorException(
+            DuplicateVendorException ex
+    ) {
 
-        Map<String, Object> error = new HashMap<>(); // creates error response map
-        error.put("timestamp", LocalDateTime.now()); // adds current timestamp
-        error.put("status", HttpStatus.CONFLICT.value()); // adds 409 status code
-        error.put("error", "Duplicate Vendor"); // adds error type
-        error.put("message", ex.getMessage()); // adds exception message
+        Map<String, Object> error =
+                new HashMap<>();
 
-        return new ResponseEntity<>(error, HttpStatus.CONFLICT); // returns 409 response
+        error.put(
+                "timestamp",
+                LocalDateTime.now()
+        );
+
+        error.put(
+                "status",
+                HttpStatus.CONFLICT.value()
+        );
+
+        error.put(
+                "error",
+                "Duplicate Vendor"
+        );
+
+        error.put(
+                "message",
+                ex.getMessage()
+        );
+
+        return new ResponseEntity<>(
+                error,
+                HttpStatus.CONFLICT
+        );
     }
 
     /*
-     * Handles DuplicateVendorBranchException
-     * Returns 409 CONFLICT with error message
+     * ============================================================
+     * HANDLE DuplicateVendorBranchException
+     * ============================================================
      */
-    @ExceptionHandler(DuplicateVendorBranchException.class) // catches DuplicateVendorBranchException only
-    public ResponseEntity<Map<String, Object>> handleDuplicateVendorBranchException(
-            DuplicateVendorBranchException ex) { // receives the thrown exception
+    @ExceptionHandler(
+            DuplicateVendorBranchException.class
+    )
+    public ResponseEntity<Map<String, Object>>
+    handleDuplicateVendorBranchException(
+            DuplicateVendorBranchException ex
+    ) {
 
-        Map<String, Object> error = new HashMap<>(); // creates error response map
-        error.put("timestamp", LocalDateTime.now()); // adds current timestamp
-        error.put("status", HttpStatus.CONFLICT.value()); // adds 409 status code
-        error.put("error", "Duplicate Vendor Branch"); // adds error type
-        error.put("message", ex.getMessage()); // adds exception message
+        Map<String, Object> error =
+                new HashMap<>();
 
-        return new ResponseEntity<>(error, HttpStatus.CONFLICT); // returns 409 response
+        error.put(
+                "timestamp",
+                LocalDateTime.now()
+        );
+
+        error.put(
+                "status",
+                HttpStatus.CONFLICT.value()
+        );
+
+        error.put(
+                "error",
+                "Duplicate Vendor Branch"
+        );
+
+        error.put(
+                "message",
+                ex.getMessage()
+        );
+
+        return new ResponseEntity<>(
+                error,
+                HttpStatus.CONFLICT
+        );
     }
 
     /*
+     * ============================================================
+     * HANDLE AddressNotFoundException
+     * ============================================================
+     */
+    @ExceptionHandler(
+            AddressNotFoundException.class
+    )
+    public ResponseEntity<Map<String, Object>>
+    handleAddressNotFoundException(
+            AddressNotFoundException ex
+    ) {
+
+        Map<String, Object> error =
+                new HashMap<>();
+
+        error.put(
+                "timestamp",
+                LocalDateTime.now()
+        );
+
+        error.put(
+                "status",
+                HttpStatus.NOT_FOUND.value()
+        );
+
+        error.put(
+                "error",
+                "Address Not Found"
+        );
+
+        error.put(
+                "message",
+                ex.getMessage()
+        );
+
+        return new ResponseEntity<>(
+                error,
+                HttpStatus.NOT_FOUND
+        );
+    }
+
+    /*
+     * ============================================================
+     * HANDLE UserNotFoundException
+     * ============================================================
+     */
+    @ExceptionHandler(
+            UserNotFoundException.class
+    )
+    public ResponseEntity<Map<String, Object>>
+    handleUserNotFoundException(
+            UserNotFoundException ex
+    ) {
+
+        Map<String, Object> error =
+                new HashMap<>();
+
+        error.put(
+                "timestamp",
+                LocalDateTime.now()
+        );
+
+        error.put(
+                "status",
+                HttpStatus.NOT_FOUND.value()
+        );
+
+        error.put(
+                "error",
+                "User Not Found"
+        );
+
+        error.put(
+                "message",
+                ex.getMessage()
+        );
+
+        return new ResponseEntity<>(
+                error,
+                HttpStatus.NOT_FOUND
+        );
+    }
+
+    /*
+     * ============================================================
+     * HANDLE PaymentNotFoundException
+     * ============================================================
+     */
+    @ExceptionHandler(
+            PaymentNotFoundException.class
+    )
+    public ResponseEntity<Map<String, Object>>
+    handlePaymentNotFoundException(
+            PaymentNotFoundException ex
+    ) {
+
+        Map<String, Object> error =
+                new HashMap<>();
+
+        error.put(
+                "timestamp",
+                LocalDateTime.now()
+        );
+
+        error.put(
+                "status",
+                HttpStatus.NOT_FOUND.value()
+        );
+
+        error.put(
+                "error",
+                "Payment Not Found"
+        );
+
+        error.put(
+                "message",
+                ex.getMessage()
+        );
+
+        return new ResponseEntity<>(
+                error,
+                HttpStatus.NOT_FOUND
+        );
+    }
+
+    /*
+     * ============================================================
+     * HANDLE InsufficientBalanceException
+     * ============================================================
+     */
+    @ExceptionHandler(
+            InsufficientBalanceException.class
+    )
+    public ResponseEntity<Map<String, Object>>
+    handleInsufficientBalanceException(
+            InsufficientBalanceException ex
+    ) {
+
+        Map<String, Object> error =
+                new HashMap<>();
+
+        error.put(
+                "timestamp",
+                LocalDateTime.now()
+        );
+
+        error.put(
+                "status",
+                HttpStatus.BAD_REQUEST.value()
+        );
+
+        error.put(
+                "error",
+                "Insufficient Balance"
+        );
+
+        error.put(
+                "message",
+                ex.getMessage()
+        );
+
+        return new ResponseEntity<>(
+                error,
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    /*
+     * ============================================================
+     * HANDLE VALIDATION ERRORS
+     * ============================================================
+     *
      * Handles @Valid validation failures
-     * Returns 400 BAD REQUEST with field-level error messages
+     *
+     * Example:
+     * - invalid email
+     * - null amount
+     * - blank name
+     *
+     * Returns field-wise validation errors
+     *
+     * ============================================================
      */
-    @ExceptionHandler(MethodArgumentNotValidException.class) // catches validation failures from @Valid
-    public ResponseEntity<Map<String, Object>> handleValidationException(
-            MethodArgumentNotValidException ex) { // receives the thrown exception
+    @ExceptionHandler(
+            MethodArgumentNotValidException.class
+    )
+    public ResponseEntity<Map<String, Object>>
+    handleValidationException(
+            MethodArgumentNotValidException ex
+    ) {
 
-        Map<String, Object> error = new HashMap<>(); // creates error response map
-        error.put("timestamp", LocalDateTime.now()); // adds current timestamp
-        error.put("status", HttpStatus.BAD_REQUEST.value()); // adds 400 status code
-        error.put("error", "Validation Failed"); // adds error type
+        Map<String, Object> error =
+                new HashMap<>();
 
-        Map<String, String> fieldErrors = new HashMap<>(); // map to hold field-level errors
+        error.put(
+                "timestamp",
+                LocalDateTime.now()
+        );
 
-        for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) { // loops through all field errors
-            fieldErrors.put(fieldError.getField(), fieldError.getDefaultMessage()); // maps field name to error message
+        error.put(
+                "status",
+                HttpStatus.BAD_REQUEST.value()
+        );
+
+        error.put(
+                "error",
+                "Validation Failed"
+        );
+
+        /*
+         * Store field-wise validation messages
+         */
+        Map<String, String> fieldErrors =
+                new HashMap<>();
+
+        /*
+         * Loop through all validation errors
+         */
+        for (FieldError fieldError :
+                ex.getBindingResult()
+                        .getFieldErrors()) {
+
+            fieldErrors.put(
+                    fieldError.getField(),
+                    fieldError.getDefaultMessage()
+            );
         }
 
-        error.put("fieldErrors", fieldErrors); // adds field errors to response
+        error.put(
+                "fieldErrors",
+                fieldErrors
+        );
 
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST); // returns 400 response
+        return new ResponseEntity<>(
+                error,
+                HttpStatus.BAD_REQUEST
+        );
     }
 
     /*
-     * Handles AddressNotFoundException — added by Varsha's module
-     * Returns 404 NOT FOUND with error message
+     * ============================================================
+     * HANDLE GENERIC EXCEPTION
+     * ============================================================
+     *
+     * Fallback handler
+     * Catches unhandled exceptions
+     *
+     * ============================================================
      */
-    @ExceptionHandler(AddressNotFoundException.class) // catches AddressNotFoundException from Varsha's module
-    public ResponseEntity<Map<String, Object>> handleAddressNotFoundException(
-            AddressNotFoundException ex) { // receives the thrown exception
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, Object>>
+    handleGenericException(
+            Exception ex
+    ) {
 
-        Map<String, Object> error = new HashMap<>(); // creates error response map
-        error.put("timestamp", LocalDateTime.now()); // adds current timestamp
-        error.put("status", HttpStatus.NOT_FOUND.value()); // adds 404 status code
-        error.put("error", "Address Not Found"); // adds error type
-        error.put("message", ex.getMessage()); // adds exception message
+        Map<String, Object> error =
+                new HashMap<>();
 
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND); // returns 404 response
-    }
+        error.put(
+                "timestamp",
+                LocalDateTime.now()
+        );
 
-    /*
-     * Handles UserNotFoundException — added by Varsha's module
-     * Returns 404 NOT FOUND with error message
-     */
-    @ExceptionHandler(UserNotFoundException.class) // catches UserNotFoundException from Varsha's module
-    public ResponseEntity<Map<String, Object>> handleUserNotFoundException(
-            UserNotFoundException ex) { // receives the thrown exception
+        error.put(
+                "status",
+                HttpStatus.INTERNAL_SERVER_ERROR.value()
+        );
 
-        Map<String, Object> error = new HashMap<>(); // creates error response map
-        error.put("timestamp", LocalDateTime.now()); // adds current timestamp
-        error.put("status", HttpStatus.NOT_FOUND.value()); // adds 404 status code
-        error.put("error", "User Not Found"); // adds error type
-        error.put("message", ex.getMessage()); // adds exception message
+        error.put(
+                "error",
+                "Internal Server Error"
+        );
 
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND); // returns 404 response
+        error.put(
+                "message",
+                ex.getMessage()
+        );
+
+        return new ResponseEntity<>(
+                error,
+                HttpStatus.INTERNAL_SERVER_ERROR
+        );
     }
 }
