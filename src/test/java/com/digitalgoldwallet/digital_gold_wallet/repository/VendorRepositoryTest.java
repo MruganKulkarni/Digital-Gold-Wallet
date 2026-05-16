@@ -1,249 +1,383 @@
-package com.digitalgoldwallet.digital_gold_wallet.repository; // package declaration
+package com.digitalgoldwallet.digital_gold_wallet.repository; // declares the package this class belongs to
 
-import com.digitalgoldwallet.digital_gold_wallet.entity.Address; // importing Address entity
-import com.digitalgoldwallet.digital_gold_wallet.entity.Vendor; // importing Vendor entity
-import com.digitalgoldwallet.digital_gold_wallet.entity.VendorBranch; // importing VendorBranch entity
+import com.digitalgoldwallet.digital_gold_wallet.entity.Address; // imports Address entity
+import com.digitalgoldwallet.digital_gold_wallet.entity.Vendor; // imports Vendor entity
+import com.digitalgoldwallet.digital_gold_wallet.entity.VendorBranch; // imports VendorBranch entity
 
-import org.junit.jupiter.api.Test; // marks method as a test case
-import org.junit.jupiter.api.BeforeEach; // runs before each test method
-import org.junit.jupiter.api.AfterEach; // runs after each test method
-import org.springframework.beans.factory.annotation.Autowired; // injects Spring beans
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest; // loads only JPA layer for testing
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase; // configures test database
-import org.springframework.test.context.ActiveProfiles; // sets active profile for test
+import org.junit.jupiter.api.Test; // marks a method as a JUnit 5 test case
+import org.springframework.beans.factory.annotation.Autowired; // tells Spring to inject the dependency automatically
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase; // controls which DB is used during tests
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest; // loads only the JPA layer for testing
+import org.springframework.test.context.ActiveProfiles; // activates a specific Spring profile for the test
 
-import java.math.BigDecimal; // used for gold price and quantity
-import java.util.List; // used for list of results
-import java.util.Optional; // used for optional result
+import java.math.BigDecimal; // used for precise decimal numbers like gold price and quantity
+import java.util.List; // used when a query returns multiple results
+import java.util.Optional; // used when a query may or may not return a result
 
 import static org.junit.jupiter.api.Assertions.*; // imports all assertion methods
 
-@DataJpaTest // loads only JPA repositories, entities — no full Spring context needed
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) // uses real MySQL DB instead of in-memory H2
-@ActiveProfiles("test") // uses test profile configuration
-public class VendorRepositoryTest {
+/*
+ * WHY NO @BeforeEach / @AfterEach:
+ *
+ * The old tearDown used EntityManager to run SET FOREIGN_KEY_CHECKS = 0
+ * as a native query. When Hibernate sees a native executeUpdate(), it first
+ * flushes all pending JPA changes — this caused a DEADLOCK (MySQL Error 1213)
+ * because JPA and native SQL were touching the same rows simultaneously.
+ * That deadlock killed the DB connection pool, so every test after the first
+ * failed with "HikariPool - Connection is not available".
+ *
+ * THE FIX:
+ * @DataJpaTest automatically wraps EVERY test in a transaction that rolls
+ * back after the test completes — any data saved is automatically removed.
+ * No manual cleanup needed. Each test creates its own data via helper methods.
+ */
 
-    @Autowired // injects VendorRepository automatically
-    private VendorRepository vendorRepository;
+@DataJpaTest
+// loads only JPA beans: repositories + entities — NO controllers or services
+// automatically wraps each test in a transaction that ROLLS BACK after the test
+// this means data saved in one test never affects another test
 
-    @Autowired // injects VendorBranchRepository automatically
-    private VendorBranchRepository vendorBranchRepository;
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+// by default @DataJpaTest replaces your DB with in-memory H2
+// replace = NONE tells Spring: use the REAL MySQL from application.yaml
+// needed because our native queries use MySQL-specific syntax H2 doesn't support
 
-    @Autowired // injects AddressRepository automatically
-    private AddressRepository addressRepository;
+@ActiveProfiles("test")
+// activates the "test" Spring profile
+// falls back to application.yaml if no application-test.yaml exists
 
-    private Vendor testVendor; // holds test vendor object used across tests
-    private Address testAddress; // holds test address object used across tests
+public class VendorRepositoryTest { // JUnit discovers and runs this class automatically
 
-    @BeforeEach // runs before every single test method
-    public void setUp() {
+    @Autowired
+    private VendorRepository vendorRepository; // Spring injects real VendorRepository — used to test vendor DB operations
 
-        // ---- create test address ----
-        testAddress = new Address(); // creating new address object
-        testAddress.setStreet("MG Road"); // setting street
-        testAddress.setCity("Bangalore"); // setting city
-        testAddress.setState("Karnataka"); // setting state
-        testAddress.setPostalCode("560001"); // setting postal code
-        testAddress.setCountry("India"); // setting country
-        addressRepository.save(testAddress); // saving address to DB
+    @Autowired
+    private VendorBranchRepository vendorBranchRepository; // Spring injects real VendorBranchRepository — used to test branch DB operations
 
-        // ---- create test vendor ----
-        testVendor = new Vendor(); // creating new vendor object
-        testVendor.setVendorName("Test Gold Traders"); // setting vendor name
-        testVendor.setDescription("Test vendor for JUnit"); // setting description
-        testVendor.setContactPersonName("Sparsh Garg"); // setting contact person
-        testVendor.setContactEmail("sparsh@test.com"); // setting contact email
-        testVendor.setContactPhone("9999999999"); // setting phone
-        testVendor.setTotalGoldQuantity(new BigDecimal("1000.00")); // setting total gold quantity
-        testVendor.setCurrentGoldPrice(new BigDecimal("6400.00")); // setting gold price
-        vendorRepository.save(testVendor); // saving vendor to DB
+    @Autowired
+    private AddressRepository addressRepository; // Spring injects AddressRepository — needed because VendorBranch has FK to addresses
+
+    // ================================================================
+    //  HELPER METHODS
+    //  Each test calls only the helpers it needs — no shared state
+    // ================================================================
+
+    private Address createAndSaveAddress() {
+        // creates a test Address, saves it to DB, returns saved object with generated ID
+
+        Address address = new Address(); // creates a new empty Address object
+        address.setStreet("MG Road"); // sets street field
+        address.setCity("Bangalore"); // sets city field
+        address.setState("Karnataka"); // sets state field
+        address.setPostalCode("560001"); // sets postal code field
+        address.setCountry("India"); // sets country field
+        return addressRepository.save(address); // saves to DB — returned object has auto-generated addressId
     }
 
-    @Autowired // inject EntityManager to run native SQL
-    private jakarta.persistence.EntityManager entityManager; // used to disable FK checks
+    private Vendor createAndSaveVendor() {
+        // creates a test Vendor, saves it to DB, returns saved object with generated ID
 
-    @AfterEach // runs after every single test method to clean up DB
-    @org.springframework.transaction.annotation.Transactional // runs in transaction
-    public void tearDown() {
-        entityManager.createNativeQuery("SET FOREIGN_KEY_CHECKS = 0").executeUpdate(); // disable FK checks temporarily
-        vendorBranchRepository.deleteAll(); // deletes all branches
-        vendorRepository.deleteAll(); // deletes all vendors
-        addressRepository.deleteAll(); // deletes all addresses
-        entityManager.createNativeQuery("SET FOREIGN_KEY_CHECKS = 1").executeUpdate(); // re-enable FK checks
+        Vendor vendor = new Vendor(); // creates a new empty Vendor object
+        vendor.setVendorName("Test Gold Traders"); // sets vendor name
+        vendor.setDescription("Test vendor for JUnit"); // sets description
+        vendor.setContactPersonName("Sparsh Garg"); // sets contact person name
+        vendor.setContactEmail("sparsh@test.com"); // sets contact email
+        vendor.setContactPhone("9999999999"); // sets contact phone
+        vendor.setTotalGoldQuantity(new BigDecimal("1000.00")); // sets total gold quantity as precise decimal
+        vendor.setCurrentGoldPrice(new BigDecimal("6400.00")); // sets gold price per gram as precise decimal
+        return vendorRepository.save(vendor); // saves to DB — returned object has auto-generated vendorId
     }
 
-    // ==================== VENDOR TESTS ====================
+    private VendorBranch createAndSaveBranch(Vendor vendor, Address address) {
+        // creates a test VendorBranch linked to given vendor and address, saves it to DB
 
-    @Test // marks this as a JUnit test case
+        VendorBranch branch = new VendorBranch(); // creates a new empty VendorBranch object
+        branch.setVendor(vendor); // links branch to vendor — sets the vendor_id foreign key
+        branch.setAddress(address); // links branch to address — sets the address_id foreign key
+        branch.setQuantity(new BigDecimal("500.00")); // sets gold quantity stocked at this branch
+        return vendorBranchRepository.save(branch); // saves to DB — returned object has auto-generated branchId
+    }
+
+    // ================================================================
+    //  VENDOR TESTS
+    // ================================================================
+
+    @Test // tells JUnit to run this method as a test case
     public void testSaveVendor_Success() {
-        // tests that vendor is saved successfully and gets an ID
-        assertNotNull(testVendor.getVendorId()); // vendor ID should not be null after save
-        System.out.println("TEST PASSED: testSaveVendor_Success - Vendor saved with ID = " + testVendor.getVendorId());
+        // verifies that a Vendor can be saved to the database successfully
+
+        Vendor vendor = createAndSaveVendor(); // creates and saves a test vendor
+
+        assertNotNull(vendor.getVendorId());
+        // assertNotNull — checks vendorId is NOT null
+        // MySQL auto-generates the ID on INSERT — if null, the save failed
+
+        System.out.println("TEST PASSED: testSaveVendor_Success - Vendor saved with ID = " + vendor.getVendorId());
     }
 
-    @Test // marks this as a JUnit test case
+    @Test // tells JUnit to run this method as a test case
     public void testFindVendorById_Success() {
-        // tests that vendor can be fetched by ID
-        Optional<Vendor> found = vendorRepository.findById(testVendor.getVendorId()); // fetch vendor by ID
-        assertTrue(found.isPresent()); // vendor should exist
-        assertEquals("Test Gold Traders", found.get().getVendorName()); // name should match
+        // verifies that a saved Vendor can be retrieved from the DB by its ID
+
+        Vendor vendor = createAndSaveVendor(); // saves vendor and gets its generated ID
+
+        Optional<Vendor> found = vendorRepository.findById(vendor.getVendorId());
+        // findById() searches the DB for a vendor with that ID
+        // returns Optional<Vendor> — contains the vendor if found, empty if not
+
+        assertTrue(found.isPresent());
+        // assertTrue — checks that the condition is true
+        // found.isPresent() is true when the Optional contains a value — vendor was found
+
+        assertEquals("Test Gold Traders", found.get().getVendorName());
+        // assertEquals — checks that both values are equal
+        // found.get() retrieves the vendor from the Optional
+        // verifies the name matches what we saved
+
         System.out.println("TEST PASSED: testFindVendorById_Success - Vendor found = " + found.get().getVendorName());
     }
 
-    @Test // marks this as a JUnit test case
+    @Test // tells JUnit to run this method as a test case
     public void testFindVendorById_NotFound() {
-        // tests that fetching non-existing vendor returns empty
-        Optional<Vendor> found = vendorRepository.findById(99999); // ID that doesn't exist
-        assertFalse(found.isPresent()); // should return empty optional
+        // verifies that searching for a non-existent vendor returns empty — not an exception
+
+        Optional<Vendor> found = vendorRepository.findById(99999);
+        // ID 99999 does not exist in the database
+        // findById() returns Optional.empty() when nothing is found — does NOT throw exception
+
+        assertFalse(found.isPresent());
+        // assertFalse — checks that the condition is false
+        // found.isPresent() should be false — confirms "not found" is handled gracefully
+
         System.out.println("TEST PASSED: testFindVendorById_NotFound - Vendor not found as expected");
     }
 
-    @Test // marks this as a JUnit test case
+    @Test // tells JUnit to run this method as a test case
     public void testUpdateVendor_Success() {
-        // tests that vendor gold price can be updated
-        testVendor.setCurrentGoldPrice(new BigDecimal("6500.00")); // updating gold price
-        vendorRepository.save(testVendor); // saving updated vendor
+        // verifies that a saved Vendor's field can be updated in the database
 
-        Optional<Vendor> updated = vendorRepository.findById(testVendor.getVendorId()); // fetch updated vendor
-        assertEquals(new BigDecimal("6500.00"), updated.get().getCurrentGoldPrice()); // price should be updated
+        Vendor vendor = createAndSaveVendor(); // saves vendor with gold price 6400.00
+
+        vendor.setCurrentGoldPrice(new BigDecimal("6500.00")); // changes the gold price to 6500.00
+        vendorRepository.save(vendor);
+        // save() on an existing entity (one that already has an ID) performs UPDATE not INSERT
+        // Hibernate knows it's an update because vendorId is already set
+
+        Optional<Vendor> updated = vendorRepository.findById(vendor.getVendorId());
+        // fetches the vendor again fresh from the DB to verify the update was persisted
+
+        assertTrue(updated.isPresent()); // confirms the vendor still exists after update
+        assertEquals(new BigDecimal("6500.00"), updated.get().getCurrentGoldPrice());
+        // verifies the gold price in DB is now 6500.00 — not the original 6400.00
+
         System.out.println("TEST PASSED: testUpdateVendor_Success - Gold price updated to = " + updated.get().getCurrentGoldPrice());
     }
 
-    @Test // marks this as a JUnit test case
+    @Test // tells JUnit to run this method as a test case
     public void testDeleteVendor_Success() {
-        // tests that vendor can be deleted
-        Integer vendorId = testVendor.getVendorId(); // store vendor ID before delete
-        vendorRepository.deleteById(vendorId); // delete vendor
+        // verifies that a saved Vendor can be deleted from the database
 
-        Optional<Vendor> deleted = vendorRepository.findById(vendorId); // try to fetch deleted vendor
-        assertFalse(deleted.isPresent()); // should not exist anymore
+        Vendor vendor = createAndSaveVendor(); // saves a test vendor
+        Integer vendorId = vendor.getVendorId(); // stores the ID before deleting
+
+        vendorRepository.deleteById(vendorId); // deletes the vendor from DB using its ID
+
+        Optional<Vendor> deleted = vendorRepository.findById(vendorId);
+        // tries to find the vendor again — should return empty after deletion
+
+        assertFalse(deleted.isPresent());
+        // assertFalse — checks that the condition is false
+        // deleted.isPresent() should be false — vendor no longer exists in DB
+
         System.out.println("TEST PASSED: testDeleteVendor_Success - Vendor deleted successfully");
     }
 
-    @Test // marks this as a JUnit test case
+    @Test // tells JUnit to run this method as a test case
     public void testExistsByVendorName_Success() {
-        // tests that vendor name existence check works
-        boolean exists = vendorRepository.existsByVendorName("Test Gold Traders"); // check existing name
-        assertTrue(exists); // should return true
+        // verifies the custom existsByVendorName query returns true for an existing name
+
+        createAndSaveVendor(); // saves vendor with name "Test Gold Traders"
+
+        boolean exists = vendorRepository.existsByVendorName("Test Gold Traders");
+        // existsByVendorName is a Spring Data derived query — Spring auto-generates:
+        // SELECT COUNT(*) > 0 FROM vendors WHERE vendor_name = ?
+        // returns true if at least one vendor with that name exists
+
+        assertTrue(exists); // confirms the name was found in the database
+
         System.out.println("TEST PASSED: testExistsByVendorName_Success - Vendor name exists = " + exists);
     }
 
-    @Test // marks this as a JUnit test case
+    @Test // tells JUnit to run this method as a test case
     public void testExistsByVendorName_NotFound() {
-        // tests that non-existing vendor name returns false
-        boolean exists = vendorRepository.existsByVendorName("Non Existing Vendor"); // check non-existing name
-        assertFalse(exists); // should return false
+        // verifies existsByVendorName returns false for a name that doesn't exist
+
+        boolean exists = vendorRepository.existsByVendorName("Non Existing Vendor XYZ");
+        // no vendor with this name was ever saved in this test — should return false
+
+        assertFalse(exists); // confirms false is returned for a missing name
+
         System.out.println("TEST PASSED: testExistsByVendorName_NotFound - Vendor name not found as expected");
     }
 
-    @Test // marks this as a JUnit test case
+    @Test // tells JUnit to run this method as a test case
     public void testExistsByContactEmail_Success() {
-        // tests that contact email existence check works
-        boolean exists = vendorRepository.existsByContactEmail("sparsh@test.com"); // check existing email
-        assertTrue(exists); // should return true
+        // verifies the custom existsByContactEmail query returns true for an existing email
+
+        createAndSaveVendor(); // saves vendor with email "sparsh@test.com"
+
+        boolean exists = vendorRepository.existsByContactEmail("sparsh@test.com");
+        // Spring Data auto-generates: SELECT COUNT(*) > 0 FROM vendors WHERE contact_email = ?
+
+        assertTrue(exists); // confirms the email was found
+
         System.out.println("TEST PASSED: testExistsByContactEmail_Success - Email exists = " + exists);
     }
 
-    @Test // marks this as a JUnit test case
+    @Test // tells JUnit to run this method as a test case
     public void testFindByVendorName_Success() {
-        // tests custom query to find vendor by name
-        Optional<Vendor> found = vendorRepository.findByVendorName("Test Gold Traders"); // find by name
-        assertTrue(found.isPresent()); // should be found
-        assertEquals("sparsh@test.com", found.get().getContactEmail()); // email should match
+        // verifies the custom findByVendorName query returns the correct vendor
+
+        createAndSaveVendor(); // saves vendor with name "Test Gold Traders"
+
+        Optional<Vendor> found = vendorRepository.findByVendorName("Test Gold Traders");
+        // findByVendorName is a Spring Data derived query:
+        // SELECT * FROM vendors WHERE vendor_name = ?
+        // returns Optional<Vendor>
+
+        assertTrue(found.isPresent()); // confirms vendor was found by name
+        assertEquals("sparsh@test.com", found.get().getContactEmail());
+        // verifies the email of the found vendor matches — confirms correct record returned
+
         System.out.println("TEST PASSED: testFindByVendorName_Success - Vendor found by name");
     }
 
-    @Test // marks this as a JUnit test case
+    @Test // tells JUnit to run this method as a test case
     public void testFindGoldPriceByVendorId_Success() {
-        // tests native SQL query to get gold price by vendor ID
-        BigDecimal price = vendorRepository.findGoldPriceByVendorId(testVendor.getVendorId()); // get price
-        assertNotNull(price); // price should not be null
-        assertEquals(new BigDecimal("6400.00"), price); // price should match
+        // verifies the native SQL query returns the correct gold price for a vendor
+
+        Vendor vendor = createAndSaveVendor(); // saves vendor with price 6400.00
+
+        BigDecimal price = vendorRepository.findGoldPriceByVendorId(vendor.getVendorId());
+        // findGoldPriceByVendorId uses a native SQL query:
+        // SELECT current_gold_price FROM vendors WHERE vendor_id = ?
+        // returns only the price as BigDecimal — not the full vendor object
+
+        assertNotNull(price); // confirms price is not null — query returned a result
+        assertEquals(new BigDecimal("6400.00"), price); // confirms the price matches what was saved
+
         System.out.println("TEST PASSED: testFindGoldPriceByVendorId_Success - Gold price = " + price);
     }
 
-    @Test // marks this as a JUnit test case
+    @Test // tells JUnit to run this method as a test case
     public void testFindAllVendors_Success() {
-        // tests that findAll returns at least one vendor
-        List<Vendor> vendors = vendorRepository.findAll(); // get all vendors
-        assertFalse(vendors.isEmpty()); // list should not be empty
+        // verifies that findAll() returns at least one vendor after saving one
+
+        createAndSaveVendor(); // saves a test vendor to ensure list is not empty
+
+        List<Vendor> vendors = vendorRepository.findAll();
+        // findAll() is provided for free by JpaRepository
+        // returns all vendors currently in the database as a List
+
+        assertFalse(vendors.isEmpty());
+        // assertFalse — checks that the condition is false
+        // vendors.isEmpty() should be false — we just saved one vendor
+
         System.out.println("TEST PASSED: testFindAllVendors_Success - Total vendors = " + vendors.size());
     }
 
-    // ==================== VENDOR BRANCH TESTS ====================
+    // ================================================================
+    //  VENDOR BRANCH TESTS
+    // ================================================================
 
-    @Test // marks this as a JUnit test case
+    @Test // tells JUnit to run this method as a test case
     public void testSaveVendorBranch_Success() {
-        // tests that vendor branch is saved successfully
-        VendorBranch branch = new VendorBranch(); // creating new branch object
-        branch.setVendor(testVendor); // linking to test vendor
-        branch.setAddress(testAddress); // linking to test address
-        branch.setQuantity(new BigDecimal("500.00")); // setting gold quantity
-        vendorBranchRepository.save(branch); // saving branch to DB
+        // verifies that a VendorBranch can be saved successfully
 
-        assertNotNull(branch.getBranchId()); // branch ID should not be null after save
+        Vendor vendor = createAndSaveVendor(); // saves a test vendor (needed as FK)
+        Address address = createAndSaveAddress(); // saves a test address (needed as FK)
+        VendorBranch branch = createAndSaveBranch(vendor, address); // saves branch linked to vendor and address
+
+        assertNotNull(branch.getBranchId());
+        // confirms branchId is NOT null — MySQL auto-generated it on INSERT
+
         System.out.println("TEST PASSED: testSaveVendorBranch_Success - Branch saved with ID = " + branch.getBranchId());
     }
 
-    @Test // marks this as a JUnit test case
+    @Test // tells JUnit to run this method as a test case
     public void testFindBranchesByVendorId_Success() {
-        // tests that branches can be fetched by vendor ID
-        VendorBranch branch = new VendorBranch(); // creating branch
-        branch.setVendor(testVendor); // linking to vendor
-        branch.setAddress(testAddress); // linking to address
-        branch.setQuantity(new BigDecimal("500.00")); // setting quantity
-        vendorBranchRepository.save(branch); // saving branch
+        // verifies that all branches belonging to a vendor can be retrieved
 
-        List<VendorBranch> branches = vendorBranchRepository.findByVendorVendorId(testVendor.getVendorId()); // fetch branches
-        assertFalse(branches.isEmpty()); // list should not be empty
-        assertEquals(1, branches.size()); // should have exactly 1 branch
+        Vendor vendor = createAndSaveVendor(); // saves test vendor
+        Address address = createAndSaveAddress(); // saves test address
+        createAndSaveBranch(vendor, address); // saves one branch linked to this vendor
+
+        List<VendorBranch> branches = vendorBranchRepository.findByVendorVendorId(vendor.getVendorId());
+        // findByVendorVendorId is a Spring Data derived query:
+        // SELECT * FROM vendor_branches WHERE vendor_id = ?
+        // "VendorVendorId" means: navigate VendorBranch.vendor -> Vendor.vendorId
+
+        assertFalse(branches.isEmpty()); // confirms at least one branch was returned
+        assertEquals(1, branches.size()); // confirms exactly one branch exists for this vendor
+
         System.out.println("TEST PASSED: testFindBranchesByVendorId_Success - Branches found = " + branches.size());
     }
 
-    @Test // marks this as a JUnit test case
+    @Test // tells JUnit to run this method as a test case
     public void testFindInventoryByBranchId_Success() {
-        // tests native SQL query to get inventory quantity by branch ID
-        VendorBranch branch = new VendorBranch(); // creating branch
-        branch.setVendor(testVendor); // linking to vendor
-        branch.setAddress(testAddress); // linking to address
-        branch.setQuantity(new BigDecimal("500.00")); // setting quantity
-        vendorBranchRepository.save(branch); // saving branch
+        // verifies the native SQL query returns the correct gold quantity for a branch
 
-        BigDecimal inventory = vendorBranchRepository.findInventoryByBranchId(branch.getBranchId()); // get inventory
-        assertNotNull(inventory); // inventory should not be null
-        assertEquals(new BigDecimal("500.00"), inventory); // quantity should match
+        Vendor vendor = createAndSaveVendor(); // saves test vendor
+        Address address = createAndSaveAddress(); // saves test address
+        VendorBranch branch = createAndSaveBranch(vendor, address); // saves branch with quantity 500.00
+
+        BigDecimal inventory = vendorBranchRepository.findInventoryByBranchId(branch.getBranchId());
+        // findInventoryByBranchId uses a native SQL query:
+        // SELECT quantity FROM vendor_branches WHERE branch_id = ?
+        // returns the gold quantity at this branch as BigDecimal
+
+        assertNotNull(inventory); // confirms inventory is not null — query returned a result
+        assertEquals(new BigDecimal("500.00"), inventory); // confirms the quantity matches what was saved
+
         System.out.println("TEST PASSED: testFindInventoryByBranchId_Success - Inventory = " + inventory);
     }
 
-    @Test // marks this as a JUnit test case
+    @Test // tells JUnit to run this method as a test case
     public void testExistsByVendorAndAddress_Success() {
-        // tests that branch existence check by vendor and address works
-        VendorBranch branch = new VendorBranch(); // creating branch
-        branch.setVendor(testVendor); // linking to vendor
-        branch.setAddress(testAddress); // linking to address
-        branch.setQuantity(new BigDecimal("500.00")); // setting quantity
-        vendorBranchRepository.save(branch); // saving branch
+        // verifies that existence check by vendor + address combination works correctly
+
+        Vendor vendor = createAndSaveVendor(); // saves test vendor
+        Address address = createAndSaveAddress(); // saves test address
+        createAndSaveBranch(vendor, address); // saves a branch at this vendor + address combination
 
         boolean exists = vendorBranchRepository.existsByVendorVendorIdAndAddressAddressId(
-                testVendor.getVendorId(), testAddress.getAddressId()); // check existence
-        assertTrue(exists); // should return true
+                vendor.getVendorId(), address.getAddressId());
+        // Spring Data derived query:
+        // SELECT COUNT(*) > 0 FROM vendor_branches WHERE vendor_id = ? AND address_id = ?
+        // used to prevent duplicate branches at the same vendor + address combination
+
+        assertTrue(exists); // confirms the branch exists for this vendor + address pair
+
         System.out.println("TEST PASSED: testExistsByVendorAndAddress_Success - Branch exists = " + exists);
     }
 
-    @Test // marks this as a JUnit test case
+    @Test // tells JUnit to run this method as a test case
     public void testDeleteVendorBranch_Success() {
-        // tests that vendor branch can be deleted
-        VendorBranch branch = new VendorBranch(); // creating branch
-        branch.setVendor(testVendor); // linking to vendor
-        branch.setAddress(testAddress); // linking to address
-        branch.setQuantity(new BigDecimal("500.00")); // setting quantity
-        vendorBranchRepository.save(branch); // saving branch
+        // verifies that a VendorBranch can be deleted from the database
 
-        Integer branchId = branch.getBranchId(); // store branch ID before delete
-        vendorBranchRepository.deleteById(branchId); // delete branch
+        Vendor vendor = createAndSaveVendor(); // saves test vendor
+        Address address = createAndSaveAddress(); // saves test address
+        VendorBranch branch = createAndSaveBranch(vendor, address); // saves test branch
 
-        Optional<VendorBranch> deleted = vendorBranchRepository.findById(branchId); // try to fetch deleted branch
-        assertFalse(deleted.isPresent()); // should not exist anymore
+        Integer branchId = branch.getBranchId(); // stores the branch ID before deleting
+        vendorBranchRepository.deleteById(branchId); // deletes the branch from DB using its ID
+
+        Optional<VendorBranch> deleted = vendorBranchRepository.findById(branchId);
+        // tries to find the branch again — should return empty after deletion
+
+        assertFalse(deleted.isPresent());
+        // assertFalse — deleted.isPresent() should be false — branch no longer exists in DB
+
         System.out.println("TEST PASSED: testDeleteVendorBranch_Success - Branch deleted successfully");
     }
 }

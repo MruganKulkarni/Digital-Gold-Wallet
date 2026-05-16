@@ -10,13 +10,19 @@ spring:
     username: digitalgoldwallet
     password: myPass@123
     driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      connection-test-query: SELECT 1
+      validation-timeout: 3000
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      minimum-idle: 2
+      maximum-pool-size: 10
 
   jpa:
     hibernate:
       ddl-auto: none
-
     show-sql: true
-
     properties:
       hibernate:
         format_sql: true
