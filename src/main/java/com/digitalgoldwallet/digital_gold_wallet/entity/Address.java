@@ -1,13 +1,14 @@
 package com.digitalgoldwallet.digital_gold_wallet.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 
 import java.util.List;
 
 /*
  * Address Entity Class
  *
- * This class maps to the "addresses" table in database.
+ * Maps to addresses table in database.
  */
 
 @Entity
@@ -16,7 +17,6 @@ public class Address implements Comparable<Address> {
 
     /*
      * Primary Key
-     * Auto incremented address ID
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,14 +25,19 @@ public class Address implements Comparable<Address> {
     /*
      * Address fields
      */
+    @NotBlank(message = "Street is required")
     private String street;
 
+    @NotBlank(message = "City is required")
     private String city;
 
+    @NotBlank(message = "State is required")
     private String state;
 
+    @NotBlank(message = "Postal code is required")
     private String postalCode;
 
+    @NotBlank(message = "Country is required")
     private String country;
 
     /*
@@ -129,52 +134,39 @@ public class Address implements Comparable<Address> {
 
     /*
      * equals()
-     *
-     * Used to compare two Address objects logically
-     * using addressId.
      */
     @Override
     public boolean equals(Object obj) {
 
-        // checks if same object reference
         if (this == obj) {
             return true;
         }
 
-        // checks null and class type
         if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
 
-        // type casting
         Address address = (Address) obj;
 
-        // compare address IDs
         return addressId != null
                 && addressId.equals(address.addressId);
     }
 
     /*
      * hashCode()
-     *
-     * Generates hash value for Address object.
      */
     @Override
     public int hashCode() {
 
-        // generate hash using addressId
         return addressId != null ? addressId.hashCode() : 0;
     }
 
     /*
      * compareTo()
-     *
-     * Used for sorting Address objects alphabetically by city.
      */
     @Override
     public int compareTo(Address otherAddress) {
 
-        // compare city names
         return this.city.compareTo(otherAddress.city);
     }
 }

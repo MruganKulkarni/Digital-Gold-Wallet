@@ -1,13 +1,17 @@
 package com.digitalgoldwallet.digital_gold_wallet.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 
 /*
  * User Entity Class
  *
- * This class maps to the "users" table in database.
+ * Maps to users table in database.
  */
 
 @Entity
@@ -16,7 +20,6 @@ public class User implements Comparable<User> {
 
     /*
      * Primary Key
-     * Auto incremented user ID
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,24 +28,30 @@ public class User implements Comparable<User> {
     /*
      * User full name
      */
+    @NotBlank(message = "User name is required")
     @Column(nullable = false)
     private String name;
 
     /*
      * User email
      */
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email format")
     @Column(nullable = false, unique = true)
     private String email;
 
     /*
      * Wallet balance
      */
+    @NotNull(message = "Balance cannot be null")
+    @DecimalMin(value = "0.0", message = "Balance cannot be negative")
     @Column(nullable = false)
     private BigDecimal balance = BigDecimal.ZERO;
 
     /*
      * Many users can belong to one address
      */
+    @NotNull(message = "Address is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "address_id")
     private Address address;
@@ -89,7 +98,7 @@ public class User implements Comparable<User> {
         this.name = name;
     }
 
-    public String getEmail() {
+    public @Email(message = "Invalid email format") String getEmail() {
         return email;
     }
 
@@ -115,51 +124,38 @@ public class User implements Comparable<User> {
 
     /*
      * equals()
-     *
-     * Used to compare two User objects logically
-     * using userId.
      */
     @Override
     public boolean equals(Object obj) {
 
-        // checks if same object reference
         if (this == obj) {
             return true;
         }
 
-        // checks null and class type
         if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
 
-        // type casting
         User user = (User) obj;
 
-        // compare user IDs
         return userId != null && userId.equals(user.userId);
     }
 
     /*
      * hashCode()
-     *
-     * Generates hash value for User object.
      */
     @Override
     public int hashCode() {
 
-        // generate hash using userId
         return userId != null ? userId.hashCode() : 0;
     }
 
     /*
      * compareTo()
-     *
-     * Used for sorting User objects alphabetically by name.
      */
     @Override
     public int compareTo(User otherUser) {
 
-        // compare user names
         return this.name.compareTo(otherUser.name);
     }
 }
