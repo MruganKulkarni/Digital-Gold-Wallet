@@ -1,4 +1,4 @@
-package com.digitalgoldwallet.digital_gold_wallet.dto;
+package com.digitalgoldwallet.digital_gold_wallet.dto.response;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
