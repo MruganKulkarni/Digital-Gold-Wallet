@@ -9,6 +9,8 @@ import com.digitalgoldwallet.digital_gold_wallet.entity.User;
 import com.digitalgoldwallet.digital_gold_wallet.exception.AddressNotFoundException;
 import com.digitalgoldwallet.digital_gold_wallet.exception.UserNotFoundException;
 
+import com.digitalgoldwallet.digital_gold_wallet.mapper.UserMapper;
+
 import com.digitalgoldwallet.digital_gold_wallet.repository.AddressRepository;
 import com.digitalgoldwallet.digital_gold_wallet.repository.UserRepository;
 
@@ -35,15 +37,19 @@ public class UserServiceImpl implements UserService {
 
     private final AddressRepository addressRepository;
 
+    private final UserMapper userMapper;
+
     /*
      * Constructor Injection
      */
     public UserServiceImpl(
             UserRepository userRepository,
-            AddressRepository addressRepository) {
+            AddressRepository addressRepository,
+            UserMapper userMapper) {
 
         this.userRepository = userRepository;
         this.addressRepository = addressRepository;
+        this.userMapper = userMapper;
     }
 
     /*
@@ -76,17 +82,12 @@ public class UserServiceImpl implements UserService {
                         ));
 
         /*
-         * Create User entity
+         * Convert DTO -> Entity
          */
-        User user = new User();
-
-        user.setName(requestDto.getName());
-
-        user.setEmail(requestDto.getEmail());
-
-        user.setBalance(requestDto.getBalance());
-
-        user.setAddress(address);
+        User user = userMapper.toEntity(
+                requestDto,
+                address
+        );
 
         /*
          * Save user
@@ -97,7 +98,7 @@ public class UserServiceImpl implements UserService {
         /*
          * Convert Entity -> DTO
          */
-        return mapToResponse(savedUser);
+        return userMapper.toResponseDto(savedUser);
     }
 
     /*
@@ -115,7 +116,7 @@ public class UserServiceImpl implements UserService {
                                                 + userId
                                 ));
 
-        return mapToResponse(user);
+        return userMapper.toResponseDto(user);
     }
 
     /*
@@ -126,7 +127,7 @@ public class UserServiceImpl implements UserService {
 
         return userRepository.findAll()
                 .stream()
-                .map(this::mapToResponse)
+                .map(userMapper::toResponseDto)
                 .toList();
     }
 
@@ -153,24 +154,19 @@ public class UserServiceImpl implements UserService {
                                 "Address not found"
                         ));
 
-        existingUser.setName(
-                requestDto.getName()
+        /*
+         * Update entity using mapper
+         */
+        userMapper.updateEntity(
+                existingUser,
+                requestDto,
+                address
         );
-
-        existingUser.setEmail(
-                requestDto.getEmail()
-        );
-
-        existingUser.setBalance(
-                requestDto.getBalance()
-        );
-
-        existingUser.setAddress(address);
 
         User updatedUser =
                 userRepository.save(existingUser);
 
-        return mapToResponse(updatedUser);
+        return userMapper.toResponseDto(updatedUser);
     }
 
     /*
@@ -204,19 +200,5 @@ public class UserServiceImpl implements UserService {
                                 ));
 
         return user.getBalance();
-    }
-
-    /*
-     * Entity -> DTO Mapper
-     */
-    private UserResponseDto mapToResponse(
-            User user) {
-
-        return new UserResponseDto(
-                user.getUserId(),
-                user.getName(),
-                user.getEmail(),
-                user.getBalance()
-        );
     }
 }
