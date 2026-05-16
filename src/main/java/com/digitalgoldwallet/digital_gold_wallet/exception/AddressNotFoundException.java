@@ -1,6 +1,13 @@
 package com.digitalgoldwallet.digital_gold_wallet.exception;
 
-public class AddressNotFoundException extends RuntimeException {
+/*
+ * ============================================================
+ * Custom Exception for Address Not Found
+ * ============================================================
+ */
+
+public class AddressNotFoundException
+        extends RuntimeException {
 
     public AddressNotFoundException(String message) {
 

@@ -6,7 +6,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /*
+ * ============================================================
  * Global Exception Handler
+ * ============================================================
  */
 
 @RestControllerAdvice
@@ -16,7 +18,8 @@ public class GlobalExceptionHandler {
      * Handles UserNotFoundException
      */
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<String> handleUserNotFoundException(
+    public ResponseEntity<String>
+    handleUserNotFoundException(
             UserNotFoundException exception) {
 
         return new ResponseEntity<>(
@@ -29,7 +32,8 @@ public class GlobalExceptionHandler {
      * Handles AddressNotFoundException
      */
     @ExceptionHandler(AddressNotFoundException.class)
-    public ResponseEntity<String> handleAddressNotFoundException(
+    public ResponseEntity<String>
+    handleAddressNotFoundException(
             AddressNotFoundException exception) {
 
         return new ResponseEntity<>(
@@ -42,7 +46,8 @@ public class GlobalExceptionHandler {
      * Handles generic exceptions
      */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleGenericException(
+    public ResponseEntity<String>
+    handleGenericException(
             Exception exception) {
 
         return new ResponseEntity<>(
