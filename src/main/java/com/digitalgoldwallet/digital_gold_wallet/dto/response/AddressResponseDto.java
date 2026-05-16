@@ -1,67 +1,80 @@
-package com.digitalgoldwallet.digital_gold_wallet.dto.request;
-
-// Importing validation annotation
-import jakarta.validation.constraints.NotBlank;
+package com.digitalgoldwallet.digital_gold_wallet.dto.response;
 
 /*
- * AddressRequestDto
+ * AddressResponseDto
  *
- * Used to receive address request data
- * from client.
+ * Used to send address response data
+ * back to client.
  */
 
-public class AddressRequestDto {
+public class AddressResponseDto {
+
+    /*
+     * Address ID
+     */
+    private Integer addressId;
 
     /*
      * Street name
      */
-    @NotBlank(message = "Street is required")
     private String street;
 
     /*
      * City name
      */
-    @NotBlank(message = "City is required")
     private String city;
 
     /*
      * State name
      */
-    @NotBlank(message = "State is required")
     private String state;
 
     /*
      * Postal code
      */
-    @NotBlank(message = "Postal code is required")
     private String postalCode;
 
     /*
      * Country name
      */
-    @NotBlank(message = "Country is required")
     private String country;
 
     /*
      * Default Constructor
      */
-    public AddressRequestDto() {
+    public AddressResponseDto() {
     }
 
     /*
      * Parameterized Constructor
      */
-    public AddressRequestDto(String street,
-                             String city,
-                             String state,
-                             String postalCode,
-                             String country) {
+    public AddressResponseDto(Integer addressId,
+                              String street,
+                              String city,
+                              String state,
+                              String postalCode,
+                              String country) {
 
+        this.addressId = addressId;
         this.street = street;
         this.city = city;
         this.state = state;
         this.postalCode = postalCode;
         this.country = country;
+    }
+
+    /*
+     * Getter for addressId
+     */
+    public Integer getAddressId() {
+        return addressId;
+    }
+
+    /*
+     * Setter for addressId
+     */
+    public void setAddressId(Integer addressId) {
+        this.addressId = addressId;
     }
 
     /*
