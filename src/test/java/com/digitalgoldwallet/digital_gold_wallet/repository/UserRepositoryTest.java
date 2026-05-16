@@ -3,27 +3,51 @@ package com.digitalgoldwallet.digital_gold_wallet.repository;
 import com.digitalgoldwallet.digital_gold_wallet.entity.Address;
 import com.digitalgoldwallet.digital_gold_wallet.entity.User;
 
-import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /*
- * JUnit Test Class
+ * ============================================================
+ * UserRepositoryTest
+ * ============================================================
  *
- * Tests complete CRUD operations
- * for User Repository.
+ * JUnit 5 Repository Layer Testing
+ *
+ * Tests:
+ * - CREATE
+ * - READ
+ * - UPDATE
+ * - DELETE
+ * - CUSTOM QUERY
+ * - EXISTS
+ * - FIND ALL
+ *
+ * Uses real MySQL database.
+ * ============================================================
  */
 
-@SpringBootTest
+@DataJpaTest
+@AutoConfigureTestDatabase(
+        replace = AutoConfigureTestDatabase.Replace.NONE
+)
+@ActiveProfiles("test")
 public class UserRepositoryTest {
 
     /*
-     * Injecting repositories
+     * Repository Injection
      */
     @Autowired
     private UserRepository userRepository;
@@ -32,160 +56,326 @@ public class UserRepositoryTest {
     private AddressRepository addressRepository;
 
     /*
-     * CREATE TEST
+     * Test data objects
      */
-    @Test
-    public void testCreateUser() {
+    private Address testAddress;
 
-        // creating address object
-        Address address = new Address();
+    private User testUser;
 
-        address.setStreet("Anna Nagar");
-        address.setCity("Chennai");
-        address.setState("Tamil Nadu");
-        address.setPostalCode("600040");
-        address.setCountry("India");
+    /*
+     * ============================================================
+     * @BeforeEach
+     *
+     * Runs before every test.
+     * Creates fresh Address and User.
+     * ============================================================
+     */
+    @BeforeEach
+    public void setUp() {
 
-        // saving address
-        Address savedAddress = addressRepository.save(address);
+        /*
+         * Create Address
+         */
+        testAddress = new Address();
 
-        // creating user object
-        User user = new User();
+        testAddress.setStreet("Anna Nagar");
+        testAddress.setCity("Chennai");
+        testAddress.setState("Tamil Nadu");
+        testAddress.setPostalCode("600040");
+        testAddress.setCountry("India");
 
-        user.setName("Varsha");
+        /*
+         * Save Address
+         */
+        testAddress = addressRepository.save(testAddress);
 
-        // unique email for every test run
-        user.setEmail("varsha"
-                + System.currentTimeMillis()
-                + "@test.com");
+        /*
+         * Create User
+         */
+        testUser = new User();
 
-        user.setBalance(new BigDecimal("5000"));
+        testUser.setName("Varsha Karthikeyan");
 
-        user.setAddress(savedAddress);
+        /*
+         * Unique email prevents duplicate constraint issues
+         */
+        testUser.setEmail(
+                "varsha"
+                        + System.currentTimeMillis()
+                        + "@test.com"
+        );
 
-        // saving user
-        User savedUser = userRepository.save(user);
+        testUser.setBalance(new BigDecimal("5000.00"));
 
-        // assertion
-        Assertions.assertNotNull(savedUser.getUserId());
+        testUser.setAddress(testAddress);
 
-        System.out.println("CREATE TEST PASSED");
+        /*
+         * Save User
+         */
+        testUser = userRepository.save(testUser);
     }
 
     /*
-     * READ TEST
+     * ============================================================
+     * @AfterEach
+     *
+     * Deletes ONLY records created by this test.
+     * Safe for shared team database.
+     * ============================================================
      */
-    @Test
-    public void testReadUser() {
+    @AfterEach
+    public void tearDown() {
 
-        // fetching first available user
-        User user = userRepository.findAll()
-                .stream()
-                .findFirst()
-                .orElse(null);
+        /*
+         * Delete user first
+         * because users table contains FK to address
+         */
+        if (testUser != null
+                && testUser.getUserId() != null
+                && userRepository.existsById(testUser.getUserId())) {
 
-        // assertion
-        Assertions.assertNotNull(user);
+            userRepository.deleteById(testUser.getUserId());
+        }
 
-        System.out.println("READ TEST PASSED");
-    }
+        /*
+         * Delete address after deleting user
+         */
+        if (testAddress != null
+                && testAddress.getAddressId() != null
+                && addressRepository.existsById(
+                testAddress.getAddressId())) {
 
-    /*
-     * UPDATE TEST
-     */
-    @Test
-    public void testUpdateUser() {
-
-        // fetching first available user
-        User user = userRepository.findAll()
-                .stream()
-                .findFirst()
-                .orElse(null);
-
-        if (user != null) {
-
-            user.setBalance(new BigDecimal("10000"));
-
-            // updating user
-            User updatedUser = userRepository.save(user);
-
-            // assertion
-            Assertions.assertEquals(
-                    new BigDecimal("10000"),
-                    updatedUser.getBalance()
+            addressRepository.deleteById(
+                    testAddress.getAddressId()
             );
-
-            System.out.println("UPDATE TEST PASSED");
-
-        } else {
-
-            System.out.println("UPDATE TEST FAILED: User is null");
         }
     }
 
     /*
-     * CUSTOM QUERY TEST
+     * ============================================================
+     * TEST 1 — CREATE USER
+     * ============================================================
      */
     @Test
-    public void testCustomQuery() {
+    @DisplayName("Test Create User")
+    public void testCreateUser() {
 
-        List<User> users =
-                userRepository.findUsersWithBalanceGreaterThan(
-                        new BigDecimal("1000"));
+        assertNotNull(
+                testUser.getUserId(),
+                "User ID should not be null"
+        );
 
-        // assertion
-        Assertions.assertFalse(users.isEmpty());
+        assertEquals(
+                "Varsha Karthikeyan",
+                testUser.getName()
+        );
 
-        System.out.println("CUSTOM QUERY TEST PASSED");
+        System.out.println(
+                "CREATE TEST PASSED"
+        );
     }
 
     /*
-     * DELETE TEST
+     * ============================================================
+     * TEST 2 — READ USER
+     * ============================================================
      */
     @Test
+    @DisplayName("Test Read User")
+    public void testReadUser() {
+
+        Optional<User> found =
+                userRepository.findById(
+                        testUser.getUserId()
+                );
+
+        assertTrue(found.isPresent());
+
+        assertEquals(
+                "Varsha Karthikeyan",
+                found.get().getName()
+        );
+
+        System.out.println(
+                "READ TEST PASSED"
+        );
+    }
+
+    /*
+     * ============================================================
+     * TEST 3 — UPDATE USER
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Update User")
+    public void testUpdateUser() {
+
+        /*
+         * Update balance
+         */
+        testUser.setBalance(
+                new BigDecimal("10000.00")
+        );
+
+        /*
+         * Save updated user
+         */
+        User updated =
+                userRepository.save(testUser);
+
+        /*
+         * Verify update
+         */
+        assertEquals(
+                new BigDecimal("10000.00"),
+                updated.getBalance()
+        );
+
+        System.out.println(
+                "UPDATE TEST PASSED"
+        );
+    }
+
+    /*
+     * ============================================================
+     * TEST 4 — DELETE USER
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Delete User")
     public void testDeleteUser() {
 
-        // create fresh address
-        Address address = new Address();
+        Integer userId =
+                testUser.getUserId();
 
-        address.setStreet("Delete Street");
-        address.setCity("Delete City");
-        address.setState("Delete State");
-        address.setPostalCode("600001");
-        address.setCountry("India");
-
-        // save address
-        Address savedAddress = addressRepository.save(address);
-
-        // create fresh user
-        User user = new User();
-
-        user.setName("Delete Test User");
-
-        // unique email for every run
-        user.setEmail("delete"
-                + System.currentTimeMillis()
-                + "@test.com");
-
-        user.setBalance(new BigDecimal("3000"));
-
-        user.setAddress(savedAddress);
-
-        // save user
-        User savedUser = userRepository.save(user);
-
-        // get saved user id
-        Integer userId = savedUser.getUserId();
-
-        // delete user
+        /*
+         * Delete user
+         */
         userRepository.deleteById(userId);
 
-        // verify deletion
-        boolean exists = userRepository.existsById(userId);
+        /*
+         * Verify deletion
+         */
+        boolean exists =
+                userRepository.existsById(userId);
 
-        // assertion
-        Assertions.assertFalse(exists);
+        assertFalse(exists);
 
-        System.out.println("DELETE TEST PASSED");
+        System.out.println(
+                "DELETE TEST PASSED"
+        );
+    }
+
+    /*
+     * ============================================================
+     * TEST 5 — FIND BY EMAIL
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Find By Email")
+    public void testFindByEmail() {
+
+        Optional<User> found =
+                userRepository.findByEmail(
+                        testUser.getEmail()
+                );
+
+        assertTrue(found.isPresent());
+
+        assertEquals(
+                testUser.getEmail(),
+                found.get().getEmail()
+        );
+
+        System.out.println(
+                "FIND BY EMAIL TEST PASSED"
+        );
+    }
+
+    /*
+     * ============================================================
+     * TEST 6 — EXISTS BY EMAIL TRUE
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Exists By Email True")
+    public void testExistsByEmailTrue() {
+
+        boolean exists =
+                userRepository.existsByEmail(
+                        testUser.getEmail()
+                );
+
+        assertTrue(exists);
+
+        System.out.println(
+                "EXISTS TRUE TEST PASSED"
+        );
+    }
+
+    /*
+     * ============================================================
+     * TEST 7 — EXISTS BY EMAIL FALSE
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Exists By Email False")
+    public void testExistsByEmailFalse() {
+
+        boolean exists =
+                userRepository.existsByEmail(
+                        "unknown@test.com"
+                );
+
+        assertFalse(exists);
+
+        System.out.println(
+                "EXISTS FALSE TEST PASSED"
+        );
+    }
+
+    /*
+     * ============================================================
+     * TEST 8 — FIND ALL USERS
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Find All Users")
+    public void testFindAllUsers() {
+
+        List<User> users =
+                userRepository.findAll();
+
+        assertFalse(users.isEmpty());
+
+        System.out.println(
+                "FIND ALL TEST PASSED"
+        );
+    }
+
+    /*
+     * ============================================================
+     * TEST 9 — CUSTOM QUERY
+     * ============================================================
+     */
+    @Test
+    @DisplayName(
+            "Test Find Users With Balance Greater Than"
+    )
+    public void testCustomQueryBalanceGreaterThan() {
+
+        List<User> users =
+                userRepository
+                        .findUsersWithBalanceGreaterThan(
+                                new BigDecimal("1000.00")
+                        );
+
+        assertNotNull(users);
+
+        assertFalse(users.isEmpty());
+
+        System.out.println(
+                "CUSTOM QUERY TEST PASSED"
+        );
     }
 }
