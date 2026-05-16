@@ -1,12 +1,35 @@
 package com.digitalgoldwallet.digital_gold_wallet.service;
 
-import com.digitalgoldwallet.digital_gold_wallet.entity.Address;
+import com.digitalgoldwallet.digital_gold_wallet.dto.request.AddressRequestDto;
+import com.digitalgoldwallet.digital_gold_wallet.dto.response.AddressResponseDto;
+
+/*
+ * ============================================================
+ * Address Service Interface
+ * ============================================================
+ */
 
 public interface AddressService {
 
-    Address createAddress(Address address);
+    /*
+     * Create address
+     */
+    AddressResponseDto createAddress(
+            AddressRequestDto requestDto
+    );
 
-    Address getAddressById(Integer addressId);
+    /*
+     * Get address by ID
+     */
+    AddressResponseDto getAddressById(
+            Integer addressId
+    );
 
-    Address updateAddress(Integer addressId, Address address);
+    /*
+     * Update address
+     */
+    AddressResponseDto updateAddress(
+            Integer addressId,
+            AddressRequestDto requestDto
+    );
 }
