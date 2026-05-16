@@ -1,222 +1,119 @@
 package com.digitalgoldwallet.digital_gold_wallet.entity;
 
-import com.digitalgoldwallet.digital_gold_wallet.constants.TransactionStatus;
-import com.digitalgoldwallet.digital_gold_wallet.constants.TransactionType;
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Objects;
-
-/*
- * Stores all transaction activity
- */
 
 @Entity
-@Table(name="transaction_history")
+@Table(name = "transaction_history")
 public class TransactionHistory {
 
     @Id
-    @GeneratedValue(
-            strategy=GenerationType.IDENTITY
-    )
-    @Column(name="transaction_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "transaction_id")
     private Integer transactionId;
 
-
-    @NotNull(message="User reference is required")
-    @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(
-            name="user_id",
-            nullable=false
-    )
+    /*
+     * Foreign Key -> users.user_id
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-
-    @NotNull(message="Vendor branch reference is required")
-    @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(
-            name="branch_id",
-            nullable=false
-    )
+    /*
+     * Foreign Key -> vendor_branches.branch_id
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "branch_id", nullable = false)
     private VendorBranch branch;
 
+    @Column(name = "transaction_type", nullable = false)
+    private String transactionType;
 
-    @Enumerated(EnumType.STRING)
-    @NotNull(message="Transaction type required")
-    private TransactionType transactionType;
+    @Column(name = "transaction_status", nullable = false)
+    private String transactionStatus;
 
-
-    @Enumerated(EnumType.STRING)
-    @NotNull(message="Transaction status required")
-    private TransactionStatus transactionStatus;
-
-
-    @NotNull(message="Quantity is required")
-    @DecimalMin(
-            value="0.01",
-            message="Quantity should be greater than 0"
-    )
+    @NotNull(message = "Quantity is required")
+    @DecimalMin(value = "0.0")
+    @Column(name = "quantity", nullable = false)
     private BigDecimal quantity;
 
-
-    @NotNull(message="Amount is required")
-    @DecimalMin(
-            value="0.01",
-            message="Amount should be greater than 0"
-    )
+    @NotNull(message = "Amount is required")
+    @DecimalMin(value = "0.0")
+    @Column(name = "amount", nullable = false)
     private BigDecimal amount;
 
-
-    @Column(name="created_at")
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-
-    public TransactionHistory(){}
-
-
-    public TransactionHistory(
-            Integer transactionId,
-            User user,
-            VendorBranch branch,
-            TransactionType transactionType,
-            TransactionStatus transactionStatus,
-            BigDecimal quantity,
-            BigDecimal amount,
-            LocalDateTime createdAt){
-
-        this.transactionId=transactionId;
-        this.user=user;
-        this.branch=branch;
-        this.transactionType=transactionType;
-        this.transactionStatus=transactionStatus;
-        this.quantity=quantity;
-        this.amount=amount;
-        this.createdAt=createdAt;
+    public TransactionHistory() {
     }
 
-
-
-    // GETTERS
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
 
     public Integer getTransactionId() {
         return transactionId;
+    }
+
+    public void setTransactionId(Integer transactionId) {
+        this.transactionId = transactionId;
     }
 
     public User getUser() {
         return user;
     }
 
-    public VendorBranch getBranch() {
-        return branch;
-    }
-
-    public TransactionType getTransactionType() {
-        return transactionType;
-    }
-
-    public TransactionStatus getTransactionStatus() {
-        return transactionStatus;
-    }
-
-    public BigDecimal getQuantity() {
-        return quantity;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-
-    // SETTERS
-
-    public void setTransactionId(Integer transactionId) {
-        this.transactionId = transactionId;
-    }
-
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public VendorBranch getBranch() {
+        return branch;
     }
 
     public void setBranch(VendorBranch branch) {
         this.branch = branch;
     }
 
-    public void setTransactionType(
-            TransactionType transactionType) {
+    public String getTransactionType() {
+        return transactionType;
+    }
 
+    public void setTransactionType(String transactionType) {
         this.transactionType = transactionType;
     }
 
-    public void setTransactionStatus(
-            TransactionStatus transactionStatus) {
+    public String getTransactionStatus() {
+        return transactionStatus;
+    }
 
+    public void setTransactionStatus(String transactionStatus) {
         this.transactionStatus = transactionStatus;
     }
 
-    public void setQuantity(
-            BigDecimal quantity) {
+    public BigDecimal getQuantity() {
+        return quantity;
+    }
 
+    public void setQuantity(BigDecimal quantity) {
         this.quantity = quantity;
     }
 
-    public void setAmount(
-            BigDecimal amount) {
+    public BigDecimal getAmount() {
+        return amount;
+    }
 
+    public void setAmount(BigDecimal amount) {
         this.amount = amount;
     }
 
-    public void setCreatedAt(
-            LocalDateTime createdAt) {
-
-        this.createdAt = createdAt;
-    }
-
-
-
-    @Override
-    public boolean equals(Object o){
-
-        if(this==o)
-            return true;
-
-        if(o==null ||
-                getClass()!=o.getClass())
-            return false;
-
-        TransactionHistory that=
-                (TransactionHistory)o;
-
-        return Objects.equals(
-                transactionId,
-                that.transactionId
-        );
-    }
-
-
-    @Override
-    public int hashCode(){
-
-        return Objects.hash(
-                transactionId
-        );
-    }
-
-
-    @Override
-    public String toString(){
-
-        return "TransactionHistory{" +
-                "transactionId=" + transactionId +
-                ", transactionType=" + transactionType +
-                ", amount=" + amount +
-                '}';
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 }

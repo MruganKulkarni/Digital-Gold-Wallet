@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /*
  * ============================================================
- * VirtualGoldHoldingRepositoryTest
+ * PhysicalGoldTransactionRepositoryTest
  * ============================================================
  */
 
@@ -28,10 +28,10 @@ import static org.junit.jupiter.api.Assertions.*;
 @AutoConfigureTestDatabase(
         replace = AutoConfigureTestDatabase.Replace.NONE
 )
-public class VirtualGoldHoldingRepositoryTest {
+public class PhysicalGoldTransactionRepositoryTest {
 
     @Autowired
-    private VirtualGoldHoldingRepository repository;
+    private PhysicalGoldTransactionRepository repository;
 
     @Autowired
     private UserRepository userRepository;
@@ -53,42 +53,28 @@ public class VirtualGoldHoldingRepositoryTest {
 
     private VendorBranch testBranch;
 
-    private VirtualGoldHolding holding;
+    private PhysicalGoldTransaction transaction;
 
     @BeforeEach
     public void setUp() {
 
-        /*
-         * Create Address
-         */
         testAddress = new Address();
 
         testAddress.setStreet(
                 "Street_" + System.currentTimeMillis()
         );
 
-        testAddress.setCity(
-                "Chennai"
-        );
+        testAddress.setCity("Chennai");
 
-        testAddress.setState(
-                "Tamil Nadu"
-        );
+        testAddress.setState("Tamil Nadu");
 
-        testAddress.setPostalCode(
-                "600001"
-        );
+        testAddress.setPostalCode("600001");
 
-        testAddress.setCountry(
-                "India"
-        );
+        testAddress.setCountry("India");
 
         testAddress =
                 addressRepository.save(testAddress);
 
-        /*
-         * Fetch existing user
-         */
         List<User> users =
                 userRepository.findAll();
 
@@ -96,9 +82,6 @@ public class VirtualGoldHoldingRepositoryTest {
 
         testUser = users.get(0);
 
-        /*
-         * Create Vendor
-         */
         testVendor = new Vendor();
 
         testVendor.setVendorName(
@@ -138,9 +121,6 @@ public class VirtualGoldHoldingRepositoryTest {
         testVendor =
                 vendorRepository.save(testVendor);
 
-        /*
-         * Create Branch
-         */
         testBranch = new VendorBranch();
 
         testBranch.setVendor(testVendor);
@@ -154,33 +134,35 @@ public class VirtualGoldHoldingRepositoryTest {
         testBranch =
                 vendorBranchRepository.save(testBranch);
 
-        /*
-         * Create Holding
-         */
-        holding = new VirtualGoldHolding();
+        transaction =
+                new PhysicalGoldTransaction();
 
-        holding.setUser(testUser);
+        transaction.setUser(testUser);
 
-        holding.setBranch(testBranch);
+        transaction.setBranch(testBranch);
 
-        holding.setQuantity(
-                new BigDecimal("5")
+        transaction.setQuantity(
+                new BigDecimal("1")
         );
 
-        holding =
-                repository.save(holding);
+        transaction.setDeliveryAddress(
+                testAddress
+        );
+
+        transaction =
+                repository.save(transaction);
     }
 
     @AfterEach
     public void tearDown() {
 
-        if (holding != null
-                && holding.getHoldingId() != null
+        if (transaction != null
+                && transaction.getTransactionId() != null
                 && repository.existsById(
-                holding.getHoldingId())) {
+                transaction.getTransactionId())) {
 
             repository.deleteById(
-                    holding.getHoldingId()
+                    transaction.getTransactionId()
             );
         }
 
@@ -215,96 +197,66 @@ public class VirtualGoldHoldingRepositoryTest {
         }
     }
 
-    /*
-     * ============================================================
-     * TEST CREATE
-     * ============================================================
-     */
     @Test
-    @DisplayName("Test Create Holding")
-    public void testCreateHolding() {
+    @DisplayName("Test Create Physical Transaction")
+    public void testCreateTransaction() {
 
         assertNotNull(
-                holding.getHoldingId()
+                transaction.getTransactionId()
         );
     }
 
-    /*
-     * ============================================================
-     * TEST READ
-     * ============================================================
-     */
     @Test
-    @DisplayName("Test Read Holding")
-    public void testReadHolding() {
+    @DisplayName("Test Read Physical Transaction")
+    public void testReadTransaction() {
 
-        Optional<VirtualGoldHolding> found =
+        Optional<PhysicalGoldTransaction> found =
                 repository.findById(
-                        holding.getHoldingId()
+                        transaction.getTransactionId()
                 );
 
         assertTrue(found.isPresent());
-
-        assertEquals(
-                holding.getQuantity(),
-                found.get().getQuantity()
-        );
     }
 
-    /*
-     * ============================================================
-     * TEST UPDATE
-     * ============================================================
-     */
     @Test
-    @DisplayName("Test Update Holding")
-    public void testUpdateHolding() {
+    @DisplayName("Test Update Physical Transaction")
+    public void testUpdateTransaction() {
 
-        holding.setQuantity(
-                new BigDecimal("10")
+        transaction.setQuantity(
+                new BigDecimal("3")
         );
 
-        VirtualGoldHolding updated =
-                repository.save(holding);
+        PhysicalGoldTransaction updated =
+                repository.save(transaction);
 
         assertEquals(
-                new BigDecimal("10"),
+                new BigDecimal("3"),
                 updated.getQuantity()
         );
     }
 
-    /*
-     * ============================================================
-     * TEST DELETE
-     * ============================================================
-     */
     @Test
-    @DisplayName("Test Delete Holding")
-    public void testDeleteHolding() {
+    @DisplayName("Test Delete Physical Transaction")
+    public void testDeleteTransaction() {
 
         Integer id =
-                holding.getHoldingId();
+                transaction.getTransactionId();
 
         repository.deleteById(id);
 
-        Optional<VirtualGoldHolding> deleted =
+        Optional<PhysicalGoldTransaction> deleted =
                 repository.findById(id);
 
         assertFalse(deleted.isPresent());
     }
 
-    /*
-     * ============================================================
-     * TEST FIND ALL
-     * ============================================================
-     */
     @Test
-    @DisplayName("Test Find All Holdings")
-    public void testFindAllHoldings() {
+    @DisplayName("Test Find All Physical Transactions")
+    public void testFindAllTransactions() {
 
-        List<VirtualGoldHolding> holdings =
+        List<PhysicalGoldTransaction> transactions =
                 repository.findAll();
 
-        assertFalse(holdings.isEmpty());
+        assertFalse(transactions.isEmpty());
     }
 }

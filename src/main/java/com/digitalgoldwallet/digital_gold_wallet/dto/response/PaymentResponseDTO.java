@@ -1,92 +1,64 @@
-package com.digitalgoldwallet.digital_gold_wallet.entity;
-
-import jakarta.persistence.*;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+package com.digitalgoldwallet.digital_gold_wallet.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /*
- * Entity class for payments table
+ * DTO used for sending payment response
  */
-@Entity
-
-/*
- * Maps this entity to payments table in MySQL
- */
-@Table(name = "payments")
-public class Payment {
+public class PaymentResponseDTO {
 
     /*
-     * Primary key for payments table
-     * Auto incremented by MySQL
+     * Payment ID
      */
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "payment_id")
     private Integer paymentId;
 
     /*
-     * Many payments belong to one user
-     * user_id is foreign key
+     * User ID linked to payment
      */
-    @NotNull(message = "User is required")
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private Integer userId;
 
     /*
      * Payment amount
      */
-    @NotNull(message = "Amount is required")
-    @DecimalMin(value = "1.0", message = "Amount must be greater than 0")
-    @Column(name = "amount", nullable = false)
     private BigDecimal amount;
 
     /*
      * Payment method
      */
-    @NotBlank(message = "Payment method is required")
-    @Column(name = "payment_method", nullable = false)
     private String paymentMethod;
 
     /*
      * Transaction type
      */
-    @NotBlank(message = "Transaction type is required")
-    @Column(name = "transaction_type", nullable = false)
     private String transactionType;
 
     /*
      * Payment status
      */
-    @NotBlank(message = "Payment status is required")
-    @Column(name = "payment_status", nullable = false)
     private String paymentStatus;
 
     /*
-     * Payment creation time
+     * Payment creation timestamp
      */
-    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    /*
-     * Default constructor
-     */
-    public Payment() {
+    // Default Constructor
+    public PaymentResponseDTO() {
     }
 
-    /*
-     * Parameterized constructor
-     */
-    public Payment(Integer paymentId, User user, BigDecimal amount,
-                   String paymentMethod, String transactionType,
-                   String paymentStatus, LocalDateTime createdAt) {
-
+    // Parameterized Constructor
+    public PaymentResponseDTO(
+            Integer paymentId,
+            Integer userId,
+            BigDecimal amount,
+            String paymentMethod,
+            String transactionType,
+            String paymentStatus,
+            LocalDateTime createdAt
+    ) {
         this.paymentId = paymentId;
-        this.user = user;
+        this.userId = userId;
         this.amount = amount;
         this.paymentMethod = paymentMethod;
         this.transactionType = transactionType;
@@ -94,6 +66,7 @@ public class Payment {
         this.createdAt = createdAt;
     }
 
+    // Getter and Setter for paymentId
     public Integer getPaymentId() {
         return paymentId;
     }
@@ -102,14 +75,16 @@ public class Payment {
         this.paymentId = paymentId;
     }
 
-    public User getUser() {
-        return user;
+    // Getter and Setter for userId
+    public Integer getUserId() {
+        return userId;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setUserId(Integer userId) {
+        this.userId = userId;
     }
 
+    // Getter and Setter for amount
     public BigDecimal getAmount() {
         return amount;
     }
@@ -118,6 +93,7 @@ public class Payment {
         this.amount = amount;
     }
 
+    // Getter and Setter for paymentMethod
     public String getPaymentMethod() {
         return paymentMethod;
     }
@@ -126,6 +102,7 @@ public class Payment {
         this.paymentMethod = paymentMethod;
     }
 
+    // Getter and Setter for transactionType
     public String getTransactionType() {
         return transactionType;
     }
@@ -134,6 +111,7 @@ public class Payment {
         this.transactionType = transactionType;
     }
 
+    // Getter and Setter for paymentStatus
     public String getPaymentStatus() {
         return paymentStatus;
     }
@@ -142,6 +120,7 @@ public class Payment {
         this.paymentStatus = paymentStatus;
     }
 
+    // Getter and Setter for createdAt
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }

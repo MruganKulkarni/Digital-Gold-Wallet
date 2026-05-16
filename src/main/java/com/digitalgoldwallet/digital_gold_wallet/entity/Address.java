@@ -1,13 +1,17 @@
 package com.digitalgoldwallet.digital_gold_wallet.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 
 import java.util.List;
 
 /*
- * Address Entity Class
+ * ============================================================
+ * Address Entity
+ * ============================================================
  *
- * This class maps to the "addresses" table in database.
+ * Maps to addresses table in MySQL database.
+ * ============================================================
  */
 
 @Entity
@@ -16,29 +20,62 @@ public class Address implements Comparable<Address> {
 
     /*
      * Primary Key
-     * Auto incremented address ID
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "address_id")
     private Integer addressId;
 
     /*
-     * Address fields
+     * Street
      */
+    @NotBlank(message = "Street is required")
+    @Column(name = "street",
+            nullable = false,
+            length = 150)
     private String street;
 
+    /*
+     * City
+     */
+    @NotBlank(message = "City is required")
+    @Column(name = "city",
+            nullable = false,
+            length = 100)
     private String city;
 
+    /*
+     * State
+     */
+    @NotBlank(message = "State is required")
+    @Column(name = "state",
+            nullable = false,
+            length = 100)
     private String state;
 
+    /*
+     * Postal Code
+     */
+    @NotBlank(message = "Postal code is required")
+    @Column(name = "postal_code",
+            nullable = false,
+            length = 20)
     private String postalCode;
 
+    /*
+     * Country
+     */
+    @NotBlank(message = "Country is required")
+    @Column(name = "country",
+            nullable = false,
+            length = 100)
     private String country;
 
     /*
-     * One address can belong to many users
+     * One Address -> Many Users
      */
-    @OneToMany(mappedBy = "address", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "address",
+            fetch = FetchType.LAZY)
     private List<User> users;
 
     /*
@@ -68,113 +105,143 @@ public class Address implements Comparable<Address> {
     }
 
     /*
-     * Getters and Setters
+     * Getter for addressId
      */
-
     public Integer getAddressId() {
         return addressId;
     }
 
+    /*
+     * Setter for addressId
+     */
     public void setAddressId(Integer addressId) {
         this.addressId = addressId;
     }
 
+    /*
+     * Getter for street
+     */
     public String getStreet() {
         return street;
     }
 
+    /*
+     * Setter for street
+     */
     public void setStreet(String street) {
         this.street = street;
     }
 
+    /*
+     * Getter for city
+     */
     public String getCity() {
         return city;
     }
 
+    /*
+     * Setter for city
+     */
     public void setCity(String city) {
         this.city = city;
     }
 
+    /*
+     * Getter for state
+     */
     public String getState() {
         return state;
     }
 
+    /*
+     * Setter for state
+     */
     public void setState(String state) {
         this.state = state;
     }
 
+    /*
+     * Getter for postalCode
+     */
     public String getPostalCode() {
         return postalCode;
     }
 
+    /*
+     * Setter for postalCode
+     */
     public void setPostalCode(String postalCode) {
         this.postalCode = postalCode;
     }
 
+    /*
+     * Getter for country
+     */
     public String getCountry() {
         return country;
     }
 
+    /*
+     * Setter for country
+     */
     public void setCountry(String country) {
         this.country = country;
     }
 
+    /*
+     * Getter for users
+     */
     public List<User> getUsers() {
         return users;
     }
 
+    /*
+     * Setter for users
+     */
     public void setUsers(List<User> users) {
         this.users = users;
     }
 
     /*
      * equals()
-     *
-     * Used to compare two Address objects logically
-     * using addressId.
      */
     @Override
     public boolean equals(Object obj) {
 
-        // checks if same object reference
         if (this == obj) {
             return true;
         }
 
-        // checks null and class type
-        if (obj == null || getClass() != obj.getClass()) {
+        if (obj == null
+                || getClass() != obj.getClass()) {
             return false;
         }
 
-        // type casting
         Address address = (Address) obj;
 
-        // compare address IDs
         return addressId != null
                 && addressId.equals(address.addressId);
     }
 
     /*
      * hashCode()
-     *
-     * Generates hash value for Address object.
      */
     @Override
     public int hashCode() {
 
-        // generate hash using addressId
-        return addressId != null ? addressId.hashCode() : 0;
+        return addressId != null
+                ? addressId.hashCode()
+                : 0;
     }
 
     /*
      * compareTo()
      *
-     * Used for sorting Address objects alphabetically by city.
+     * Sort addresses alphabetically by city.
      */
     @Override
     public int compareTo(Address otherAddress) {
 
-        // compare city names
         return this.city.compareTo(otherAddress.city);
     }
 }
