@@ -1,4 +1,4 @@
-package com.digitalgoldwallet.digital_gold_wallet.dto;
+package com.digitalgoldwallet.digital_gold_wallet.dto.request;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
