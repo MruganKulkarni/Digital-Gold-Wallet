@@ -27,13 +27,14 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
 
     /*
      * Fetch payments using userId and payment status
-     * Native SQL query as mentioned in project guide
+     * Native SQL query
      */
-    @Query(value = """
-            SELECT * FROM payments
-            WHERE user_id = :userId
-            AND payment_status = :status
-            """, nativeQuery = true)
+    @Query(
+            value = "SELECT * FROM payments " +
+                    "WHERE user_id = :userId " +
+                    "AND payment_status = :status",
+            nativeQuery = true
+    )
     List<Payment> findByUserIdAndStatus(
             @Param("userId") Integer userId,
             @Param("status") String status
