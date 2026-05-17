@@ -5,10 +5,35 @@ import com.digitalgoldwallet.digital_gold_wallet.dto.response.PhysicalGoldTransa
 
 import java.util.List;
 
-public interface PhysicalGoldTransactionService {
+/*
+ * ============================================================
+ * Physical Gold Service
+ * ============================================================
+ */
+
+public interface
+PhysicalGoldTransactionService {
+
 
     /*
-     * Create transaction
+     * ============================================================
+     * Convert virtual gold to physical gold
+     *
+     * API:
+     * POST /api/v1/gold/physical/convert
+     *
+     * ============================================================
+     */
+
+    PhysicalGoldTransactionResponseDto
+    convertToPhysical(
+            PhysicalGoldTransactionRequestDto dto
+    );
+
+
+
+    /*
+     * Existing Day-3 create
      */
 
     PhysicalGoldTransactionResponseDto
@@ -16,22 +41,38 @@ public interface PhysicalGoldTransactionService {
             PhysicalGoldTransactionRequestDto dto
     );
 
-    /*
-     * Get by id
-     */
 
-    PhysicalGoldTransactionResponseDto
-    getById(
-            Integer transactionId
-    );
 
     /*
-     * Get user history
+     * ============================================================
+     * User physical orders
+     *
+     * GET:
+     * /api/v1/users/{userId}/gold/physical
+     *
+     * ============================================================
      */
 
     List<PhysicalGoldTransactionResponseDto>
     getByUser(
             Integer userId
+    );
+
+
+
+    /*
+     * ============================================================
+     * Delivery details
+     *
+     * GET:
+     * /api/v1/physical-transactions/{transactionId}
+     *
+     * ============================================================
+     */
+
+    PhysicalGoldTransactionResponseDto
+    getById(
+            Integer id
     );
 
 }

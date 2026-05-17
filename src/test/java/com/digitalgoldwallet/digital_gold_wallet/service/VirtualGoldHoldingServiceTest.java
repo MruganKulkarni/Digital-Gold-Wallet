@@ -139,7 +139,7 @@ class VirtualGoldHoldingServiceTest {
      */
 
     @Test
-    void createHolding_Success() {
+    void buyGold_Success() {
 
         when(
                 userRepository.findById(1)
@@ -182,7 +182,7 @@ class VirtualGoldHoldingServiceTest {
         );
 
         VirtualGoldHoldingResponseDto result =
-                service.createHolding(
+                service.buyGold(
                         requestDto
                 );
 
@@ -213,7 +213,7 @@ class VirtualGoldHoldingServiceTest {
      */
 
     @Test
-    void createHolding_UserNotFound() {
+    void buyGold_UserNotFound() {
 
         when(
                 userRepository.findById(1)
@@ -225,7 +225,7 @@ class VirtualGoldHoldingServiceTest {
                 UserNotFoundException.class,
 
                 () ->
-                        service.createHolding(
+                        service.buyGold(
                                 requestDto
                         )
         );
@@ -243,7 +243,7 @@ class VirtualGoldHoldingServiceTest {
      */
 
     @Test
-    void createHolding_BranchNotFound() {
+    void buyGold_BranchNotFound() {
 
         when(
                 userRepository.findById(1)
@@ -262,7 +262,7 @@ class VirtualGoldHoldingServiceTest {
                 VendorBranchNotFoundException.class,
 
                 () ->
-                        service.createHolding(
+                        service.buyGold(
                                 requestDto
                         )
         );
