@@ -20,6 +20,8 @@ spring:
       maximum-pool-size: 10
       keepalive-time: 30000
 
+
+
   jpa:
     hibernate:
       ddl-auto: none
