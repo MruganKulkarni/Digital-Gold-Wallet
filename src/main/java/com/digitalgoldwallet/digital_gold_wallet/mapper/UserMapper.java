@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 /*
  * ============================================================
- * User Mapper
+ * User Mapper for entity,dto and service connection.
  * ============================================================
  *
  * Handles conversion between:

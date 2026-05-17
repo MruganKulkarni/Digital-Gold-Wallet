@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 /*
  * ============================================================
- * Address Mapper
+ * Address Mapper for Address entity,dto and service connection.
  * ============================================================
  *
  * Handles conversion between:
