@@ -192,4 +192,43 @@ public class UserControllerTest {
                 "VALIDATION TEST PASSED"
         );
     }
+    /*
+     * ============================================================
+     * TEST USER NOT FOUND API
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test User Not Found API")
+    public void testUserNotFoundApi()
+            throws Exception {
+
+        /*
+         * Mock exception
+         */
+        when(userService.getUserById(999))
+                .thenThrow(
+                        new RuntimeException(
+                                "User not found"
+                        )
+                );
+
+        /*
+         * Perform API call
+         */
+        mockMvc.perform(
+                        get("/api/v1/users/999")
+                )
+
+                /*
+                 * Verify status
+                 */
+                .andExpect(
+                        status()
+                                .isInternalServerError()
+                );
+
+        System.out.println(
+                "USER NOT FOUND API TEST PASSED"
+        );
+    }
 }

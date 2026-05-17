@@ -84,4 +84,43 @@ public class AddressControllerTest {
                 "GET ADDRESS API TEST PASSED"
         );
     }
+    /*
+     * ============================================================
+     * TEST ADDRESS NOT FOUND API
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Address Not Found API")
+    public void testAddressNotFoundApi()
+            throws Exception {
+
+        /*
+         * Mock exception
+         */
+        when(addressService.getAddressById(999))
+                .thenThrow(
+                        new RuntimeException(
+                                "Address not found"
+                        )
+                );
+
+        /*
+         * Perform API call
+         */
+        mockMvc.perform(
+                        get("/api/v1/addresses/999")
+                )
+
+                /*
+                 * Verify status
+                 */
+                .andExpect(
+                        status()
+                                .isInternalServerError()
+                );
+
+        System.out.println(
+                "ADDRESS NOT FOUND API TEST PASSED"
+        );
+    }
 }
