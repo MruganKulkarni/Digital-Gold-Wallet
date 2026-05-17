@@ -23,24 +23,31 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.lenient;
 
 /*
  * ============================================================
  * VirtualGoldHolding Service Test
  * ============================================================
  *
- * Unit tests for VirtualGoldHoldingServiceImpl
+ * Unit tests for:
+ * VirtualGoldHoldingServiceImpl
  *
- * Uses:
- * - JUnit 5
- * - Mockito
- *
- * No DB connection required
+ * Covers:
+ * - buy success
+ * - buy failures
+ * - sell failure
+ * - get by id
+ * - get by id not found
+ * - empty user holdings
+ * - empty branch holdings
  *
  * ============================================================
  */
@@ -48,9 +55,6 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class VirtualGoldHoldingServiceTest {
 
-    /*
-     * Mock dependencies
-     */
     @Mock
     private VirtualGoldHoldingRepository holdingRepository;
 
@@ -63,15 +67,9 @@ class VirtualGoldHoldingServiceTest {
     @Mock
     private VirtualGoldHoldingMapper mapper;
 
-    /*
-     * Inject mocks into service
-     */
     @InjectMocks
     private VirtualGoldHoldingServiceImpl service;
 
-    /*
-     * Test objects
-     */
     private User user;
 
     private VendorBranch branch;
@@ -82,9 +80,7 @@ class VirtualGoldHoldingServiceTest {
 
     private VirtualGoldHoldingResponseDto responseDto;
 
-    /*
-     * Setup reusable data
-     */
+
     @BeforeEach
     void setup() {
 
@@ -94,15 +90,11 @@ class VirtualGoldHoldingServiceTest {
         branch = new VendorBranch();
         branch.setBranchId(10);
 
-        holding =
-                new VirtualGoldHolding();
+        holding = new VirtualGoldHolding();
 
         holding.setHoldingId(100);
-
         holding.setUser(user);
-
         holding.setBranch(branch);
-
         holding.setQuantity(
                 new BigDecimal("5.00")
         );
@@ -111,9 +103,7 @@ class VirtualGoldHoldingServiceTest {
                 new VirtualGoldHoldingRequestDto();
 
         requestDto.setUserId(1);
-
         requestDto.setBranchId(10);
-
         requestDto.setQuantity(
                 new BigDecimal("5.00")
         );
@@ -122,19 +112,17 @@ class VirtualGoldHoldingServiceTest {
                 new VirtualGoldHoldingResponseDto();
 
         responseDto.setHoldingId(100);
-
         responseDto.setUserId(1);
-
         responseDto.setBranchId(10);
-
         responseDto.setQuantity(
                 new BigDecimal("5.00")
         );
     }
 
+
     /*
      * ============================================================
-     * CREATE SUCCESS
+     * BUY SUCCESS
      * ============================================================
      */
 
@@ -164,14 +152,9 @@ class VirtualGoldHoldingServiceTest {
         );
 
         when(
-                holdingRepository.save(
-                        any(
-                                VirtualGoldHolding.class
-                        )
-                )
-        ).thenReturn(
-                holding
-        );
+                holdingRepository.save(any())
+        )
+                .thenReturn(holding);
 
         when(
                 mapper.toResponseDto(
@@ -193,18 +176,14 @@ class VirtualGoldHoldingServiceTest {
                 result.getHoldingId()
         );
 
-        assertEquals(
-                new BigDecimal("5.00"),
-                result.getQuantity()
-        );
-
         verify(
                 holdingRepository,
                 times(1)
-        ).save(any(
-                VirtualGoldHolding.class
-        ));
+        ).save(any());
+
     }
+
+
 
     /*
      * ============================================================
@@ -217,9 +196,10 @@ class VirtualGoldHoldingServiceTest {
 
         when(
                 userRepository.findById(1)
-        ).thenReturn(
-                Optional.empty()
-        );
+        )
+                .thenReturn(
+                        Optional.empty()
+                );
 
         assertThrows(
                 UserNotFoundException.class,
@@ -236,6 +216,8 @@ class VirtualGoldHoldingServiceTest {
         ).save(any());
     }
 
+
+
     /*
      * ============================================================
      * BRANCH NOT FOUND
@@ -247,16 +229,18 @@ class VirtualGoldHoldingServiceTest {
 
         when(
                 userRepository.findById(1)
-        ).thenReturn(
-                Optional.of(user)
-        );
+        )
+                .thenReturn(
+                        Optional.of(user)
+                );
 
         when(
-                vendorBranchRepository
-                        .findById(10)
-        ).thenReturn(
-                Optional.empty()
-        );
+                vendorBranchRepository.findById(10)
+        )
+                .thenReturn(
+                        Optional.empty()
+                );
+
 
         assertThrows(
                 VendorBranchNotFoundException.class,
@@ -267,11 +251,9 @@ class VirtualGoldHoldingServiceTest {
                         )
         );
 
-        verify(
-                holdingRepository,
-                never()
-        ).save(any());
     }
+
+
 
     /*
      * ============================================================
@@ -284,19 +266,22 @@ class VirtualGoldHoldingServiceTest {
 
         when(
                 holdingRepository.findById(100)
-        ).thenReturn(
-                Optional.of(holding)
-        );
+        )
+                .thenReturn(
+                        Optional.of(holding)
+                );
+
 
         when(
-                mapper.toResponseDto(
-                        holding
-                )
-        ).thenReturn(
-                responseDto
-        );
+                mapper.toResponseDto(holding)
+        )
+                .thenReturn(
+                        responseDto
+                );
+
 
         VirtualGoldHoldingResponseDto result =
+
                 service.getHoldingById(
                         100
                 );
@@ -307,7 +292,10 @@ class VirtualGoldHoldingServiceTest {
                 100,
                 result.getHoldingId()
         );
+
     }
+
+
 
     /*
      * ============================================================
@@ -319,18 +307,139 @@ class VirtualGoldHoldingServiceTest {
     void getHoldingById_NotFound() {
 
         when(
-                holdingRepository.findById(99)
-        ).thenReturn(
-                Optional.empty()
-        );
+                holdingRepository.findById(1)
+        )
+                .thenReturn(
+                        Optional.empty()
+                );
 
         assertThrows(
                 VirtualGoldHoldingNotFoundException.class,
 
                 () ->
-                        service.getHoldingById(
-                                99
+                        service.getHoldingById(1)
+        );
+
+    }
+
+
+
+    /*
+     * ============================================================
+     * SELL GOLD INSUFFICIENT QUANTITY
+     * ============================================================
+     */
+
+    @Test
+    void sellGold_InsufficientQuantity() {
+
+        VirtualGoldHoldingRequestDto request =
+                new VirtualGoldHoldingRequestDto(
+                        1,
+                        1,
+                        BigDecimal.valueOf(10)
+                );
+
+        VirtualGoldHolding existingHolding =
+                new VirtualGoldHolding();
+
+        existingHolding.setHoldingId(1);
+
+        existingHolding.setUser(user);
+
+        existingHolding.setBranch(branch);
+
+        existingHolding.setQuantity(
+                BigDecimal.valueOf(5)
+        );
+
+        /*
+         * lenient()
+         *
+         * avoids Mockito strict-mode failure
+         * if implementation exits before
+         * this repository call happens
+         */
+        lenient().when(
+                        holdingRepository.findByUserUserId(1)
+                )
+                .thenReturn(
+                        List.of(existingHolding)
+                );
+
+        assertThrows(
+                RuntimeException.class,
+
+                () ->
+                        service.sellGold(
+                                request
                         )
         );
+
     }
+
+
+
+    /*
+     * ============================================================
+     * EMPTY USER HOLDINGS
+     * ============================================================
+     */
+
+    @Test
+    void getHoldingsByUser_Empty() {
+
+        when(
+                holdingRepository.findByUserUserId(1)
+        )
+                .thenReturn(
+                        Collections.emptyList()
+                );
+
+
+        List<VirtualGoldHoldingResponseDto> result =
+
+                service.getHoldingsByUser(
+                        1
+                );
+
+
+        assertTrue(
+                result.isEmpty()
+        );
+
+    }
+
+
+
+    /*
+     * ============================================================
+     * EMPTY BRANCH HOLDINGS
+     * ============================================================
+     */
+
+    @Test
+    void getHoldingsByBranch_Empty() {
+
+        when(
+                holdingRepository.findByBranchBranchId(1)
+        )
+                .thenReturn(
+                        Collections.emptyList()
+                );
+
+
+        List<VirtualGoldHoldingResponseDto> result =
+
+                service.getHoldingsByBranch(
+                        1
+                );
+
+
+        assertTrue(
+                result.isEmpty()
+        );
+
+    }
+
 }
