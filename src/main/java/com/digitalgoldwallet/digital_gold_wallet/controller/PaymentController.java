@@ -1,7 +1,7 @@
 package com.digitalgoldwallet.digital_gold_wallet.controller;
 
-import com.digitalgoldwallet.digital_gold_wallet.dto.request.PaymentRequestDTO;
-import com.digitalgoldwallet.digital_gold_wallet.dto.response.PaymentResponseDTO;
+import com.digitalgoldwallet.digital_gold_wallet.dto.request.PaymentRequestDto;
+import com.digitalgoldwallet.digital_gold_wallet.dto.response.PaymentResponseDto;
 import com.digitalgoldwallet.digital_gold_wallet.service.PaymentService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -68,14 +68,14 @@ public class PaymentController {
     @Operation(
             summary = "Initiate payment"
     )
-    public ResponseEntity<PaymentResponseDTO>
+    public ResponseEntity<PaymentResponseDto>
     createPayment(
             @Valid
             @RequestBody
-            PaymentRequestDTO requestDto
+            PaymentRequestDto requestDto
     ) {
 
-        PaymentResponseDTO response =
+        PaymentResponseDto response =
                 paymentService.createPayment(
                         requestDto
                 );
@@ -100,13 +100,13 @@ public class PaymentController {
     @Operation(
             summary = "Get payment by ID"
     )
-    public ResponseEntity<PaymentResponseDTO>
+    public ResponseEntity<PaymentResponseDto>
     getPaymentById(
             @PathVariable
             Integer paymentId
     ) {
 
-        PaymentResponseDTO response =
+        PaymentResponseDto response =
                 paymentService.getPaymentById(
                         paymentId
                 );
@@ -130,13 +130,13 @@ public class PaymentController {
     @Operation(
             summary = "Get payment history by user ID"
     )
-    public ResponseEntity<List<PaymentResponseDTO>>
+    public ResponseEntity<List<PaymentResponseDto>>
     getPaymentsByUserId(
             @PathVariable
             Integer userId
     ) {
 
-        List<PaymentResponseDTO> response =
+        List<PaymentResponseDto> response =
                 paymentService.getPaymentsByUserId(
                         userId
                 );

@@ -1,7 +1,7 @@
 package com.digitalgoldwallet.digital_gold_wallet.service;
 
-import com.digitalgoldwallet.digital_gold_wallet.dto.request.PaymentRequestDTO;
-import com.digitalgoldwallet.digital_gold_wallet.dto.response.PaymentResponseDTO;
+import com.digitalgoldwallet.digital_gold_wallet.dto.request.PaymentRequestDto;
+import com.digitalgoldwallet.digital_gold_wallet.dto.response.PaymentResponseDto;
 
 import java.util.List;
 
@@ -10,21 +10,21 @@ public interface PaymentService {
     /*
      * Create payment
      */
-    PaymentResponseDTO createPayment(
-            PaymentRequestDTO requestDto
+    PaymentResponseDto createPayment(
+            PaymentRequestDto requestDto
     );
 
     /*
      * Get payment by ID
      */
-    PaymentResponseDTO getPaymentById(
+    PaymentResponseDto getPaymentById(
             Integer paymentId
     );
 
     /*
      * Get all payments of user
      */
-    List<PaymentResponseDTO> getPaymentsByUserId(
+    List<PaymentResponseDto> getPaymentsByUserId(
             Integer userId
     );
 }

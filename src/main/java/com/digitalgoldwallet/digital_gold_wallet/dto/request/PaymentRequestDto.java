@@ -10,7 +10,7 @@ import java.math.BigDecimal;
  * DTO used for creating/updating payment
  * Contains validation rules
  */
-public class PaymentRequestDTO {
+public class PaymentRequestDto {
 
     /*
      * User ID linked to payment
@@ -47,11 +47,11 @@ public class PaymentRequestDTO {
     private String paymentStatus;
 
     // Default Constructor
-    public PaymentRequestDTO() {
+    public PaymentRequestDto() {
     }
 
     // Parameterized Constructor
-    public PaymentRequestDTO(
+    public PaymentRequestDto(
             Integer userId,
             BigDecimal amount,
             String paymentMethod,

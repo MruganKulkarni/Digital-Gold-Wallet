@@ -1,7 +1,7 @@
 package com.digitalgoldwallet.digital_gold_wallet.controller;
 
-import com.digitalgoldwallet.digital_gold_wallet.dto.request.PaymentRequestDTO;
-import com.digitalgoldwallet.digital_gold_wallet.dto.response.PaymentResponseDTO;
+import com.digitalgoldwallet.digital_gold_wallet.dto.request.PaymentRequestDto;
+import com.digitalgoldwallet.digital_gold_wallet.dto.response.PaymentResponseDto;
 import com.digitalgoldwallet.digital_gold_wallet.service.PaymentService;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -60,8 +60,8 @@ public class PaymentControllerTest {
     public void testCreatePayment()
             throws Exception {
 
-        PaymentRequestDTO requestDto =
-                new PaymentRequestDTO();
+        PaymentRequestDto requestDto =
+                new PaymentRequestDto();
 
         requestDto.setUserId(1);
 
@@ -81,8 +81,8 @@ public class PaymentControllerTest {
                 "Success"
         );
 
-        PaymentResponseDTO responseDto =
-                new PaymentResponseDTO();
+        PaymentResponseDto responseDto =
+                new PaymentResponseDto();
 
         responseDto.setPaymentId(1);
 
@@ -109,7 +109,7 @@ public class PaymentControllerTest {
         );
 
         when(paymentService.createPayment(
-                any(PaymentRequestDTO.class)))
+                any(PaymentRequestDto.class)))
                 .thenReturn(responseDto);
 
         mockMvc.perform(
@@ -143,8 +143,8 @@ public class PaymentControllerTest {
     public void testGetPaymentById()
             throws Exception {
 
-        PaymentResponseDTO responseDto =
-                new PaymentResponseDTO();
+        PaymentResponseDto responseDto =
+                new PaymentResponseDto();
 
         responseDto.setPaymentId(1);
 
@@ -191,8 +191,8 @@ public class PaymentControllerTest {
     public void testGetPaymentsByUserId()
             throws Exception {
 
-        PaymentResponseDTO responseDto =
-                new PaymentResponseDTO();
+        PaymentResponseDto responseDto =
+                new PaymentResponseDto();
 
         responseDto.setPaymentId(1);
 

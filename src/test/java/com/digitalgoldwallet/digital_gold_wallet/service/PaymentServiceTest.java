@@ -1,7 +1,7 @@
 package com.digitalgoldwallet.digital_gold_wallet.service;
 
-import com.digitalgoldwallet.digital_gold_wallet.dto.request.PaymentRequestDTO;
-import com.digitalgoldwallet.digital_gold_wallet.dto.response.PaymentResponseDTO;
+import com.digitalgoldwallet.digital_gold_wallet.dto.request.PaymentRequestDto;
+import com.digitalgoldwallet.digital_gold_wallet.dto.response.PaymentResponseDto;
 import com.digitalgoldwallet.digital_gold_wallet.entity.Payment;
 import com.digitalgoldwallet.digital_gold_wallet.entity.User;
 import com.digitalgoldwallet.digital_gold_wallet.exception.InsufficientBalanceException;
@@ -86,8 +86,8 @@ public class PaymentServiceTest {
     @Test
     void testCreatePaymentSuccess() {
 
-        PaymentRequestDTO dto =
-                new PaymentRequestDTO();
+        PaymentRequestDto dto =
+                new PaymentRequestDto();
 
         dto.setUserId(1);
 
@@ -114,7 +114,7 @@ public class PaymentServiceTest {
                 Payment.class)))
                 .thenReturn(payment);
 
-        PaymentResponseDTO response =
+        PaymentResponseDto response =
                 paymentService.createPayment(dto);
 
         assertNotNull(response);
@@ -133,8 +133,8 @@ public class PaymentServiceTest {
     @Test
     void testInsufficientBalance() {
 
-        PaymentRequestDTO dto =
-                new PaymentRequestDTO();
+        PaymentRequestDto dto =
+                new PaymentRequestDto();
 
         dto.setUserId(1);
 
@@ -167,7 +167,7 @@ public class PaymentServiceTest {
         when(paymentRepository.findById(1))
                 .thenReturn(Optional.of(payment));
 
-        PaymentResponseDTO response =
+        PaymentResponseDto response =
                 paymentService.getPaymentById(1);
 
         assertNotNull(response);

@@ -1,5 +1,6 @@
 package com.digitalgoldwallet.digital_gold_wallet.exception; // package declaration for exception handling
 
+import com.digitalgoldwallet.digital_gold_wallet.exception.WalletException;
 import org.springframework.http.HttpStatus; // used for HTTP status codes
 import org.springframework.http.ResponseEntity; // used to return HTTP response with body and status
 import org.springframework.validation.FieldError; // used to extract field-level validation errors
@@ -611,5 +612,47 @@ public class GlobalExceptionHandler {
                 HttpStatus.NOT_FOUND
         );
 
+    }
+
+    /*
+     * ============================================================
+     * HANDLE WalletException
+     * ============================================================
+     */
+    @ExceptionHandler(
+            WalletException.class
+    )
+    public ResponseEntity<Map<String, Object>>
+    handleWalletException(
+            WalletException ex
+    ) {
+
+        Map<String, Object> error =
+                new HashMap<>();
+
+        error.put(
+                "timestamp",
+                LocalDateTime.now()
+        );
+
+        error.put(
+                "status",
+                HttpStatus.BAD_REQUEST.value()
+        );
+
+        error.put(
+                "error",
+                "Wallet Error"
+        );
+
+        error.put(
+                "message",
+                ex.getMessage()
+        );
+
+        return new ResponseEntity<>(
+                error,
+                HttpStatus.BAD_REQUEST
+        );
     }
 }

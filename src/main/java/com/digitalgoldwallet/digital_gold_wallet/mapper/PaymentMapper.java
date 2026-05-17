@@ -1,7 +1,7 @@
 package com.digitalgoldwallet.digital_gold_wallet.mapper;
 
-import com.digitalgoldwallet.digital_gold_wallet.dto.request.PaymentRequestDTO;
-import com.digitalgoldwallet.digital_gold_wallet.dto.response.PaymentResponseDTO;
+import com.digitalgoldwallet.digital_gold_wallet.dto.request.PaymentRequestDto;
+import com.digitalgoldwallet.digital_gold_wallet.dto.response.PaymentResponseDto;
 import com.digitalgoldwallet.digital_gold_wallet.entity.Payment;
 import com.digitalgoldwallet.digital_gold_wallet.entity.User;
 
@@ -11,7 +11,7 @@ public class PaymentMapper {
      * Convert Request DTO -> Entity
      */
     public static Payment mapToEntity(
-            PaymentRequestDTO requestDto,
+            PaymentRequestDto requestDto,
             User user
     ) {
 
@@ -41,12 +41,12 @@ public class PaymentMapper {
     /*
      * Convert Entity -> Response DTO
      */
-    public static PaymentResponseDTO mapToResponseDto(
+    public static PaymentResponseDto mapToResponseDto(
             Payment payment
     ) {
 
-        PaymentResponseDTO responseDto =
-                new PaymentResponseDTO();
+        PaymentResponseDto responseDto =
+                new PaymentResponseDto();
 
         responseDto.setPaymentId(
                 payment.getPaymentId()
