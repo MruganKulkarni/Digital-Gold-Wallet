@@ -5,10 +5,17 @@ import com.digitalgoldwallet.digital_gold_wallet.dto.response.TransactionHistory
 
 import java.util.List;
 
+/*
+ * ============================================================
+ * Transaction History Service
+ * ============================================================
+ */
+
 public interface TransactionHistoryService {
 
+
     /*
-     * Create transaction
+     * Existing Day-3 create method
      */
 
     TransactionHistoryResponseDto
@@ -16,22 +23,32 @@ public interface TransactionHistoryService {
             TransactionHistoryRequestDto dto
     );
 
-    /*
-     * Get transaction by ID
-     */
 
-    TransactionHistoryResponseDto
-    getTransactionById(
-            Integer transactionId
-    );
 
     /*
-     * Get user transactions
+     * Get all user transactions
+     *
+     * GET:
+     * /api/v1/users/{userId}/transactions
      */
 
     List<TransactionHistoryResponseDto>
     getTransactionsByUser(
             Integer userId
+    );
+
+
+
+    /*
+     * Get branch transactions
+     *
+     * GET:
+     * /api/v1/branches/{branchId}/transactions
+     */
+
+    List<TransactionHistoryResponseDto>
+    getTransactionsByBranch(
+            Integer branchId
     );
 
 }

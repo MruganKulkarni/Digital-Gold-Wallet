@@ -5,33 +5,102 @@ import com.digitalgoldwallet.digital_gold_wallet.dto.response.VirtualGoldHolding
 
 import java.util.List;
 
+/*
+ * ============================================================
+ * Virtual Gold Holding Service
+ * ============================================================
+ *
+ * Handles:
+ *
+ * - Buy virtual gold
+ * - Sell virtual gold
+ * - Fetch by id
+ * - User holdings
+ * - Branch holdings
+ *
+ * ============================================================
+ */
+
 public interface VirtualGoldHoldingService {
 
+
     /*
-     * Create Holding
+     * ============================================================
+     * Buy virtual gold
+     *
+     * API:
+     * POST /api/v1/gold/virtual/buy
+     *
+     * ============================================================
      */
 
     VirtualGoldHoldingResponseDto
-    createHolding(
+    buyGold(
             VirtualGoldHoldingRequestDto dto
     );
 
+
+
     /*
-     * Get By Id
+     * ============================================================
+     * Sell virtual gold
+     *
+     * API:
+     * POST /api/v1/gold/virtual/sell
+     *
+     * ============================================================
+     */
+
+    VirtualGoldHoldingResponseDto
+    sellGold(
+            VirtualGoldHoldingRequestDto dto
+    );
+
+
+
+    /*
+     * ============================================================
+     * Existing method from Day 3
+     * ============================================================
      */
 
     VirtualGoldHoldingResponseDto
     getHoldingById(
-            Integer holdingId
+            Integer id
     );
 
+
+
     /*
-     * Get user holdings
+     * ============================================================
+     * Get holdings of user
+     *
+     * GET:
+     * /api/v1/users/{userId}/gold/virtual
+     *
+     * ============================================================
      */
 
     List<VirtualGoldHoldingResponseDto>
     getHoldingsByUser(
             Integer userId
+    );
+
+
+
+    /*
+     * ============================================================
+     * Get holdings of branch
+     *
+     * GET:
+     * /api/v1/branches/{branchId}/gold/virtual
+     *
+     * ============================================================
+     */
+
+    List<VirtualGoldHoldingResponseDto>
+    getHoldingsByBranch(
+            Integer branchId
     );
 
 }
