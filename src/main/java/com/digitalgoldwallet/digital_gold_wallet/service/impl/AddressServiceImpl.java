@@ -7,6 +7,8 @@ import com.digitalgoldwallet.digital_gold_wallet.entity.Address;
 
 import com.digitalgoldwallet.digital_gold_wallet.exception.AddressNotFoundException;
 
+import com.digitalgoldwallet.digital_gold_wallet.mapper.AddressMapper;
+
 import com.digitalgoldwallet.digital_gold_wallet.repository.AddressRepository;
 
 import com.digitalgoldwallet.digital_gold_wallet.service.AddressService;
@@ -28,14 +30,20 @@ public class AddressServiceImpl
      */
     private final AddressRepository addressRepository;
 
+    private final AddressMapper addressMapper;
+
     /*
      * Constructor Injection
      */
     public AddressServiceImpl(
-            AddressRepository addressRepository) {
+            AddressRepository addressRepository,
+            AddressMapper addressMapper) {
 
         this.addressRepository =
                 addressRepository;
+
+        this.addressMapper =
+                addressMapper;
     }
 
     /*
@@ -45,32 +53,20 @@ public class AddressServiceImpl
     public AddressResponseDto createAddress(
             AddressRequestDto requestDto) {
 
-        Address address = new Address();
-
-        address.setStreet(
-                requestDto.getStreet()
-        );
-
-        address.setCity(
-                requestDto.getCity()
-        );
-
-        address.setState(
-                requestDto.getState()
-        );
-
-        address.setPostalCode(
-                requestDto.getPostalCode()
-        );
-
-        address.setCountry(
-                requestDto.getCountry()
-        );
+        /*
+         * DTO -> Entity
+         */
+        Address address =
+                addressMapper.toEntity(
+                        requestDto
+                );
 
         Address savedAddress =
                 addressRepository.save(address);
 
-        return mapToResponse(savedAddress);
+        return addressMapper.toResponseDto(
+                savedAddress
+        );
     }
 
     /*
@@ -87,7 +83,9 @@ public class AddressServiceImpl
                                         "Address not found"
                                 ));
 
-        return mapToResponse(address);
+        return addressMapper.toResponseDto(
+                address
+        );
     }
 
     /*
@@ -105,24 +103,12 @@ public class AddressServiceImpl
                                         "Address not found"
                                 ));
 
-        existingAddress.setStreet(
-                requestDto.getStreet()
-        );
-
-        existingAddress.setCity(
-                requestDto.getCity()
-        );
-
-        existingAddress.setState(
-                requestDto.getState()
-        );
-
-        existingAddress.setPostalCode(
-                requestDto.getPostalCode()
-        );
-
-        existingAddress.setCountry(
-                requestDto.getCountry()
+        /*
+         * Update entity using mapper
+         */
+        addressMapper.updateEntity(
+                existingAddress,
+                requestDto
         );
 
         Address updatedAddress =
@@ -130,22 +116,8 @@ public class AddressServiceImpl
                         existingAddress
                 );
 
-        return mapToResponse(updatedAddress);
-    }
-
-    /*
-     * Entity -> DTO Mapper
-     */
-    private AddressResponseDto mapToResponse(
-            Address address) {
-
-        return new AddressResponseDto(
-                address.getAddressId(),
-                address.getStreet(),
-                address.getCity(),
-                address.getState(),
-                address.getPostalCode(),
-                address.getCountry()
+        return addressMapper.toResponseDto(
+                updatedAddress
         );
     }
 }
