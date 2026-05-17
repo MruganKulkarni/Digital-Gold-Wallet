@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 /*
  * DTO used for sending payment response
  */
-public class PaymentResponseDTO {
+public class PaymentResponseDto {
 
     /*
      * Payment ID
@@ -44,11 +44,11 @@ public class PaymentResponseDTO {
     private LocalDateTime createdAt;
 
     // Default Constructor
-    public PaymentResponseDTO() {
+    public PaymentResponseDto() {
     }
 
     // Parameterized Constructor
-    public PaymentResponseDTO(
+    public PaymentResponseDto(
             Integer paymentId,
             Integer userId,
             BigDecimal amount,

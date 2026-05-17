@@ -1,7 +1,7 @@
 package com.digitalgoldwallet.digital_gold_wallet.service.impl;
 
-import com.digitalgoldwallet.digital_gold_wallet.dto.request.PaymentRequestDTO;
-import com.digitalgoldwallet.digital_gold_wallet.dto.response.PaymentResponseDTO;
+import com.digitalgoldwallet.digital_gold_wallet.dto.request.PaymentRequestDto;
+import com.digitalgoldwallet.digital_gold_wallet.dto.response.PaymentResponseDto;
 import com.digitalgoldwallet.digital_gold_wallet.entity.Payment;
 import com.digitalgoldwallet.digital_gold_wallet.entity.User;
 import com.digitalgoldwallet.digital_gold_wallet.exception.InsufficientBalanceException;
@@ -14,7 +14,6 @@ import com.digitalgoldwallet.digital_gold_wallet.service.PaymentService;
 
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,8 +43,8 @@ public class PaymentServiceImpl
      * ====================================================
      */
     @Override
-    public PaymentResponseDTO createPayment(
-            PaymentRequestDTO requestDto
+    public PaymentResponseDto createPayment(
+            PaymentRequestDto requestDto
     ) {
 
         /*
@@ -138,7 +137,7 @@ public class PaymentServiceImpl
      * ====================================================
      */
     @Override
-    public PaymentResponseDTO getPaymentById(
+    public PaymentResponseDto getPaymentById(
             Integer paymentId
     ) {
 
@@ -163,7 +162,7 @@ public class PaymentServiceImpl
      * ====================================================
      */
     @Override
-    public List<PaymentResponseDTO>
+    public List<PaymentResponseDto>
     getPaymentsByUserId(
             Integer userId
     ) {
