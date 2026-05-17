@@ -24,6 +24,13 @@ import static org.junit.jupiter.api.Assertions.*;
  * ============================================================
  * User Service Layer Testing
  * ============================================================
+ *
+ * Covers:
+ * - Positive Scenarios
+ * - Negative Scenarios
+ * - Exception Testing
+ * - CRUD Operations
+ * ============================================================
  */
 
 @SpringBootTest
@@ -124,9 +131,6 @@ public class UserServiceTest {
     @DisplayName("Test Create User Service")
     public void testCreateUserService() {
 
-        /*
-         * Create Request DTO
-         */
         UserRequestDto requestDto =
                 new UserRequestDto();
 
@@ -148,21 +152,12 @@ public class UserServiceTest {
                 testAddress.getAddressId()
         );
 
-        /*
-         * Call service
-         */
         UserResponseDto responseDto =
                 userService.createUser(requestDto);
 
-        /*
-         * Store ID for cleanup
-         */
         testUserId =
                 responseDto.getUserId();
 
-        /*
-         * Assertions
-         */
         assertNotNull(
                 responseDto.getUserId()
         );
@@ -186,9 +181,6 @@ public class UserServiceTest {
     @DisplayName("Test Get User Service")
     public void testGetUserService() {
 
-        /*
-         * Create Request DTO
-         */
         UserRequestDto requestDto =
                 new UserRequestDto();
 
@@ -208,26 +200,17 @@ public class UserServiceTest {
                 testAddress.getAddressId()
         );
 
-        /*
-         * Create user
-         */
         UserResponseDto createdUser =
                 userService.createUser(requestDto);
 
         testUserId =
                 createdUser.getUserId();
 
-        /*
-         * Fetch user
-         */
         UserResponseDto fetchedUser =
                 userService.getUserById(
                         testUserId
                 );
 
-        /*
-         * Assertions
-         */
         assertEquals(
                 testUserId,
                 fetchedUser.getUserId()
@@ -247,9 +230,6 @@ public class UserServiceTest {
     @DisplayName("Test Update User Service")
     public void testUpdateUserService() {
 
-        /*
-         * Create user first
-         */
         UserRequestDto requestDto =
                 new UserRequestDto();
 
@@ -275,9 +255,6 @@ public class UserServiceTest {
         testUserId =
                 createdUser.getUserId();
 
-        /*
-         * Update DTO
-         */
         UserRequestDto updateDto =
                 new UserRequestDto();
 
@@ -295,18 +272,12 @@ public class UserServiceTest {
                 testAddress.getAddressId()
         );
 
-        /*
-         * Call update
-         */
         UserResponseDto updatedUser =
                 userService.updateUser(
                         testUserId,
                         updateDto
                 );
 
-        /*
-         * Assertions
-         */
         assertEquals(
                 "Updated Name",
                 updatedUser.getName()
@@ -331,9 +302,6 @@ public class UserServiceTest {
     @DisplayName("Test Delete User Service")
     public void testDeleteUserService() {
 
-        /*
-         * Create user
-         */
         UserRequestDto requestDto =
                 new UserRequestDto();
 
@@ -359,14 +327,8 @@ public class UserServiceTest {
         Integer userId =
                 createdUser.getUserId();
 
-        /*
-         * Delete user
-         */
         userService.deleteUser(userId);
 
-        /*
-         * Verify deletion
-         */
         boolean exists =
                 userRepository.existsById(userId);
 
@@ -374,6 +336,131 @@ public class UserServiceTest {
 
         System.out.println(
                 "DELETE USER SERVICE TEST PASSED"
+        );
+    }
+
+    /*
+     * ============================================================
+     * TEST USER NOT FOUND
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test User Not Found Exception")
+    public void testUserNotFound() {
+
+        Integer invalidUserId = 999999;
+
+        Exception exception = assertThrows(
+                RuntimeException.class,
+
+                () -> userService.getUserById(
+                        invalidUserId
+                )
+        );
+
+        assertTrue(
+                exception.getMessage()
+                        .contains("User not found")
+        );
+
+        System.out.println(
+                "USER NOT FOUND TEST PASSED"
+        );
+    }
+
+    /*
+     * ============================================================
+     * TEST DUPLICATE EMAIL
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Duplicate Email Exception")
+    public void testDuplicateEmail() {
+
+        UserRequestDto firstUser =
+                new UserRequestDto();
+
+        firstUser.setName("Varsha");
+
+        firstUser.setEmail(
+                "duplicate@test.com"
+        );
+
+        firstUser.setBalance(
+                new BigDecimal("5000")
+        );
+
+        firstUser.setAddressId(
+                testAddress.getAddressId()
+        );
+
+        UserResponseDto createdUser =
+                userService.createUser(firstUser);
+
+        testUserId =
+                createdUser.getUserId();
+
+        UserRequestDto secondUser =
+                new UserRequestDto();
+
+        secondUser.setName("Another User");
+
+        secondUser.setEmail(
+                "duplicate@test.com"
+        );
+
+        secondUser.setBalance(
+                new BigDecimal("7000")
+        );
+
+        secondUser.setAddressId(
+                testAddress.getAddressId()
+        );
+
+        Exception exception = assertThrows(
+                RuntimeException.class,
+
+                () -> userService.createUser(
+                        secondUser
+                )
+        );
+
+        assertTrue(
+                exception.getMessage()
+                        .contains("Email already exists")
+        );
+
+        System.out.println(
+                "DUPLICATE EMAIL TEST PASSED"
+        );
+    }
+
+    /*
+     * ============================================================
+     * TEST DELETE USER NOT FOUND
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Delete User Not Found")
+    public void testDeleteUserNotFound() {
+
+        Integer invalidUserId = 888888;
+
+        Exception exception = assertThrows(
+                RuntimeException.class,
+
+                () -> userService.deleteUser(
+                        invalidUserId
+                )
+        );
+
+        assertTrue(
+                exception.getMessage()
+                        .contains("User not found")
+        );
+
+        System.out.println(
+                "DELETE USER NOT FOUND TEST PASSED"
         );
     }
 }

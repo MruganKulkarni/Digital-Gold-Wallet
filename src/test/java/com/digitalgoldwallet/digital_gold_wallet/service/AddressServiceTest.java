@@ -18,6 +18,13 @@ import static org.junit.jupiter.api.Assertions.*;
  * ============================================================
  * Address Service Layer Testing
  * ============================================================
+ *
+ * Covers:
+ * - Positive Scenarios
+ * - Negative Scenarios
+ * - Exception Testing
+ * - CRUD Operations
+ * ============================================================
  */
 
 @SpringBootTest
@@ -48,6 +55,9 @@ public class AddressServiceTest {
     @AfterEach
     public void tearDown() {
 
+        /*
+         * Delete test address if exists
+         */
         if (testAddressId != null
                 && addressRepository.existsById(
                 testAddressId)) {
@@ -68,7 +78,7 @@ public class AddressServiceTest {
     public void testCreateAddressService() {
 
         /*
-         * Create Request DTO
+         * Create request DTO
          */
         AddressRequestDto requestDto =
                 new AddressRequestDto();
@@ -150,6 +160,9 @@ public class AddressServiceTest {
                         requestDto
                 );
 
+        /*
+         * Store ID for cleanup
+         */
         testAddressId =
                 createdAddress.getAddressId();
 
@@ -207,6 +220,9 @@ public class AddressServiceTest {
                         requestDto
                 );
 
+        /*
+         * Store ID for cleanup
+         */
         testAddressId =
                 createdAddress.getAddressId();
 
@@ -248,6 +264,99 @@ public class AddressServiceTest {
 
         System.out.println(
                 "UPDATE ADDRESS SERVICE TEST PASSED"
+        );
+    }
+
+    /*
+     * ============================================================
+     * TEST ADDRESS NOT FOUND
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Address Not Found Exception")
+    public void testAddressNotFound() {
+
+        /*
+         * Invalid address ID
+         */
+        Integer invalidAddressId = 999999;
+
+        /*
+         * Verify exception
+         */
+        Exception exception = assertThrows(
+                RuntimeException.class,
+
+                () -> addressService.getAddressById(
+                        invalidAddressId
+                )
+        );
+
+        /*
+         * Verify message
+         */
+        assertTrue(
+                exception.getMessage()
+                        .contains("Address not found")
+        );
+
+        System.out.println(
+                "ADDRESS NOT FOUND TEST PASSED"
+        );
+    }
+
+    /*
+     * ============================================================
+     * TEST UPDATE ADDRESS NOT FOUND
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Update Address Not Found")
+    public void testUpdateAddressNotFound() {
+
+        /*
+         * Invalid address ID
+         */
+        Integer invalidAddressId = 888888;
+
+        /*
+         * Create DTO
+         */
+        AddressRequestDto requestDto =
+                new AddressRequestDto();
+
+        requestDto.setStreet("Test");
+
+        requestDto.setCity("Test");
+
+        requestDto.setState("Test");
+
+        requestDto.setPostalCode("123456");
+
+        requestDto.setCountry("India");
+
+        /*
+         * Verify exception
+         */
+        Exception exception = assertThrows(
+                RuntimeException.class,
+
+                () -> addressService.updateAddress(
+                        invalidAddressId,
+                        requestDto
+                )
+        );
+
+        /*
+         * Verify message
+         */
+        assertTrue(
+                exception.getMessage()
+                        .contains("Address not found")
+        );
+
+        System.out.println(
+                "UPDATE ADDRESS NOT FOUND TEST PASSED"
         );
     }
 }
