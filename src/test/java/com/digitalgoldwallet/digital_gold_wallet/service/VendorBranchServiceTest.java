@@ -45,7 +45,7 @@ import static org.mockito.Mockito.when; // used to define mock behaviour
  * Creates a real VendorBranchServiceImpl and injects all @Mock fields into it
  */
 @ExtendWith(MockitoExtension.class) // enables Mockito annotations for JUnit 5
-public class VendorBranchServiceMockTest {
+public class VendorBranchServiceTest {
 
     @Mock // creates a mock VendorBranchRepository — no real DB calls
     private VendorBranchRepository vendorBranchRepository;
