@@ -11,11 +11,15 @@ import com.digitalgoldwallet.digital_gold_wallet.repository.UserRepository;
 import com.digitalgoldwallet.digital_gold_wallet.service.impl.WalletServiceImpl;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -26,9 +30,11 @@ import static org.mockito.Mockito.when;
 
 /*
  * ============================================================
- * WALLET SERVICE TEST
+ * WALLET SERVICE TEST USING MOCKITO
  * ============================================================
  */
+
+@ExtendWith(MockitoExtension.class)
 public class WalletServiceTest {
 
     @Mock
@@ -45,13 +51,13 @@ public class WalletServiceTest {
     @BeforeEach
     void setUp() {
 
-        MockitoAnnotations.openMocks(this);
-
         user = new User();
 
         user.setUserId(1);
 
-        user.setName("Tanmay");
+        user.setName(
+                "Tanmay"
+        );
 
         user.setBalance(
                 new BigDecimal("10000")
@@ -63,7 +69,9 @@ public class WalletServiceTest {
      * TEST GET WALLET BALANCE
      * ============================================================
      */
+
     @Test
+    @DisplayName("Test Get Wallet Balance")
     void testGetWalletBalance() {
 
         when(userRepository.findById(1))
@@ -78,6 +86,11 @@ public class WalletServiceTest {
                 new BigDecimal("10000"),
                 response.getBalance()
         );
+
+        assertEquals(
+                "Tanmay",
+                response.getUserName()
+        );
     }
 
     /*
@@ -85,7 +98,9 @@ public class WalletServiceTest {
      * TEST CREDIT WALLET
      * ============================================================
      */
+
     @Test
+    @DisplayName("Test Credit Wallet")
     void testCreditWallet() {
 
         WalletTransactionRequestDto request =
@@ -102,11 +117,14 @@ public class WalletServiceTest {
         when(userRepository.findById(1))
                 .thenReturn(Optional.of(user));
 
+        PaymentResponseDto paymentResponse =
+                new PaymentResponseDto();
+
+        paymentResponse.setPaymentId(1);
+
         when(paymentService.createPayment(
-                any()))
-                .thenReturn(
-                        new PaymentResponseDto()
-                );
+                any()
+        )).thenReturn(paymentResponse);
 
         PaymentResponseDto response =
                 walletService.creditWallet(
@@ -115,6 +133,16 @@ public class WalletServiceTest {
                 );
 
         assertNotNull(response);
+
+        assertEquals(
+                1,
+                response.getPaymentId()
+        );
+
+        assertEquals(
+                new BigDecimal("15000"),
+                user.getBalance()
+        );
     }
 
     /*
@@ -122,7 +150,9 @@ public class WalletServiceTest {
      * TEST DEBIT WALLET
      * ============================================================
      */
+
     @Test
+    @DisplayName("Test Debit Wallet")
     void testDebitWallet() {
 
         WalletTransactionRequestDto request =
@@ -139,11 +169,14 @@ public class WalletServiceTest {
         when(userRepository.findById(1))
                 .thenReturn(Optional.of(user));
 
+        PaymentResponseDto paymentResponse =
+                new PaymentResponseDto();
+
+        paymentResponse.setPaymentId(2);
+
         when(paymentService.createPayment(
-                any()))
-                .thenReturn(
-                        new PaymentResponseDto()
-                );
+                any()
+        )).thenReturn(paymentResponse);
 
         PaymentResponseDto response =
                 walletService.debitWallet(
@@ -152,5 +185,15 @@ public class WalletServiceTest {
                 );
 
         assertNotNull(response);
+
+        assertEquals(
+                2,
+                response.getPaymentId()
+        );
+
+        assertEquals(
+                new BigDecimal("9000"),
+                user.getBalance()
+        );
     }
 }

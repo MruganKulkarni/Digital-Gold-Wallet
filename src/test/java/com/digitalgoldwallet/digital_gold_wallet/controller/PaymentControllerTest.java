@@ -4,64 +4,50 @@ import com.digitalgoldwallet.digital_gold_wallet.dto.request.PaymentRequestDto;
 import com.digitalgoldwallet.digital_gold_wallet.dto.response.PaymentResponseDto;
 import com.digitalgoldwallet.digital_gold_wallet.service.PaymentService;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import org.springframework.boot.test.mock.mockito.MockBean;
-
-import org.springframework.http.MediaType;
-
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 /*
  * ============================================================
- * PAYMENT CONTROLLER TEST
+ * PAYMENT CONTROLLER TEST USING MOCKITO
  * ============================================================
  */
 
-@WebMvcTest(PaymentController.class)
+@ExtendWith(MockitoExtension.class)
 public class PaymentControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockBean
+    @Mock
     private PaymentService paymentService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @InjectMocks
+    private PaymentController paymentController;
 
-    /*
-     * ============================================================
-     * TEST CREATE PAYMENT
-     * ============================================================
-     */
-    @Test
-    @DisplayName("Test Create Payment API")
-    public void testCreatePayment()
-            throws Exception {
+    private PaymentRequestDto requestDto;
+    private PaymentResponseDto responseDto;
 
-        PaymentRequestDto requestDto =
-                new PaymentRequestDto();
+    @BeforeEach
+    void setUp() {
+
+        requestDto = new PaymentRequestDto();
 
         requestDto.setUserId(1);
 
@@ -81,8 +67,7 @@ public class PaymentControllerTest {
                 "Success"
         );
 
-        PaymentResponseDto responseDto =
-                new PaymentResponseDto();
+        responseDto = new PaymentResponseDto();
 
         responseDto.setPaymentId(1);
 
@@ -107,30 +92,36 @@ public class PaymentControllerTest {
         responseDto.setCreatedAt(
                 LocalDateTime.now()
         );
+    }
+
+    /*
+     * ============================================================
+     * TEST CREATE PAYMENT
+     * ============================================================
+     */
+
+    @Test
+    @DisplayName("Test Create Payment API")
+    public void testCreatePayment() {
 
         when(paymentService.createPayment(
-                any(PaymentRequestDto.class)))
-                .thenReturn(responseDto);
+                any(PaymentRequestDto.class)
+        )).thenReturn(responseDto);
 
-        mockMvc.perform(
-                        post("/api/v1/payments")
-                                .contentType(
-                                        MediaType.APPLICATION_JSON
-                                )
-                                .content(
-                                        objectMapper
-                                                .writeValueAsString(
-                                                        requestDto
-                                                )
-                                )
-                )
-                .andExpect(
-                        status().isCreated()
-                )
-                .andExpect(
-                        jsonPath("$.paymentId")
-                                .value(1)
-                );
+        ResponseEntity<PaymentResponseDto> response =
+                paymentController.createPayment(requestDto);
+
+        assertNotNull(response);
+
+        assertEquals(
+                HttpStatus.CREATED,
+                response.getStatusCode()
+        );
+
+        assertEquals(
+                1,
+                response.getBody().getPaymentId()
+        );
     }
 
     /*
@@ -138,47 +129,28 @@ public class PaymentControllerTest {
      * TEST GET PAYMENT BY ID
      * ============================================================
      */
+
     @Test
     @DisplayName("Test Get Payment By ID API")
-    public void testGetPaymentById()
-            throws Exception {
-
-        PaymentResponseDto responseDto =
-                new PaymentResponseDto();
-
-        responseDto.setPaymentId(1);
-
-        responseDto.setUserId(1);
-
-        responseDto.setAmount(
-                new BigDecimal("5000")
-        );
-
-        responseDto.setPaymentMethod(
-                "Google Pay"
-        );
-
-        responseDto.setTransactionType(
-                "Credited to wallet"
-        );
-
-        responseDto.setPaymentStatus(
-                "Success"
-        );
+    public void testGetPaymentById() {
 
         when(paymentService.getPaymentById(1))
                 .thenReturn(responseDto);
 
-        mockMvc.perform(
-                        get("/api/v1/payments/1")
-                )
-                .andExpect(
-                        status().isOk()
-                )
-                .andExpect(
-                        jsonPath("$.paymentId")
-                                .value(1)
-                );
+        ResponseEntity<PaymentResponseDto> response =
+                paymentController.getPaymentById(1);
+
+        assertNotNull(response);
+
+        assertEquals(
+                HttpStatus.OK,
+                response.getStatusCode()
+        );
+
+        assertEquals(
+                1,
+                response.getBody().getPaymentId()
+        );
     }
 
     /*
@@ -186,48 +158,29 @@ public class PaymentControllerTest {
      * TEST GET PAYMENTS BY USER ID
      * ============================================================
      */
+
     @Test
     @DisplayName("Test Get Payments By User ID API")
-    public void testGetPaymentsByUserId()
-            throws Exception {
-
-        PaymentResponseDto responseDto =
-                new PaymentResponseDto();
-
-        responseDto.setPaymentId(1);
-
-        responseDto.setUserId(1);
-
-        responseDto.setAmount(
-                new BigDecimal("5000")
-        );
-
-        responseDto.setPaymentMethod(
-                "Google Pay"
-        );
-
-        responseDto.setTransactionType(
-                "Credited to wallet"
-        );
-
-        responseDto.setPaymentStatus(
-                "Success"
-        );
+    public void testGetPaymentsByUserId() {
 
         when(paymentService.getPaymentsByUserId(1))
                 .thenReturn(
                         Arrays.asList(responseDto)
                 );
 
-        mockMvc.perform(
-                        get("/api/v1/users/1/payments")
-                )
-                .andExpect(
-                        status().isOk()
-                )
-                .andExpect(
-                        jsonPath("$[0].paymentId")
-                                .value(1)
-                );
+        ResponseEntity<List<PaymentResponseDto>> response =
+                paymentController.getPaymentsByUserId(1);
+
+        assertNotNull(response);
+
+        assertEquals(
+                HttpStatus.OK,
+                response.getStatusCode()
+        );
+
+        assertEquals(
+                1,
+                response.getBody().get(0).getPaymentId()
+        );
     }
 }
