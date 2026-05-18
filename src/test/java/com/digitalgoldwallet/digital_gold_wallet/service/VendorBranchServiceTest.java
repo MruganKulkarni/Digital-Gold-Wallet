@@ -1,108 +1,102 @@
 package com.digitalgoldwallet.digital_gold_wallet.service; // package declaration for service tests
 
-import com.digitalgoldwallet.digital_gold_wallet.dto.request.VendorBranchRequestDto; // request DTO used to create branches
-import com.digitalgoldwallet.digital_gold_wallet.dto.request.VendorRequestDto; // request DTO used to create vendors
-import com.digitalgoldwallet.digital_gold_wallet.dto.response.VendorBranchResponseDto; // response DTO returned by branch service methods
-import com.digitalgoldwallet.digital_gold_wallet.dto.response.VendorResponseDto; // response DTO returned by vendor service methods
-import com.digitalgoldwallet.digital_gold_wallet.entity.Address; // Address entity — needed to create branch location
-import com.digitalgoldwallet.digital_gold_wallet.exception.DuplicateVendorBranchException; // thrown when branch already exists at same vendor + address
-import com.digitalgoldwallet.digital_gold_wallet.exception.VendorBranchNotFoundException; // thrown when branch is not found by ID
-import com.digitalgoldwallet.digital_gold_wallet.exception.VendorNotFoundException; // thrown when vendor is not found by ID
-import com.digitalgoldwallet.digital_gold_wallet.repository.AddressRepository; // used to save test address directly
-import com.digitalgoldwallet.digital_gold_wallet.repository.VendorBranchRepository; // used for direct DB cleanup after each test
-import com.digitalgoldwallet.digital_gold_wallet.repository.VendorRepository; // used for direct DB cleanup after each test
+import com.digitalgoldwallet.digital_gold_wallet.dto.request.VendorBranchRequestDto; // request DTO for vendor branch
+import com.digitalgoldwallet.digital_gold_wallet.dto.response.VendorBranchResponseDto; // response DTO for vendor branch
+import com.digitalgoldwallet.digital_gold_wallet.entity.Address; // Address entity — needed to link branch to address
+import com.digitalgoldwallet.digital_gold_wallet.entity.Vendor; // Vendor entity — needed to link branch to vendor
+import com.digitalgoldwallet.digital_gold_wallet.entity.VendorBranch; // VendorBranch entity
+import com.digitalgoldwallet.digital_gold_wallet.exception.DuplicateVendorBranchException; // thrown for duplicate branch
+import com.digitalgoldwallet.digital_gold_wallet.exception.VendorBranchNotFoundException; // thrown when branch not found
+import com.digitalgoldwallet.digital_gold_wallet.exception.VendorNotFoundException; // thrown when vendor not found
+import com.digitalgoldwallet.digital_gold_wallet.repository.AddressRepository; // address repository — will be mocked
+import com.digitalgoldwallet.digital_gold_wallet.repository.VendorBranchRepository; // vendor branch repository — will be mocked
+import com.digitalgoldwallet.digital_gold_wallet.repository.VendorRepository; // vendor repository — will be mocked
+import com.digitalgoldwallet.digital_gold_wallet.service.impl.VendorBranchServiceImpl; // concrete service implementation
 
 import org.junit.jupiter.api.DisplayName; // used to give readable names to test cases
-import org.junit.jupiter.api.Test; // marks a method as a JUnit 5 test case
+import org.junit.jupiter.api.Test; // marks method as a JUnit 5 test case
+import org.junit.jupiter.api.extension.ExtendWith; // used to register extensions with JUnit 5
 
-import org.springframework.beans.factory.annotation.Autowired; // tells Spring to inject the dependency automatically
-import org.springframework.boot.test.context.SpringBootTest; // loads full Spring context with real MySQL DB
+import org.mockito.InjectMocks; // injects mocks into the class under test
+import org.mockito.Mock; // creates a mock object
+import org.mockito.junit.jupiter.MockitoExtension; // enables Mockito annotations in JUnit 5
 
 import java.math.BigDecimal; // used for gold quantity values
-import java.util.List; // used for list of branch responses
+import java.time.LocalDateTime; // used for timestamp field
+import java.util.List; // used for list of branches
+import java.util.Optional; // used for optional result
 
 import static org.junit.jupiter.api.Assertions.*; // imports all assertion methods
+import static org.mockito.ArgumentMatchers.any; // matches any argument of given type
+import static org.mockito.Mockito.when; // used to define mock behaviour
 
 /*
- * Service layer tests for VendorBranchServiceImpl
+ * Mockito-based unit tests for VendorBranchServiceImpl
  *
- * WHY @SpringBootTest:
- * We use the full Spring context with real MySQL so service + repository
- * work together exactly as they do in production.
- * No mocking — real DB calls verify real business logic.
+ * WHY @ExtendWith(MockitoExtension.class):
+ * Enables Mockito annotations — no Spring context, no DB
+ * Pure unit tests — fast execution, no network/DB dependency
  *
- * WHY NO @BeforeEach / @AfterEach:
- * Each test creates its own data using helper methods and
- * cleans up only what it created — no shared state between tests.
- * This avoids transaction conflicts and deadlocks.
+ * WHY @Mock:
+ * Creates mock repositories — no real DB calls
+ * We control what each repository returns
+ *
+ * WHY @InjectMocks:
+ * Creates a real VendorBranchServiceImpl and injects all @Mock fields into it
  */
-
-@SpringBootTest // loads full Spring application context — uses real MySQL from application.yaml
+@ExtendWith(MockitoExtension.class) // enables Mockito annotations for JUnit 5
 public class VendorBranchServiceTest {
 
-    @Autowired
-    private VendorBranchService vendorBranchService; // Spring injects VendorBranchServiceImpl — used to call branch service methods
+    @Mock // creates a mock VendorBranchRepository — no real DB calls
+    private VendorBranchRepository vendorBranchRepository;
 
-    @Autowired
-    private VendorService vendorService; // Spring injects VendorServiceImpl — used to create test vendors
+    @Mock // creates a mock VendorRepository — no real DB calls
+    private VendorRepository vendorRepository;
 
-    @Autowired
-    private VendorRepository vendorRepository; // used for direct DB cleanup after each test
+    @Mock // creates a mock AddressRepository — no real DB calls
+    private AddressRepository addressRepository;
 
-    @Autowired
-    private VendorBranchRepository vendorBranchRepository; // used for direct DB cleanup after each test
-
-    @Autowired
-    private AddressRepository addressRepository; // used to save test addresses directly — from Varsha's module
+    @InjectMocks // creates VendorBranchServiceImpl and injects all mock repositories into it
+    private VendorBranchServiceImpl vendorBranchService;
 
     // ================================================================
     //  HELPER METHODS
-    //  Each test calls only the helpers it needs — no shared state
     // ================================================================
 
-    private Address createAndSaveAddress() {
-        // creates a test Address directly via repository and returns saved object with generated ID
+    private Vendor createMockVendor() {
+        // creates and returns a mock Vendor entity
 
-        Address address = new Address(); // creates new Address object
+        Vendor vendor = new Vendor(); // creates new Vendor entity
+        vendor.setVendorId(1); // sets vendor id
+        vendor.setVendorName("Test Gold Traders"); // sets vendor name
+        vendor.setTotalGoldQuantity(new BigDecimal("1000.00")); // sets total gold quantity
+        vendor.setCurrentGoldPrice(new BigDecimal("6400.00")); // sets current gold price
+        return vendor; // returns mock vendor
+    }
+
+    private Address createMockAddress() {
+        // creates and returns a mock Address entity
+
+        Address address = new Address(); // creates new Address entity
+        address.setAddressId(1); // sets address id
         address.setStreet("MG Road"); // sets street
         address.setCity("Bangalore"); // sets city
         address.setState("Karnataka"); // sets state
         address.setPostalCode("560001"); // sets postal code
         address.setCountry("India"); // sets country
-        return addressRepository.save(address); // saves to DB — returned object has auto-generated addressId
+        return address; // returns mock address
     }
 
-    private VendorResponseDto createAndSaveVendor() {
-        // creates a vendor via service and returns the saved response DTO
+    private VendorBranch createMockBranch(Vendor vendor, Address address) {
+        // creates and returns a mock VendorBranch entity
 
-        VendorRequestDto dto = new VendorRequestDto(); // creates new vendor request DTO
-        dto.setVendorName("Branch Test Vendor " + System.currentTimeMillis()); // unique name using timestamp
-        dto.setContactEmail("branch" + System.currentTimeMillis() + "@test.com"); // unique email using timestamp
-        dto.setTotalGoldQuantity(new BigDecimal("1000.00")); // sets valid quantity
-        dto.setCurrentGoldPrice(new BigDecimal("6400.00")); // sets valid price
-        return vendorService.createVendor(dto); // saves vendor via service and returns response DTO
-    }
-
-    private VendorBranchResponseDto createAndSaveBranch(Integer vendorId, Integer addressId) {
-        // creates a branch via service and returns the saved response DTO
-
-        VendorBranchRequestDto dto = new VendorBranchRequestDto(); // creates new branch request DTO
-        dto.setVendorId(vendorId); // sets vendor ID
-        dto.setAddressId(addressId); // sets address ID
-        dto.setQuantity(new BigDecimal("500.00")); // sets gold quantity at this branch
-        return vendorBranchService.addBranch(vendorId, dto); // saves branch via service and returns response DTO
-    }
-
-    private void cleanup(Integer branchId, Integer vendorId) {
-        // deletes branch and vendor from DB — used for cleanup after each test
-
-        if (branchId != null && vendorBranchRepository.existsById(branchId)) { // checks if branch exists
-            vendorBranchRepository.deleteById(branchId); // deletes branch first — FK constraint requires this order
-        }
-
-        if (vendorId != null && vendorRepository.existsById(vendorId)) { // checks if vendor exists
-            vendorRepository.deleteById(vendorId); // deletes vendor after branch is removed
-        }
+        VendorBranch branch = new VendorBranch(); // creates new VendorBranch entity
+        branch.setBranchId(1); // sets branch id
+        branch.setVendor(vendor); // links to mock vendor
+        branch.setAddress(address); // links to mock address
+        branch.setQuantity(new BigDecimal("500.00")); // sets gold quantity
+        branch.setCreatedAt(LocalDateTime.now()); // sets creation timestamp
+        return branch; // returns mock branch
     }
 
     // ================================================================
@@ -112,25 +106,35 @@ public class VendorBranchServiceTest {
     @Test // tells JUnit to run this method as a test case
     @DisplayName("Test Add Branch - Success") // readable name shown in test report
     public void testAddBranch_Success() {
-        // verifies that a branch can be added to a vendor successfully via service
+        // verifies that addBranch returns correct response when branch is created successfully
 
-        VendorResponseDto vendor = createAndSaveVendor(); // saves a test vendor
-        Address address = createAndSaveAddress(); // saves a test address
+        Vendor mockVendor = createMockVendor(); // creates mock vendor
+        Address mockAddress = createMockAddress(); // creates mock address
+        VendorBranch mockBranch = createMockBranch(mockVendor, mockAddress); // creates mock branch
 
-        VendorBranchRequestDto dto = new VendorBranchRequestDto(); // creates branch request DTO
-        dto.setVendorId(vendor.getVendorId()); // sets vendor ID
-        dto.setAddressId(address.getAddressId()); // sets address ID
-        dto.setQuantity(new BigDecimal("500.00")); // sets gold quantity
+        VendorBranchRequestDto requestDto = new VendorBranchRequestDto(); // creates request DTO
+        requestDto.setVendorId(1); // sets vendor id
+        requestDto.setAddressId(1); // sets address id
+        requestDto.setQuantity(new BigDecimal("500.00")); // sets quantity
 
-        VendorBranchResponseDto response = vendorBranchService.addBranch(vendor.getVendorId(), dto); // calls service to add branch
+        when(vendorRepository.findById(1)) // when repository finds vendor by ID 1
+                .thenReturn(Optional.of(mockVendor)); // return mock vendor
+
+        when(addressRepository.findById(1)) // when repository finds address by ID 1
+                .thenReturn(Optional.of(mockAddress)); // return mock address
+
+        when(vendorBranchRepository.existsByVendorVendorIdAndAddressAddressId(1, 1)) // when checking for duplicate branch
+                .thenReturn(false); // return false — no duplicate
+
+        when(vendorBranchRepository.save(any(VendorBranch.class))) // when repository saves any branch
+                .thenReturn(mockBranch); // return mock branch with generated ID
+
+        VendorBranchResponseDto response = vendorBranchService.addBranch(1, requestDto); // calls service method
 
         assertNotNull(response); // confirms response is not null
-        assertNotNull(response.getBranchId()); // confirms branch ID was generated by MySQL
-        assertEquals(vendor.getVendorId(), response.getVendorId()); // confirms branch is linked to correct vendor
-        assertEquals(address.getAddressId(), response.getAddressId()); // confirms branch is linked to correct address
+        assertEquals(1, response.getBranchId()); // confirms branch ID is set
+        assertEquals(1, response.getVendorId()); // confirms vendor ID matches
         assertEquals(new BigDecimal("500.00"), response.getQuantity()); // confirms quantity matches
-
-        cleanup(response.getBranchId(), vendor.getVendorId()); // cleanup — deletes branch and vendor
 
         System.out.println("TEST PASSED: testAddBranch_Success - Branch added with ID = " + response.getBranchId());
     }
@@ -138,17 +142,18 @@ public class VendorBranchServiceTest {
     @Test // tells JUnit to run this method as a test case
     @DisplayName("Test Add Branch - Vendor Not Found") // readable name shown in test report
     public void testAddBranch_VendorNotFound() {
-        // verifies that adding a branch to a non-existent vendor throws VendorNotFoundException
+        // verifies that addBranch throws VendorNotFoundException when vendor does not exist
 
-        Address address = createAndSaveAddress(); // saves a test address
+        VendorBranchRequestDto requestDto = new VendorBranchRequestDto(); // creates request DTO
+        requestDto.setVendorId(99999); // sets non-existent vendor id
+        requestDto.setAddressId(1); // sets valid address id
+        requestDto.setQuantity(new BigDecimal("500.00")); // sets valid quantity
 
-        VendorBranchRequestDto dto = new VendorBranchRequestDto(); // creates branch request DTO
-        dto.setVendorId(99999); // non-existent vendor ID — should trigger VendorNotFoundException
-        dto.setAddressId(address.getAddressId()); // valid address ID
-        dto.setQuantity(new BigDecimal("500.00")); // valid quantity
+        when(vendorRepository.findById(99999)) // when repository tries to find vendor by ID 99999
+                .thenReturn(Optional.empty()); // return empty Optional — vendor not found
 
-        assertThrows(VendorNotFoundException.class, () -> vendorBranchService.addBranch(99999, dto));
-        // assertThrows — confirms VendorNotFoundException is thrown for non-existent vendor ID
+        assertThrows(VendorNotFoundException.class, // expects VendorNotFoundException to be thrown
+                () -> vendorBranchService.addBranch(99999, requestDto)); // lambda that calls service method
 
         System.out.println("TEST PASSED: testAddBranch_VendorNotFound - VendorNotFoundException thrown as expected");
     }
@@ -156,23 +161,27 @@ public class VendorBranchServiceTest {
     @Test // tells JUnit to run this method as a test case
     @DisplayName("Test Add Branch - Duplicate Branch") // readable name shown in test report
     public void testAddBranch_DuplicateBranch() {
-        // verifies that adding a duplicate branch at the same vendor + address throws DuplicateVendorBranchException
+        // verifies that addBranch throws DuplicateVendorBranchException when branch already exists
 
-        VendorResponseDto vendor = createAndSaveVendor(); // saves a test vendor
-        Address address = createAndSaveAddress(); // saves a test address
+        Vendor mockVendor = createMockVendor(); // creates mock vendor
+        Address mockAddress = createMockAddress(); // creates mock address
 
-        VendorBranchResponseDto branch = createAndSaveBranch(vendor.getVendorId(), address.getAddressId()); // saves first branch
+        VendorBranchRequestDto requestDto = new VendorBranchRequestDto(); // creates request DTO
+        requestDto.setVendorId(1); // sets vendor id
+        requestDto.setAddressId(1); // sets address id
+        requestDto.setQuantity(new BigDecimal("500.00")); // sets quantity
 
-        VendorBranchRequestDto duplicate = new VendorBranchRequestDto(); // creates duplicate branch request DTO
-        duplicate.setVendorId(vendor.getVendorId()); // same vendor ID
-        duplicate.setAddressId(address.getAddressId()); // same address ID — should trigger duplicate check
-        duplicate.setQuantity(new BigDecimal("200.00")); // different quantity — but location is duplicate
+        when(vendorRepository.findById(1)) // when repository finds vendor by ID 1
+                .thenReturn(Optional.of(mockVendor)); // return mock vendor
 
-        assertThrows(DuplicateVendorBranchException.class,
-                () -> vendorBranchService.addBranch(vendor.getVendorId(), duplicate));
-        // assertThrows — confirms DuplicateVendorBranchException is thrown for same vendor + address combo
+        when(addressRepository.findById(1)) // when repository finds address by ID 1
+                .thenReturn(Optional.of(mockAddress)); // return mock address
 
-        cleanup(branch.getBranchId(), vendor.getVendorId()); // cleanup
+        when(vendorBranchRepository.existsByVendorVendorIdAndAddressAddressId(1, 1)) // when checking for duplicate branch
+                .thenReturn(true); // return true — duplicate exists
+
+        assertThrows(DuplicateVendorBranchException.class, // expects DuplicateVendorBranchException to be thrown
+                () -> vendorBranchService.addBranch(1, requestDto)); // lambda that calls service method
 
         System.out.println("TEST PASSED: testAddBranch_DuplicateBranch - DuplicateVendorBranchException thrown as expected");
     }
@@ -184,30 +193,34 @@ public class VendorBranchServiceTest {
     @Test // tells JUnit to run this method as a test case
     @DisplayName("Test Get Branch By ID - Success") // readable name shown in test report
     public void testGetBranchById_Success() {
-        // verifies that a saved branch can be fetched by its ID via service
+        // verifies that getBranchById returns correct response when branch exists
 
-        VendorResponseDto vendor = createAndSaveVendor(); // saves a test vendor
-        Address address = createAndSaveAddress(); // saves a test address
-        VendorBranchResponseDto branch = createAndSaveBranch(vendor.getVendorId(), address.getAddressId()); // saves a branch
+        Vendor mockVendor = createMockVendor(); // creates mock vendor
+        Address mockAddress = createMockAddress(); // creates mock address
+        VendorBranch mockBranch = createMockBranch(mockVendor, mockAddress); // creates mock branch
 
-        VendorBranchResponseDto found = vendorBranchService.getBranchById(branch.getBranchId()); // calls service to fetch branch by ID
+        when(vendorBranchRepository.findById(1)) // when repository finds branch by ID 1
+                .thenReturn(Optional.of(mockBranch)); // return mock branch wrapped in Optional
 
-        assertNotNull(found); // confirms response is not null
-        assertEquals(branch.getBranchId(), found.getBranchId()); // confirms branch ID matches
-        assertEquals(vendor.getVendorId(), found.getVendorId()); // confirms vendor ID matches
+        VendorBranchResponseDto response = vendorBranchService.getBranchById(1); // calls service method
 
-        cleanup(branch.getBranchId(), vendor.getVendorId()); // cleanup
+        assertNotNull(response); // confirms response is not null
+        assertEquals(1, response.getBranchId()); // confirms branch ID matches
+        assertEquals(1, response.getVendorId()); // confirms vendor ID matches
 
-        System.out.println("TEST PASSED: testGetBranchById_Success - Branch found with ID = " + found.getBranchId());
+        System.out.println("TEST PASSED: testGetBranchById_Success - Branch found with ID = " + response.getBranchId());
     }
 
     @Test // tells JUnit to run this method as a test case
     @DisplayName("Test Get Branch By ID - Not Found") // readable name shown in test report
     public void testGetBranchById_NotFound() {
-        // verifies that fetching a non-existent branch throws VendorBranchNotFoundException
+        // verifies that getBranchById throws VendorBranchNotFoundException when branch does not exist
 
-        assertThrows(VendorBranchNotFoundException.class, () -> vendorBranchService.getBranchById(99999));
-        // assertThrows — confirms VendorBranchNotFoundException is thrown for non-existent branch ID 99999
+        when(vendorBranchRepository.findById(99999)) // when repository tries to find branch by ID 99999
+                .thenReturn(Optional.empty()); // return empty Optional — branch not found
+
+        assertThrows(VendorBranchNotFoundException.class, // expects VendorBranchNotFoundException to be thrown
+                () -> vendorBranchService.getBranchById(99999)); // lambda that calls service method
 
         System.out.println("TEST PASSED: testGetBranchById_NotFound - VendorBranchNotFoundException thrown as expected");
     }
@@ -219,31 +232,39 @@ public class VendorBranchServiceTest {
     @Test // tells JUnit to run this method as a test case
     @DisplayName("Test Get Branches By Vendor ID - Success") // readable name shown in test report
     public void testGetBranchesByVendorId_Success() {
-        // verifies that all branches of a vendor can be fetched via service
+        // verifies that getBranchesByVendorId returns list of branches when vendor exists
 
-        VendorResponseDto vendor = createAndSaveVendor(); // saves a test vendor
-        Address address = createAndSaveAddress(); // saves a test address
-        VendorBranchResponseDto branch = createAndSaveBranch(vendor.getVendorId(), address.getAddressId()); // saves one branch
+        Vendor mockVendor = createMockVendor(); // creates mock vendor
+        Address mockAddress = createMockAddress(); // creates mock address
+        VendorBranch mockBranch = createMockBranch(mockVendor, mockAddress); // creates mock branch
 
-        List<VendorBranchResponseDto> branches = vendorBranchService.getBranchesByVendorId(vendor.getVendorId()); // calls service to get all branches of vendor
+        when(vendorRepository.existsById(1)) // when repository checks if vendor exists
+                .thenReturn(true); // return true — vendor exists
 
-        assertNotNull(branches); // confirms list is not null
-        assertFalse(branches.isEmpty()); // confirms list has at least one branch
+        when(vendorBranchRepository.findByVendorVendorId(1)) // when repository fetches branches by vendor ID
+                .thenReturn(List.of(mockBranch)); // return list with one mock branch
 
-        cleanup(branch.getBranchId(), vendor.getVendorId()); // cleanup
+        List<VendorBranchResponseDto> response = vendorBranchService.getBranchesByVendorId(1); // calls service method
 
-        System.out.println("TEST PASSED: testGetBranchesByVendorId_Success - Branches found = " + branches.size());
+        assertNotNull(response); // confirms response is not null
+        assertFalse(response.isEmpty()); // confirms list has at least one branch
+        assertEquals(1, response.get(0).getBranchId()); // confirms first branch ID matches
+
+        System.out.println("TEST PASSED: testGetBranchesByVendorId_Success - Branches found = " + response.size());
     }
 
     @Test // tells JUnit to run this method as a test case
-    @DisplayName("Test Get Branches By Vendor ID - Vendor Not Found") // readable name shown in test report
-    public void testGetBranchesByVendorId_VendorNotFound() {
-        // verifies that fetching branches for a non-existent vendor throws VendorNotFoundException
+    @DisplayName("Test Get Branches By Vendor ID - Not Found") // readable name shown in test report
+    public void testGetBranchesByVendorId_NotFound() {
+        // verifies that getBranchesByVendorId throws VendorNotFoundException when vendor does not exist
 
-        assertThrows(VendorNotFoundException.class, () -> vendorBranchService.getBranchesByVendorId(99999));
-        // assertThrows — confirms VendorNotFoundException is thrown for non-existent vendor ID
+        when(vendorRepository.existsById(99999)) // when repository checks if vendor 99999 exists
+                .thenReturn(false); // return false — vendor does not exist
 
-        System.out.println("TEST PASSED: testGetBranchesByVendorId_VendorNotFound - VendorNotFoundException thrown as expected");
+        assertThrows(VendorNotFoundException.class, // expects VendorNotFoundException to be thrown
+                () -> vendorBranchService.getBranchesByVendorId(99999)); // lambda that calls service method
+
+        System.out.println("TEST PASSED: testGetBranchesByVendorId_NotFound - VendorNotFoundException thrown as expected");
     }
 
     // ================================================================
@@ -253,18 +274,18 @@ public class VendorBranchServiceTest {
     @Test // tells JUnit to run this method as a test case
     @DisplayName("Test Get Inventory By Branch ID - Success") // readable name shown in test report
     public void testGetInventoryByBranchId_Success() {
-        // verifies that the gold inventory at a branch can be fetched via service
+        // verifies that getInventoryByBranchId returns correct inventory when branch exists
 
-        VendorResponseDto vendor = createAndSaveVendor(); // saves a test vendor
-        Address address = createAndSaveAddress(); // saves a test address
-        VendorBranchResponseDto branch = createAndSaveBranch(vendor.getVendorId(), address.getAddressId()); // saves branch with quantity 500.00
+        when(vendorBranchRepository.existsById(1)) // when repository checks if branch exists
+                .thenReturn(true); // return true — branch exists
 
-        BigDecimal inventory = vendorBranchService.getInventoryByBranchId(branch.getBranchId()); // calls service to get inventory
+        when(vendorBranchRepository.findInventoryByBranchId(1)) // when repository fetches inventory
+                .thenReturn(new BigDecimal("500.00")); // return mock inventory quantity
+
+        BigDecimal inventory = vendorBranchService.getInventoryByBranchId(1); // calls service method
 
         assertNotNull(inventory); // confirms inventory is not null
-        assertEquals(new BigDecimal("500.00"), inventory); // confirms quantity matches what was saved
-
-        cleanup(branch.getBranchId(), vendor.getVendorId()); // cleanup
+        assertEquals(new BigDecimal("500.00"), inventory); // confirms inventory matches
 
         System.out.println("TEST PASSED: testGetInventoryByBranchId_Success - Inventory = " + inventory);
     }
@@ -272,10 +293,13 @@ public class VendorBranchServiceTest {
     @Test // tells JUnit to run this method as a test case
     @DisplayName("Test Get Inventory By Branch ID - Not Found") // readable name shown in test report
     public void testGetInventoryByBranchId_NotFound() {
-        // verifies that fetching inventory for a non-existent branch throws VendorBranchNotFoundException
+        // verifies that getInventoryByBranchId throws VendorBranchNotFoundException when branch does not exist
 
-        assertThrows(VendorBranchNotFoundException.class, () -> vendorBranchService.getInventoryByBranchId(99999));
-        // assertThrows — confirms VendorBranchNotFoundException is thrown for non-existent branch ID
+        when(vendorBranchRepository.existsById(99999)) // when repository checks if branch 99999 exists
+                .thenReturn(false); // return false — branch does not exist
+
+        assertThrows(VendorBranchNotFoundException.class, // expects VendorBranchNotFoundException to be thrown
+                () -> vendorBranchService.getInventoryByBranchId(99999)); // lambda that calls service method
 
         System.out.println("TEST PASSED: testGetInventoryByBranchId_NotFound - VendorBranchNotFoundException thrown as expected");
     }

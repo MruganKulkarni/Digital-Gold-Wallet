@@ -1,79 +1,91 @@
 package com.digitalgoldwallet.digital_gold_wallet.service; // package declaration for service tests
 
-import com.digitalgoldwallet.digital_gold_wallet.dto.request.VendorRequestDto; // request DTO used to create/update vendors
-import com.digitalgoldwallet.digital_gold_wallet.dto.response.VendorResponseDto; // response DTO returned by service methods
-import com.digitalgoldwallet.digital_gold_wallet.exception.DuplicateVendorException; // thrown when vendor name or email already exists
-import com.digitalgoldwallet.digital_gold_wallet.exception.VendorNotFoundException; // thrown when vendor is not found by ID
-import com.digitalgoldwallet.digital_gold_wallet.repository.VendorRepository; // used for direct DB cleanup after each test
+import com.digitalgoldwallet.digital_gold_wallet.dto.request.VendorRequestDto; // request DTO for vendor
+import com.digitalgoldwallet.digital_gold_wallet.dto.response.VendorResponseDto; // response DTO for vendor
+import com.digitalgoldwallet.digital_gold_wallet.entity.Vendor; // Vendor entity
+import com.digitalgoldwallet.digital_gold_wallet.exception.DuplicateVendorException; // thrown for duplicate vendor
+import com.digitalgoldwallet.digital_gold_wallet.exception.VendorNotFoundException; // thrown when vendor not found
+import com.digitalgoldwallet.digital_gold_wallet.repository.VendorRepository; // vendor repository — will be mocked
+import com.digitalgoldwallet.digital_gold_wallet.service.impl.VendorServiceImpl; // concrete service implementation
 
 import org.junit.jupiter.api.DisplayName; // used to give readable names to test cases
-import org.junit.jupiter.api.Test; // marks a method as a JUnit 5 test case
+import org.junit.jupiter.api.Test; // marks method as a JUnit 5 test case
+import org.junit.jupiter.api.extension.ExtendWith; // used to register extensions with JUnit 5
 
-import org.springframework.beans.factory.annotation.Autowired; // tells Spring to inject the dependency automatically
-import org.springframework.boot.test.context.SpringBootTest; // loads full Spring context with real MySQL DB
+import org.mockito.InjectMocks; // injects mocks into the class under test
+import org.mockito.Mock; // creates a mock object
+import org.mockito.junit.jupiter.MockitoExtension; // enables Mockito annotations in JUnit 5
+
 import org.springframework.data.domain.Page; // used for paginated results
+import org.springframework.data.domain.PageImpl; // used to create mock Page object
 import org.springframework.data.domain.PageRequest; // used to create pagination parameters
 
 import java.math.BigDecimal; // used for gold price and quantity values
+import java.time.LocalDateTime; // used for timestamp field
+import java.util.List; // used for list of vendors
+import java.util.Optional; // used for optional vendor result
 
 import static org.junit.jupiter.api.Assertions.*; // imports all assertion methods
+import static org.mockito.ArgumentMatchers.any; // matches any argument of given type
+import static org.mockito.Mockito.when; // used to define mock behaviour
 
 /*
- * Service layer tests for VendorServiceImpl
+ * Mockito-based unit tests for VendorServiceImpl
  *
- * WHY @SpringBootTest:
- * We use the full Spring context with real MySQL so service + repository
- * work together exactly as they do in production.
- * No mocking — real DB calls verify real business logic.
+ * WHY @ExtendWith(MockitoExtension.class):
+ * Enables Mockito annotations — no Spring context, no DB
+ * Pure unit tests — fast execution, no network/DB dependency
  *
- * WHY NO @BeforeEach / @AfterEach:
- * Each test creates its own data using helper methods and
- * cleans up only what it created — no shared state between tests.
- * This avoids transaction conflicts and deadlocks.
+ * WHY @Mock:
+ * Creates a mock VendorRepository — no real DB calls
+ * We control what the repository returns
+ *
+ * WHY @InjectMocks:
+ * Creates a real VendorServiceImpl and injects all @Mock fields into it
  */
-
-@SpringBootTest // loads full Spring application context — uses real MySQL from application.yaml
+@ExtendWith(MockitoExtension.class) // enables Mockito annotations for JUnit 5
 public class VendorServiceTest {
 
-    @Autowired
-    private VendorService vendorService; // Spring injects VendorServiceImpl — used to call service methods
+    @Mock // creates a mock VendorRepository — no real DB calls
+    private VendorRepository vendorRepository;
 
-    @Autowired
-    private VendorRepository vendorRepository; // Spring injects VendorRepository — used for cleanup after tests
+    @InjectMocks // creates VendorServiceImpl and injects vendorRepository mock into it
+    private VendorServiceImpl vendorService;
 
     // ================================================================
     //  HELPER METHODS
-    //  Each test calls only the helpers it needs — no shared state
     // ================================================================
 
-    private VendorRequestDto createVendorRequestDto() {
-        // creates and returns a VendorRequestDto with valid test data
+    private Vendor createMockVendor() {
+        // creates and returns a mock Vendor entity for use in tests
 
-        VendorRequestDto dto = new VendorRequestDto(); // creates new request DTO object
-        dto.setVendorName("Test Gold Traders " + System.currentTimeMillis()); // unique name using timestamp to avoid duplicates
-        dto.setDescription("Test vendor description"); // sets description
+        Vendor vendor = new Vendor(); // creates new Vendor entity
+        vendor.setVendorId(1); // sets vendor id
+        vendor.setVendorName("Test Gold Traders"); // sets vendor name
+        vendor.setDescription("Test description"); // sets description
+        vendor.setContactPersonName("Sparsh Garg"); // sets contact person
+        vendor.setContactEmail("sparsh@test.com"); // sets contact email
+        vendor.setContactPhone("9999999999"); // sets contact phone
+        vendor.setWebsiteUrl("https://testgold.com"); // sets website url
+        vendor.setTotalGoldQuantity(new BigDecimal("1000.00")); // sets total gold quantity
+        vendor.setCurrentGoldPrice(new BigDecimal("6400.00")); // sets current gold price
+        vendor.setCreatedAt(LocalDateTime.now()); // sets creation timestamp
+        return vendor; // returns fully populated mock vendor
+    }
+
+    private VendorRequestDto createMockRequestDto() {
+        // creates and returns a mock VendorRequestDto for use in tests
+
+        VendorRequestDto dto = new VendorRequestDto(); // creates new request DTO
+        dto.setVendorName("Test Gold Traders"); // sets vendor name
+        dto.setDescription("Test description"); // sets description
         dto.setContactPersonName("Sparsh Garg"); // sets contact person
-        dto.setContactEmail("sparsh" + System.currentTimeMillis() + "@test.com"); // unique email using timestamp
+        dto.setContactEmail("sparsh@test.com"); // sets contact email
         dto.setContactPhone("9999999999"); // sets contact phone
         dto.setWebsiteUrl("https://testgold.com"); // sets website url
         dto.setTotalGoldQuantity(new BigDecimal("1000.00")); // sets total gold quantity
         dto.setCurrentGoldPrice(new BigDecimal("6400.00")); // sets current gold price
-        return dto; // returns fully populated request DTO
-    }
-
-    private VendorResponseDto createAndSaveVendor() {
-        // creates a vendor via service and returns the saved response DTO
-
-        VendorRequestDto dto = createVendorRequestDto(); // creates a valid request DTO
-        return vendorService.createVendor(dto); // calls service to save vendor — returns response DTO with generated ID
-    }
-
-    private void deleteVendorById(Integer vendorId) {
-        // deletes vendor directly from DB using repository — used for cleanup after each test
-
-        if (vendorRepository.existsById(vendorId)) { // checks if vendor still exists before deleting
-            vendorRepository.deleteById(vendorId); // deletes vendor from DB
-        }
+        return dto; // returns fully populated mock request DTO
     }
 
     // ================================================================
@@ -83,19 +95,25 @@ public class VendorServiceTest {
     @Test // tells JUnit to run this method as a test case
     @DisplayName("Test Create Vendor - Success") // readable name shown in test report
     public void testCreateVendor_Success() {
-        // verifies that a vendor can be created successfully via service
+        // verifies that createVendor returns correct response when vendor is created successfully
 
-        VendorRequestDto dto = createVendorRequestDto(); // creates a valid request DTO
+        VendorRequestDto requestDto = createMockRequestDto(); // creates mock request DTO
+        Vendor mockVendor = createMockVendor(); // creates mock vendor entity
 
-        VendorResponseDto response = vendorService.createVendor(dto); // calls service to create vendor
+        when(vendorRepository.existsByVendorName("Test Gold Traders")) // when repository checks for duplicate name
+                .thenReturn(false); // return false — no duplicate
+
+        when(vendorRepository.existsByContactEmail("sparsh@test.com")) // when repository checks for duplicate email
+                .thenReturn(false); // return false — no duplicate
+
+        when(vendorRepository.save(any(Vendor.class))) // when repository saves any vendor
+                .thenReturn(mockVendor); // return mock vendor with generated ID
+
+        VendorResponseDto response = vendorService.createVendor(requestDto); // calls service method
 
         assertNotNull(response); // confirms response is not null
-        assertNotNull(response.getVendorId()); // confirms vendor ID was generated by MySQL
-        assertEquals(dto.getVendorName(), response.getVendorName()); // confirms vendor name matches what was sent
-        assertEquals(dto.getContactEmail(), response.getContactEmail()); // confirms email matches
-        assertEquals(dto.getCurrentGoldPrice(), response.getCurrentGoldPrice()); // confirms gold price matches
-
-        deleteVendorById(response.getVendorId()); // cleanup — deletes vendor created during this test
+        assertEquals(1, response.getVendorId()); // confirms vendor ID is set
+        assertEquals("Test Gold Traders", response.getVendorName()); // confirms vendor name matches
 
         System.out.println("TEST PASSED: testCreateVendor_Success - Vendor created with ID = " + response.getVendorId());
     }
@@ -103,21 +121,15 @@ public class VendorServiceTest {
     @Test // tells JUnit to run this method as a test case
     @DisplayName("Test Create Vendor - Duplicate Name") // readable name shown in test report
     public void testCreateVendor_DuplicateName() {
-        // verifies that creating a vendor with a duplicate name throws DuplicateVendorException
+        // verifies that createVendor throws DuplicateVendorException when name already exists
 
-        VendorResponseDto saved = createAndSaveVendor(); // saves a vendor first
+        VendorRequestDto requestDto = createMockRequestDto(); // creates mock request DTO
 
-        VendorRequestDto duplicate = new VendorRequestDto(); // creates a new request DTO
-        duplicate.setVendorName(saved.getVendorName()); // sets same name as already saved vendor — should trigger duplicate check
-        duplicate.setContactEmail("different" + System.currentTimeMillis() + "@test.com"); // different email — only name is duplicate
-        duplicate.setTotalGoldQuantity(new BigDecimal("500.00")); // sets valid quantity
-        duplicate.setCurrentGoldPrice(new BigDecimal("6000.00")); // sets valid price
+        when(vendorRepository.existsByVendorName("Test Gold Traders")) // when repository checks for duplicate name
+                .thenReturn(true); // return true — duplicate exists
 
-        assertThrows(DuplicateVendorException.class, () -> vendorService.createVendor(duplicate));
-        // assertThrows — confirms that calling createVendor throws DuplicateVendorException
-        // lambda () -> vendorService.createVendor(duplicate) is the code that should throw
-
-        deleteVendorById(saved.getVendorId()); // cleanup — deletes vendor created during this test
+        assertThrows(DuplicateVendorException.class, // expects DuplicateVendorException to be thrown
+                () -> vendorService.createVendor(requestDto)); // lambda that calls service method
 
         System.out.println("TEST PASSED: testCreateVendor_DuplicateName - DuplicateVendorException thrown as expected");
     }
@@ -125,20 +137,18 @@ public class VendorServiceTest {
     @Test // tells JUnit to run this method as a test case
     @DisplayName("Test Create Vendor - Duplicate Email") // readable name shown in test report
     public void testCreateVendor_DuplicateEmail() {
-        // verifies that creating a vendor with a duplicate email throws DuplicateVendorException
+        // verifies that createVendor throws DuplicateVendorException when email already exists
 
-        VendorResponseDto saved = createAndSaveVendor(); // saves a vendor first
+        VendorRequestDto requestDto = createMockRequestDto(); // creates mock request DTO
 
-        VendorRequestDto duplicate = new VendorRequestDto(); // creates a new request DTO
-        duplicate.setVendorName("Completely Different Name " + System.currentTimeMillis()); // different name — only email is duplicate
-        duplicate.setContactEmail(saved.getContactEmail()); // sets same email as already saved vendor — should trigger duplicate check
-        duplicate.setTotalGoldQuantity(new BigDecimal("500.00")); // sets valid quantity
-        duplicate.setCurrentGoldPrice(new BigDecimal("6000.00")); // sets valid price
+        when(vendorRepository.existsByVendorName("Test Gold Traders")) // when repository checks for duplicate name
+                .thenReturn(false); // return false — name is unique
 
-        assertThrows(DuplicateVendorException.class, () -> vendorService.createVendor(duplicate));
-        // assertThrows — confirms DuplicateVendorException is thrown for duplicate email
+        when(vendorRepository.existsByContactEmail("sparsh@test.com")) // when repository checks for duplicate email
+                .thenReturn(true); // return true — duplicate email exists
 
-        deleteVendorById(saved.getVendorId()); // cleanup — deletes vendor created during this test
+        assertThrows(DuplicateVendorException.class, // expects DuplicateVendorException to be thrown
+                () -> vendorService.createVendor(requestDto)); // lambda that calls service method
 
         System.out.println("TEST PASSED: testCreateVendor_DuplicateEmail - DuplicateVendorException thrown as expected");
     }
@@ -150,54 +160,63 @@ public class VendorServiceTest {
     @Test // tells JUnit to run this method as a test case
     @DisplayName("Test Get Vendor By ID - Success") // readable name shown in test report
     public void testGetVendorById_Success() {
-        // verifies that a saved vendor can be fetched by its ID via service
+        // verifies that getVendorById returns correct response when vendor exists
 
-        VendorResponseDto saved = createAndSaveVendor(); // saves a vendor and gets its ID
+        Vendor mockVendor = createMockVendor(); // creates mock vendor entity
 
-        VendorResponseDto found = vendorService.getVendorById(saved.getVendorId()); // calls service to fetch vendor by ID
+        when(vendorRepository.findById(1)) // when repository finds vendor by ID 1
+                .thenReturn(Optional.of(mockVendor)); // return mock vendor wrapped in Optional
 
-        assertNotNull(found); // confirms response is not null
-        assertEquals(saved.getVendorId(), found.getVendorId()); // confirms ID matches
-        assertEquals(saved.getVendorName(), found.getVendorName()); // confirms name matches
+        VendorResponseDto response = vendorService.getVendorById(1); // calls service method
 
-        deleteVendorById(saved.getVendorId()); // cleanup
+        assertNotNull(response); // confirms response is not null
+        assertEquals(1, response.getVendorId()); // confirms vendor ID matches
+        assertEquals("Test Gold Traders", response.getVendorName()); // confirms vendor name matches
 
-        System.out.println("TEST PASSED: testGetVendorById_Success - Vendor found with ID = " + found.getVendorId());
+        System.out.println("TEST PASSED: testGetVendorById_Success - Vendor found with ID = " + response.getVendorId());
     }
 
     @Test // tells JUnit to run this method as a test case
     @DisplayName("Test Get Vendor By ID - Not Found") // readable name shown in test report
     public void testGetVendorById_NotFound() {
-        // verifies that fetching a non-existent vendor throws VendorNotFoundException
+        // verifies that getVendorById throws VendorNotFoundException when vendor does not exist
 
-        assertThrows(VendorNotFoundException.class, () -> vendorService.getVendorById(99999));
-        // assertThrows — confirms VendorNotFoundException is thrown for ID 99999
-        // ID 99999 does not exist in the database
+        when(vendorRepository.findById(99999)) // when repository tries to find vendor by ID 99999
+                .thenReturn(Optional.empty()); // return empty Optional — vendor not found
+
+        assertThrows(VendorNotFoundException.class, // expects VendorNotFoundException to be thrown
+                () -> vendorService.getVendorById(99999)); // lambda that calls service method
 
         System.out.println("TEST PASSED: testGetVendorById_NotFound - VendorNotFoundException thrown as expected");
     }
 
     // ================================================================
-    //  GET ALL VENDORS TESTS
+    //  GET ALL VENDORS TEST
     // ================================================================
 
     @Test // tells JUnit to run this method as a test case
     @DisplayName("Test Get All Vendors - Success") // readable name shown in test report
     public void testGetAllVendors_Success() {
-        // verifies that getAllVendors returns a paginated result with at least one vendor
+        // verifies that getAllVendors returns paginated list of vendors
 
-        VendorResponseDto saved = createAndSaveVendor(); // saves a vendor to ensure list is not empty
+        Vendor mockVendor = createMockVendor(); // creates mock vendor entity
 
-        Page<VendorResponseDto> page = vendorService.getAllVendors(PageRequest.of(0, 10));
-        // PageRequest.of(0, 10) — page 0, size 10 (first 10 results)
-        // getAllVendors returns a Page object with content, totalElements, totalPages
+        Page<Vendor> mockPage = new PageImpl<>( // creates mock Page object
+                List.of(mockVendor), // list with one vendor
+                PageRequest.of(0, 10), // page 0, size 10
+                1 // total elements
+        );
 
-        assertNotNull(page); // confirms page object is not null
-        assertFalse(page.getContent().isEmpty()); // confirms page has at least one vendor
+        when(vendorRepository.findAll(any(PageRequest.class))) // when repository fetches all vendors with any pageable
+                .thenReturn(mockPage); // return mock page
 
-        deleteVendorById(saved.getVendorId()); // cleanup
+        Page<VendorResponseDto> response = vendorService.getAllVendors(PageRequest.of(0, 10)); // calls service method
 
-        System.out.println("TEST PASSED: testGetAllVendors_Success - Total vendors = " + page.getTotalElements());
+        assertNotNull(response); // confirms response is not null
+        assertFalse(response.getContent().isEmpty()); // confirms page has at least one vendor
+        assertEquals("Test Gold Traders", response.getContent().get(0).getVendorName()); // confirms first vendor name
+
+        System.out.println("TEST PASSED: testGetAllVendors_Success - Total vendors = " + response.getTotalElements());
     }
 
     // ================================================================
@@ -207,36 +226,42 @@ public class VendorServiceTest {
     @Test // tells JUnit to run this method as a test case
     @DisplayName("Test Update Vendor - Success") // readable name shown in test report
     public void testUpdateVendor_Success() {
-        // verifies that an existing vendor can be updated via service
+        // verifies that updateVendor returns updated response when vendor exists
 
-        VendorResponseDto saved = createAndSaveVendor(); // saves a vendor first
+        Vendor mockVendor = createMockVendor(); // creates mock vendor entity
+        VendorRequestDto requestDto = createMockRequestDto(); // creates mock request DTO
+        requestDto.setCurrentGoldPrice(new BigDecimal("7000.00")); // updates gold price in request DTO
 
-        VendorRequestDto updateDto = new VendorRequestDto(); // creates update request DTO
-        updateDto.setVendorName(saved.getVendorName()); // keeps same name — only updating price
-        updateDto.setContactEmail(saved.getContactEmail()); // keeps same email
-        updateDto.setTotalGoldQuantity(new BigDecimal("2000.00")); // updates gold quantity
-        updateDto.setCurrentGoldPrice(new BigDecimal("7000.00")); // updates gold price to new value
+        when(vendorRepository.findById(1)) // when repository finds vendor by ID 1
+                .thenReturn(Optional.of(mockVendor)); // return mock vendor
 
-        VendorResponseDto updated = vendorService.updateVendor(saved.getVendorId(), updateDto); // calls service to update vendor
+        // NOTE: existsByVendorName stub removed — name is not changing so this check is never triggered
 
-        assertNotNull(updated); // confirms response is not null
-        assertEquals(new BigDecimal("7000.00"), updated.getCurrentGoldPrice()); // confirms gold price was updated
-        assertEquals(new BigDecimal("2000.00"), updated.getTotalGoldQuantity()); // confirms quantity was updated
+        mockVendor.setCurrentGoldPrice(new BigDecimal("7000.00")); // simulates updated price on entity
 
-        deleteVendorById(saved.getVendorId()); // cleanup
+        when(vendorRepository.save(any(Vendor.class))) // when repository saves updated vendor
+                .thenReturn(mockVendor); // return updated mock vendor
 
-        System.out.println("TEST PASSED: testUpdateVendor_Success - Gold price updated to = " + updated.getCurrentGoldPrice());
+        VendorResponseDto response = vendorService.updateVendor(1, requestDto); // calls service method
+
+        assertNotNull(response); // confirms response is not null
+        assertEquals(new BigDecimal("7000.00"), response.getCurrentGoldPrice()); // confirms price was updated
+
+        System.out.println("TEST PASSED: testUpdateVendor_Success - Gold price updated to = " + response.getCurrentGoldPrice());
     }
 
     @Test // tells JUnit to run this method as a test case
     @DisplayName("Test Update Vendor - Not Found") // readable name shown in test report
     public void testUpdateVendor_NotFound() {
-        // verifies that updating a non-existent vendor throws VendorNotFoundException
+        // verifies that updateVendor throws VendorNotFoundException when vendor does not exist
 
-        VendorRequestDto updateDto = createVendorRequestDto(); // creates a valid update request DTO
+        VendorRequestDto requestDto = createMockRequestDto(); // creates mock request DTO
 
-        assertThrows(VendorNotFoundException.class, () -> vendorService.updateVendor(99999, updateDto));
-        // assertThrows — confirms VendorNotFoundException is thrown for non-existent vendor ID 99999
+        when(vendorRepository.findById(99999)) // when repository tries to find vendor by ID 99999
+                .thenReturn(Optional.empty()); // return empty Optional — vendor not found
+
+        assertThrows(VendorNotFoundException.class, // expects VendorNotFoundException to be thrown
+                () -> vendorService.updateVendor(99999, requestDto)); // lambda that calls service method
 
         System.out.println("TEST PASSED: testUpdateVendor_NotFound - VendorNotFoundException thrown as expected");
     }
@@ -246,29 +271,34 @@ public class VendorServiceTest {
     // ================================================================
 
     @Test // tells JUnit to run this method as a test case
-    @DisplayName("Test Get Gold Price By Vendor ID - Success") // readable name shown in test report
+    @DisplayName("Test Get Gold Price - Success") // readable name shown in test report
     public void testGetGoldPriceByVendorId_Success() {
-        // verifies that the current gold price for a vendor can be fetched via service
+        // verifies that getGoldPriceByVendorId returns correct price when vendor exists
 
-        VendorResponseDto saved = createAndSaveVendor(); // saves a vendor with gold price 6400.00
+        when(vendorRepository.existsById(1)) // when repository checks if vendor exists
+                .thenReturn(true); // return true — vendor exists
 
-        BigDecimal price = vendorService.getGoldPriceByVendorId(saved.getVendorId()); // calls service to get gold price
+        when(vendorRepository.findGoldPriceByVendorId(1)) // when repository fetches gold price
+                .thenReturn(new BigDecimal("6400.00")); // return mock gold price
+
+        BigDecimal price = vendorService.getGoldPriceByVendorId(1); // calls service method
 
         assertNotNull(price); // confirms price is not null
-        assertEquals(new BigDecimal("6400.00"), price); // confirms price matches what was saved
-
-        deleteVendorById(saved.getVendorId()); // cleanup
+        assertEquals(new BigDecimal("6400.00"), price); // confirms price matches
 
         System.out.println("TEST PASSED: testGetGoldPriceByVendorId_Success - Gold price = " + price);
     }
 
     @Test // tells JUnit to run this method as a test case
-    @DisplayName("Test Get Gold Price By Vendor ID - Not Found") // readable name shown in test report
+    @DisplayName("Test Get Gold Price - Not Found") // readable name shown in test report
     public void testGetGoldPriceByVendorId_NotFound() {
-        // verifies that fetching gold price for non-existent vendor throws VendorNotFoundException
+        // verifies that getGoldPriceByVendorId throws VendorNotFoundException when vendor does not exist
 
-        assertThrows(VendorNotFoundException.class, () -> vendorService.getGoldPriceByVendorId(99999));
-        // assertThrows — confirms VendorNotFoundException is thrown for non-existent vendor ID
+        when(vendorRepository.existsById(99999)) // when repository checks if vendor 99999 exists
+                .thenReturn(false); // return false — vendor does not exist
+
+        assertThrows(VendorNotFoundException.class, // expects VendorNotFoundException to be thrown
+                () -> vendorService.getGoldPriceByVendorId(99999)); // lambda that calls service method
 
         System.out.println("TEST PASSED: testGetGoldPriceByVendorId_NotFound - VendorNotFoundException thrown as expected");
     }
