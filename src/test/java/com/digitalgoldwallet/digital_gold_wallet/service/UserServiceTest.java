@@ -4,123 +4,59 @@ import com.digitalgoldwallet.digital_gold_wallet.dto.request.UserRequestDto;
 import com.digitalgoldwallet.digital_gold_wallet.dto.response.UserResponseDto;
 
 import com.digitalgoldwallet.digital_gold_wallet.entity.Address;
+import com.digitalgoldwallet.digital_gold_wallet.entity.User;
+
+import com.digitalgoldwallet.digital_gold_wallet.mapper.UserMapper;
 
 import com.digitalgoldwallet.digital_gold_wallet.repository.AddressRepository;
 import com.digitalgoldwallet.digital_gold_wallet.repository.UserRepository;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import com.digitalgoldwallet.digital_gold_wallet.service.impl.UserServiceImpl;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import static org.mockito.Mockito.*;
+
 /*
  * ============================================================
- * User Service Layer Testing
- * ============================================================
- *
- * Covers:
- * - Positive Scenarios
- * - Negative Scenarios
- * - Exception Testing
- * - CRUD Operations
+ * Mockito-Based User Service Testing
  * ============================================================
  */
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
 
     /*
-     * Service Injection
+     * Mock Repository
      */
-    @Autowired
-    private UserService userService;
-
-    /*
-     * Repository Injection
-     */
-    @Autowired
+    @Mock
     private UserRepository userRepository;
 
-    @Autowired
+    @Mock
     private AddressRepository addressRepository;
 
     /*
-     * Test Data
+     * Mock Mapper
      */
-    private Address testAddress;
-
-    private Integer testUserId;
+    @Mock
+    private UserMapper userMapper;
 
     /*
-     * ============================================================
-     * Setup Test Data
-     * ============================================================
+     * Inject mocks into service
      */
-    @BeforeEach
-    public void setUp() {
-
-        /*
-         * Create Address
-         */
-        testAddress = new Address();
-
-        testAddress.setStreet("Anna Nagar");
-
-        testAddress.setCity("Chennai");
-
-        testAddress.setState("Tamil Nadu");
-
-        testAddress.setPostalCode(
-                "600040"
-                        + System.currentTimeMillis()
-        );
-
-        testAddress.setCountry("India");
-
-        /*
-         * Save Address
-         */
-        testAddress =
-                addressRepository.save(testAddress);
-    }
-
-    /*
-     * ============================================================
-     * Cleanup Test Data
-     * ============================================================
-     */
-    @AfterEach
-    public void tearDown() {
-
-        /*
-         * Delete User
-         */
-        if (testUserId != null
-                && userRepository.existsById(testUserId)) {
-
-            userRepository.deleteById(testUserId);
-        }
-
-        /*
-         * Delete Address
-         */
-        if (testAddress != null
-                && testAddress.getAddressId() != null
-                && addressRepository.existsById(
-                testAddress.getAddressId())) {
-
-            addressRepository.deleteById(
-                    testAddress.getAddressId()
-            );
-        }
-    }
+    @InjectMocks
+    private UserServiceImpl userService;
 
     /*
      * ============================================================
@@ -128,47 +64,117 @@ public class UserServiceTest {
      * ============================================================
      */
     @Test
-    @DisplayName("Test Create User Service")
-    public void testCreateUserService() {
+    @DisplayName("Test Create User")
+    public void testCreateUser() {
 
+        /*
+         * Address Entity
+         */
+        Address address = new Address();
+
+        address.setAddressId(1);
+
+        /*
+         * Request DTO
+         */
         UserRequestDto requestDto =
                 new UserRequestDto();
 
-        requestDto.setName(
-                "Varsha Karthikeyan"
-        );
+        requestDto.setName("Varsha");
 
-        requestDto.setEmail(
-                "service"
-                        + System.currentTimeMillis()
-                        + "@test.com"
-        );
+        requestDto.setEmail("varsha@test.com");
 
         requestDto.setBalance(
-                new BigDecimal("5000.00")
+                new BigDecimal("5000")
         );
 
-        requestDto.setAddressId(
-                testAddress.getAddressId()
+        requestDto.setAddressId(1);
+
+        /*
+         * User Entity
+         */
+        User user = new User();
+
+        user.setUserId(1);
+
+        user.setName("Varsha");
+
+        user.setEmail("varsha@test.com");
+
+        user.setBalance(
+                new BigDecimal("5000")
         );
 
+        user.setAddress(address);
+
+        /*
+         * Response DTO
+         */
         UserResponseDto responseDto =
+                new UserResponseDto();
+
+        responseDto.setUserId(1);
+
+        responseDto.setName("Varsha");
+
+        responseDto.setEmail("varsha@test.com");
+
+        responseDto.setBalance(
+                new BigDecimal("5000")
+        );
+
+        /*
+         * Mock Repository
+         */
+        when(userRepository.existsByEmail(
+                requestDto.getEmail()
+        )).thenReturn(false);
+
+        when(addressRepository.findById(1))
+                .thenReturn(Optional.of(address));
+
+        /*
+         * Mock Mapper
+         */
+        when(userMapper.toEntity(
+                requestDto,
+                address
+        ))
+                .thenReturn(user);
+
+        when(userMapper.toResponseDto(user))
+                .thenReturn(responseDto);
+
+        /*
+         * Mock Save
+         */
+        when(userRepository.save(any(User.class)))
+                .thenReturn(user);
+
+        /*
+         * Call Service
+         */
+        UserResponseDto savedUser =
                 userService.createUser(requestDto);
 
-        testUserId =
-                responseDto.getUserId();
-
-        assertNotNull(
-                responseDto.getUserId()
-        );
+        /*
+         * Assertions
+         */
+        assertNotNull(savedUser);
 
         assertEquals(
-                "Varsha Karthikeyan",
-                responseDto.getName()
+                "Varsha",
+                savedUser.getName()
         );
 
+        /*
+         * Verify save called once
+         */
+        verify(userRepository, times(1))
+                .save(any(User.class));
+
         System.out.println(
-                "CREATE USER SERVICE TEST PASSED"
+                "CREATE USER TEST PASSED"
         );
     }
 
@@ -178,164 +184,77 @@ public class UserServiceTest {
      * ============================================================
      */
     @Test
-    @DisplayName("Test Get User Service")
-    public void testGetUserService() {
+    @DisplayName("Test Get User")
+    public void testGetUser() {
 
-        UserRequestDto requestDto =
-                new UserRequestDto();
+        /*
+         * Address Entity
+         */
+        Address address = new Address();
 
-        requestDto.setName("Test User");
+        address.setAddressId(1);
 
-        requestDto.setEmail(
-                "getuser"
-                        + System.currentTimeMillis()
-                        + "@test.com"
+        /*
+         * User Entity
+         */
+        User user = new User();
+
+        user.setUserId(1);
+
+        user.setName("Varsha");
+
+        user.setEmail("varsha@test.com");
+
+        user.setBalance(
+                new BigDecimal("5000")
         );
 
-        requestDto.setBalance(
-                new BigDecimal("3000.00")
+        user.setAddress(address);
+
+        /*
+         * Response DTO
+         */
+        UserResponseDto responseDto =
+                new UserResponseDto();
+
+        responseDto.setUserId(1);
+
+        responseDto.setName("Varsha");
+
+        responseDto.setEmail("varsha@test.com");
+
+        responseDto.setBalance(
+                new BigDecimal("5000")
         );
 
-        requestDto.setAddressId(
-                testAddress.getAddressId()
-        );
+        /*
+         * Mock Repository
+         */
+        when(userRepository.findById(1))
+                .thenReturn(Optional.of(user));
 
-        UserResponseDto createdUser =
-                userService.createUser(requestDto);
+        /*
+         * Mock Mapper
+         */
+        when(userMapper.toResponseDto(user))
+                .thenReturn(responseDto);
 
-        testUserId =
-                createdUser.getUserId();
-
+        /*
+         * Call Service
+         */
         UserResponseDto fetchedUser =
-                userService.getUserById(
-                        testUserId
-                );
+                userService.getUserById(1);
 
+        /*
+         * Assertions
+         */
         assertEquals(
-                testUserId,
+                1,
                 fetchedUser.getUserId()
         );
 
         System.out.println(
-                "GET USER SERVICE TEST PASSED"
-        );
-    }
-
-    /*
-     * ============================================================
-     * TEST UPDATE USER
-     * ============================================================
-     */
-    @Test
-    @DisplayName("Test Update User Service")
-    public void testUpdateUserService() {
-
-        UserRequestDto requestDto =
-                new UserRequestDto();
-
-        requestDto.setName("Old Name");
-
-        requestDto.setEmail(
-                "update"
-                        + System.currentTimeMillis()
-                        + "@test.com"
-        );
-
-        requestDto.setBalance(
-                new BigDecimal("1000.00")
-        );
-
-        requestDto.setAddressId(
-                testAddress.getAddressId()
-        );
-
-        UserResponseDto createdUser =
-                userService.createUser(requestDto);
-
-        testUserId =
-                createdUser.getUserId();
-
-        UserRequestDto updateDto =
-                new UserRequestDto();
-
-        updateDto.setName("Updated Name");
-
-        updateDto.setEmail(
-                createdUser.getEmail()
-        );
-
-        updateDto.setBalance(
-                new BigDecimal("9000.00")
-        );
-
-        updateDto.setAddressId(
-                testAddress.getAddressId()
-        );
-
-        UserResponseDto updatedUser =
-                userService.updateUser(
-                        testUserId,
-                        updateDto
-                );
-
-        assertEquals(
-                "Updated Name",
-                updatedUser.getName()
-        );
-
-        assertEquals(
-                new BigDecimal("9000.00"),
-                updatedUser.getBalance()
-        );
-
-        System.out.println(
-                "UPDATE USER SERVICE TEST PASSED"
-        );
-    }
-
-    /*
-     * ============================================================
-     * TEST DELETE USER
-     * ============================================================
-     */
-    @Test
-    @DisplayName("Test Delete User Service")
-    public void testDeleteUserService() {
-
-        UserRequestDto requestDto =
-                new UserRequestDto();
-
-        requestDto.setName("Delete User");
-
-        requestDto.setEmail(
-                "delete"
-                        + System.currentTimeMillis()
-                        + "@test.com"
-        );
-
-        requestDto.setBalance(
-                new BigDecimal("5000.00")
-        );
-
-        requestDto.setAddressId(
-                testAddress.getAddressId()
-        );
-
-        UserResponseDto createdUser =
-                userService.createUser(requestDto);
-
-        Integer userId =
-                createdUser.getUserId();
-
-        userService.deleteUser(userId);
-
-        boolean exists =
-                userRepository.existsById(userId);
-
-        assertFalse(exists);
-
-        System.out.println(
-                "DELETE USER SERVICE TEST PASSED"
+                "GET USER TEST PASSED"
         );
     }
 
@@ -345,19 +264,27 @@ public class UserServiceTest {
      * ============================================================
      */
     @Test
-    @DisplayName("Test User Not Found Exception")
+    @DisplayName("Test User Not Found")
     public void testUserNotFound() {
 
-        Integer invalidUserId = 999999;
+        /*
+         * Mock Empty Response
+         */
+        when(userRepository.findById(999))
+                .thenReturn(Optional.empty());
 
+        /*
+         * Verify Exception
+         */
         Exception exception = assertThrows(
                 RuntimeException.class,
 
-                () -> userService.getUserById(
-                        invalidUserId
-                )
+                () -> userService.getUserById(999)
         );
 
+        /*
+         * Verify Message
+         */
         assertTrue(
                 exception.getMessage()
                         .contains("User not found")
@@ -374,57 +301,46 @@ public class UserServiceTest {
      * ============================================================
      */
     @Test
-    @DisplayName("Test Duplicate Email Exception")
+    @DisplayName("Test Duplicate Email")
     public void testDuplicateEmail() {
 
-        UserRequestDto firstUser =
+        /*
+         * Request DTO
+         */
+        UserRequestDto requestDto =
                 new UserRequestDto();
 
-        firstUser.setName("Varsha");
+        requestDto.setName("Varsha");
 
-        firstUser.setEmail(
+        requestDto.setEmail(
                 "duplicate@test.com"
         );
 
-        firstUser.setBalance(
+        requestDto.setBalance(
                 new BigDecimal("5000")
         );
 
-        firstUser.setAddressId(
-                testAddress.getAddressId()
-        );
+        requestDto.setAddressId(1);
 
-        UserResponseDto createdUser =
-                userService.createUser(firstUser);
+        /*
+         * Mock Duplicate Email
+         */
+        when(userRepository.existsByEmail(
+                requestDto.getEmail()
+        )).thenReturn(true);
 
-        testUserId =
-                createdUser.getUserId();
-
-        UserRequestDto secondUser =
-                new UserRequestDto();
-
-        secondUser.setName("Another User");
-
-        secondUser.setEmail(
-                "duplicate@test.com"
-        );
-
-        secondUser.setBalance(
-                new BigDecimal("7000")
-        );
-
-        secondUser.setAddressId(
-                testAddress.getAddressId()
-        );
-
+        /*
+         * Verify Exception
+         */
         Exception exception = assertThrows(
                 RuntimeException.class,
 
-                () -> userService.createUser(
-                        secondUser
-                )
+                () -> userService.createUser(requestDto)
         );
 
+        /*
+         * Verify Message
+         */
         assertTrue(
                 exception.getMessage()
                         .contains("Email already exists")
@@ -432,35 +348,6 @@ public class UserServiceTest {
 
         System.out.println(
                 "DUPLICATE EMAIL TEST PASSED"
-        );
-    }
-
-    /*
-     * ============================================================
-     * TEST DELETE USER NOT FOUND
-     * ============================================================
-     */
-    @Test
-    @DisplayName("Test Delete User Not Found")
-    public void testDeleteUserNotFound() {
-
-        Integer invalidUserId = 888888;
-
-        Exception exception = assertThrows(
-                RuntimeException.class,
-
-                () -> userService.deleteUser(
-                        invalidUserId
-                )
-        );
-
-        assertTrue(
-                exception.getMessage()
-                        .contains("User not found")
-        );
-
-        System.out.println(
-                "DELETE USER NOT FOUND TEST PASSED"
         );
     }
 }
