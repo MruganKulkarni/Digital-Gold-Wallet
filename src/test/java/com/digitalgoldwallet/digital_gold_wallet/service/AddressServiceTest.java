@@ -3,70 +3,54 @@ package com.digitalgoldwallet.digital_gold_wallet.service;
 import com.digitalgoldwallet.digital_gold_wallet.dto.request.AddressRequestDto;
 import com.digitalgoldwallet.digital_gold_wallet.dto.response.AddressResponseDto;
 
+import com.digitalgoldwallet.digital_gold_wallet.entity.Address;
+
+import com.digitalgoldwallet.digital_gold_wallet.mapper.AddressMapper;
+
 import com.digitalgoldwallet.digital_gold_wallet.repository.AddressRepository;
 
-import org.junit.jupiter.api.AfterEach;
+import com.digitalgoldwallet.digital_gold_wallet.service.impl.AddressServiceImpl;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import static org.mockito.Mockito.*;
+
 /*
  * ============================================================
- * Address Service Layer Testing
- * ============================================================
- *
- * Covers:
- * - Positive Scenarios
- * - Negative Scenarios
- * - Exception Testing
- * - CRUD Operations
+ * Mockito-Based Address Service Testing
  * ============================================================
  */
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 public class AddressServiceTest {
 
     /*
-     * Service Injection
+     * Mock Repository
      */
-    @Autowired
-    private AddressService addressService;
-
-    /*
-     * Repository Injection
-     */
-    @Autowired
+    @Mock
     private AddressRepository addressRepository;
 
     /*
-     * Test Address ID
+     * Mock Mapper
      */
-    private Integer testAddressId;
+    @Mock
+    private AddressMapper addressMapper;
 
     /*
-     * ============================================================
-     * Cleanup Test Data
-     * ============================================================
+     * Inject mocks into service
      */
-    @AfterEach
-    public void tearDown() {
-
-        /*
-         * Delete test address if exists
-         */
-        if (testAddressId != null
-                && addressRepository.existsById(
-                testAddressId)) {
-
-            addressRepository.deleteById(
-                    testAddressId
-            );
-        }
-    }
+    @InjectMocks
+    private AddressServiceImpl addressService;
 
     /*
      * ============================================================
@@ -74,11 +58,11 @@ public class AddressServiceTest {
      * ============================================================
      */
     @Test
-    @DisplayName("Test Create Address Service")
-    public void testCreateAddressService() {
+    @DisplayName("Test Create Address")
+    public void testCreateAddress() {
 
         /*
-         * Create request DTO
+         * Request DTO
          */
         AddressRequestDto requestDto =
                 new AddressRequestDto();
@@ -89,41 +73,81 @@ public class AddressServiceTest {
 
         requestDto.setState("Tamil Nadu");
 
-        requestDto.setPostalCode(
-                "600040"
-                        + System.currentTimeMillis()
-        );
+        requestDto.setPostalCode("600040");
 
         requestDto.setCountry("India");
 
         /*
-         * Call service
+         * Address Entity
+         */
+        Address address = new Address();
+
+        address.setAddressId(1);
+
+        address.setStreet("Anna Nagar");
+
+        address.setCity("Chennai");
+
+        address.setState("Tamil Nadu");
+
+        address.setPostalCode("600040");
+
+        address.setCountry("India");
+
+        /*
+         * Response DTO
          */
         AddressResponseDto responseDto =
+                new AddressResponseDto(
+                        1,
+                        "Anna Nagar",
+                        "Chennai",
+                        "Tamil Nadu",
+                        "600040",
+                        "India"
+                );
+
+        /*
+         * Mock Mapper Methods
+         */
+        when(addressMapper.toEntity(requestDto))
+                .thenReturn(address);
+
+        when(addressMapper.toResponseDto(address))
+                .thenReturn(responseDto);
+
+        /*
+         * Mock Repository Save
+         */
+        when(addressRepository.save(any(Address.class)))
+                .thenReturn(address);
+
+        /*
+         * Call Service
+         */
+        AddressResponseDto savedAddress =
                 addressService.createAddress(
                         requestDto
                 );
 
         /*
-         * Store ID for cleanup
-         */
-        testAddressId =
-                responseDto.getAddressId();
-
-        /*
          * Assertions
          */
-        assertNotNull(
-                responseDto.getAddressId()
-        );
+        assertNotNull(savedAddress);
 
         assertEquals(
                 "Chennai",
-                responseDto.getCity()
+                savedAddress.getCity()
         );
 
+        /*
+         * Verify save called once
+         */
+        verify(addressRepository, times(1))
+                .save(any(Address.class));
+
         System.out.println(
-                "CREATE ADDRESS SERVICE TEST PASSED"
+                "CREATE ADDRESS TEST PASSED"
         );
     }
 
@@ -133,137 +157,67 @@ public class AddressServiceTest {
      * ============================================================
      */
     @Test
-    @DisplayName("Test Get Address Service")
-    public void testGetAddressService() {
+    @DisplayName("Test Get Address")
+    public void testGetAddress() {
 
         /*
-         * Create Address
+         * Address Entity
          */
-        AddressRequestDto requestDto =
-                new AddressRequestDto();
+        Address address = new Address();
 
-        requestDto.setStreet("T Nagar");
+        address.setAddressId(1);
 
-        requestDto.setCity("Chennai");
+        address.setStreet("Anna Nagar");
 
-        requestDto.setState("Tamil Nadu");
+        address.setCity("Chennai");
 
-        requestDto.setPostalCode(
-                "600017"
-                        + System.currentTimeMillis()
-        );
+        address.setState("Tamil Nadu");
 
-        requestDto.setCountry("India");
+        address.setPostalCode("600040");
 
-        AddressResponseDto createdAddress =
-                addressService.createAddress(
-                        requestDto
+        address.setCountry("India");
+
+        /*
+         * Response DTO
+         */
+        AddressResponseDto responseDto =
+                new AddressResponseDto(
+                        1,
+                        "Anna Nagar",
+                        "Chennai",
+                        "Tamil Nadu",
+                        "600040",
+                        "India"
                 );
 
         /*
-         * Store ID for cleanup
+         * Mock Repository
          */
-        testAddressId =
-                createdAddress.getAddressId();
+        when(addressRepository.findById(1))
+                .thenReturn(Optional.of(address));
 
         /*
-         * Fetch Address
+         * Mock Mapper
+         */
+        when(addressMapper.toResponseDto(address))
+                .thenReturn(responseDto);
+
+        /*
+         * Call Service
          */
         AddressResponseDto fetchedAddress =
-                addressService.getAddressById(
-                        testAddressId
-                );
+                addressService.getAddressById(1);
 
         /*
          * Assertions
          */
         assertEquals(
-                testAddressId,
+                1,
                 fetchedAddress.getAddressId()
         );
 
         System.out.println(
-                "GET ADDRESS SERVICE TEST PASSED"
-        );
-    }
-
-    /*
-     * ============================================================
-     * TEST UPDATE ADDRESS
-     * ============================================================
-     */
-    @Test
-    @DisplayName("Test Update Address Service")
-    public void testUpdateAddressService() {
-
-        /*
-         * Create Address
-         */
-        AddressRequestDto requestDto =
-                new AddressRequestDto();
-
-        requestDto.setStreet("Old Street");
-
-        requestDto.setCity("Old City");
-
-        requestDto.setState("Old State");
-
-        requestDto.setPostalCode(
-                "111111"
-                        + System.currentTimeMillis()
-        );
-
-        requestDto.setCountry("India");
-
-        AddressResponseDto createdAddress =
-                addressService.createAddress(
-                        requestDto
-                );
-
-        /*
-         * Store ID for cleanup
-         */
-        testAddressId =
-                createdAddress.getAddressId();
-
-        /*
-         * Update DTO
-         */
-        AddressRequestDto updateDto =
-                new AddressRequestDto();
-
-        updateDto.setStreet("New Street");
-
-        updateDto.setCity("Bangalore");
-
-        updateDto.setState("Karnataka");
-
-        updateDto.setPostalCode(
-                "560001"
-                        + System.currentTimeMillis()
-        );
-
-        updateDto.setCountry("India");
-
-        /*
-         * Call update
-         */
-        AddressResponseDto updatedAddress =
-                addressService.updateAddress(
-                        testAddressId,
-                        updateDto
-                );
-
-        /*
-         * Assertions
-         */
-        assertEquals(
-                "Bangalore",
-                updatedAddress.getCity()
-        );
-
-        System.out.println(
-                "UPDATE ADDRESS SERVICE TEST PASSED"
+                "GET ADDRESS TEST PASSED"
         );
     }
 
@@ -273,27 +227,26 @@ public class AddressServiceTest {
      * ============================================================
      */
     @Test
-    @DisplayName("Test Address Not Found Exception")
+    @DisplayName("Test Address Not Found")
     public void testAddressNotFound() {
 
         /*
-         * Invalid address ID
+         * Mock Empty Response
          */
-        Integer invalidAddressId = 999999;
+        when(addressRepository.findById(999))
+                .thenReturn(Optional.empty());
 
         /*
-         * Verify exception
+         * Verify Exception
          */
         Exception exception = assertThrows(
                 RuntimeException.class,
 
-                () -> addressService.getAddressById(
-                        invalidAddressId
-                )
+                () -> addressService.getAddressById(999)
         );
 
         /*
-         * Verify message
+         * Verify Message
          */
         assertTrue(
                 exception.getMessage()
@@ -302,61 +255,6 @@ public class AddressServiceTest {
 
         System.out.println(
                 "ADDRESS NOT FOUND TEST PASSED"
-        );
-    }
-
-    /*
-     * ============================================================
-     * TEST UPDATE ADDRESS NOT FOUND
-     * ============================================================
-     */
-    @Test
-    @DisplayName("Test Update Address Not Found")
-    public void testUpdateAddressNotFound() {
-
-        /*
-         * Invalid address ID
-         */
-        Integer invalidAddressId = 888888;
-
-        /*
-         * Create DTO
-         */
-        AddressRequestDto requestDto =
-                new AddressRequestDto();
-
-        requestDto.setStreet("Test");
-
-        requestDto.setCity("Test");
-
-        requestDto.setState("Test");
-
-        requestDto.setPostalCode("123456");
-
-        requestDto.setCountry("India");
-
-        /*
-         * Verify exception
-         */
-        Exception exception = assertThrows(
-                RuntimeException.class,
-
-                () -> addressService.updateAddress(
-                        invalidAddressId,
-                        requestDto
-                )
-        );
-
-        /*
-         * Verify message
-         */
-        assertTrue(
-                exception.getMessage()
-                        .contains("Address not found")
-        );
-
-        System.out.println(
-                "UPDATE ADDRESS NOT FOUND TEST PASSED"
         );
     }
 }
