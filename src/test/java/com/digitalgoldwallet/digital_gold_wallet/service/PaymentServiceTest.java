@@ -2,29 +2,44 @@ package com.digitalgoldwallet.digital_gold_wallet.service;
 
 import com.digitalgoldwallet.digital_gold_wallet.dto.request.PaymentRequestDto;
 import com.digitalgoldwallet.digital_gold_wallet.dto.response.PaymentResponseDto;
+
 import com.digitalgoldwallet.digital_gold_wallet.entity.Payment;
 import com.digitalgoldwallet.digital_gold_wallet.entity.User;
+
 import com.digitalgoldwallet.digital_gold_wallet.exception.InsufficientBalanceException;
 import com.digitalgoldwallet.digital_gold_wallet.exception.PaymentNotFoundException;
+
 import com.digitalgoldwallet.digital_gold_wallet.repository.PaymentRepository;
 import com.digitalgoldwallet.digital_gold_wallet.repository.UserRepository;
+
 import com.digitalgoldwallet.digital_gold_wallet.service.impl.PaymentServiceImpl;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
+/*
+ * ============================================================
+ * PAYMENT SERVICE TEST USING MOCKITO
+ * ============================================================
+ */
+
+@ExtendWith(MockitoExtension.class)
 public class PaymentServiceTest {
 
     @Mock
@@ -43,13 +58,13 @@ public class PaymentServiceTest {
     @BeforeEach
     void setUp() {
 
-        MockitoAnnotations.openMocks(this);
-
         user = new User();
 
         user.setUserId(1);
 
-        user.setName("Tanmay");
+        user.setName(
+                "Tanmay"
+        );
 
         user.setBalance(
                 new BigDecimal("10000")
@@ -79,11 +94,13 @@ public class PaymentServiceTest {
     }
 
     /*
-     * ==========================================
+     * ============================================================
      * TEST CREATE PAYMENT SUCCESS
-     * ==========================================
+     * ============================================================
      */
+
     @Test
+    @DisplayName("Test Create Payment Success")
     void testCreatePaymentSuccess() {
 
         PaymentRequestDto dto =
@@ -110,9 +127,9 @@ public class PaymentServiceTest {
         when(userRepository.findById(1))
                 .thenReturn(Optional.of(user));
 
-        when(paymentRepository.save(any(
-                Payment.class)))
-                .thenReturn(payment);
+        when(paymentRepository.save(
+                any(Payment.class)
+        )).thenReturn(payment);
 
         PaymentResponseDto response =
                 paymentService.createPayment(dto);
@@ -123,14 +140,21 @@ public class PaymentServiceTest {
                 "Success",
                 response.getPaymentStatus()
         );
+
+        assertEquals(
+                new BigDecimal("1000"),
+                response.getAmount()
+        );
     }
 
     /*
-     * ==========================================
+     * ============================================================
      * TEST INSUFFICIENT BALANCE
-     * ==========================================
+     * ============================================================
      */
+
     @Test
+    @DisplayName("Test Insufficient Balance")
     void testInsufficientBalance() {
 
         PaymentRequestDto dto =
@@ -157,11 +181,13 @@ public class PaymentServiceTest {
     }
 
     /*
-     * ==========================================
+     * ============================================================
      * TEST GET PAYMENT BY ID
-     * ==========================================
+     * ============================================================
      */
+
     @Test
+    @DisplayName("Test Get Payment By ID")
     void testGetPaymentById() {
 
         when(paymentRepository.findById(1))
@@ -176,14 +202,21 @@ public class PaymentServiceTest {
                 1,
                 response.getPaymentId()
         );
+
+        assertEquals(
+                "Google Pay",
+                response.getPaymentMethod()
+        );
     }
 
     /*
-     * ==========================================
+     * ============================================================
      * TEST PAYMENT NOT FOUND
-     * ==========================================
+     * ============================================================
      */
+
     @Test
+    @DisplayName("Test Payment Not Found")
     void testPaymentNotFound() {
 
         when(paymentRepository.findById(1))
@@ -197,18 +230,19 @@ public class PaymentServiceTest {
     }
 
     /*
-     * ==========================================
+     * ============================================================
      * TEST GET PAYMENTS BY USER
-     * ==========================================
+     * ============================================================
      */
+
     @Test
+    @DisplayName("Test Get Payments By User ID")
     void testGetPaymentsByUserId() {
 
         when(userRepository.existsById(1))
                 .thenReturn(true);
 
-        when(paymentRepository
-                .findPaymentsByUserId(1))
+        when(paymentRepository.findPaymentsByUserId(1))
                 .thenReturn(
                         Arrays.asList(payment)
                 );

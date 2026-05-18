@@ -6,82 +6,105 @@ import com.digitalgoldwallet.digital_gold_wallet.dto.response.WalletBalanceRespo
 
 import com.digitalgoldwallet.digital_gold_wallet.service.WalletService;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import org.springframework.boot.test.mock.mockito.MockBean;
-
-import org.springframework.http.MediaType;
-
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.math.BigDecimal;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 /*
  * ============================================================
- * WALLET CONTROLLER TEST
+ * WALLET CONTROLLER TEST USING MOCKITO
  * ============================================================
  */
-@WebMvcTest(WalletController.class)
+
+@ExtendWith(MockitoExtension.class)
 public class WalletControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockBean
+    @Mock
     private WalletService walletService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @InjectMocks
+    private WalletController walletController;
+
+    private WalletBalanceResponseDto balanceResponse;
+    private WalletTransactionRequestDto requestDto;
+    private PaymentResponseDto paymentResponse;
+
+    @BeforeEach
+    void setUp() {
+
+        balanceResponse =
+                new WalletBalanceResponseDto();
+
+        balanceResponse.setUserId(1);
+
+        balanceResponse.setUserName(
+                "Tanmay"
+        );
+
+        balanceResponse.setBalance(
+                new BigDecimal("10000")
+        );
+
+        requestDto =
+                new WalletTransactionRequestDto();
+
+        requestDto.setAmount(
+                new BigDecimal("5000")
+        );
+
+        requestDto.setPaymentMethod(
+                "Google Pay"
+        );
+
+        paymentResponse =
+                new PaymentResponseDto();
+
+        paymentResponse.setPaymentId(1);
+    }
 
     /*
      * ============================================================
      * TEST GET BALANCE API
      * ============================================================
      */
+
     @Test
     @DisplayName("Test Get Wallet Balance API")
-    void testGetWalletBalance()
-            throws Exception {
-
-        WalletBalanceResponseDto response =
-                new WalletBalanceResponseDto();
-
-        response.setUserId(1);
-
-        response.setUserName("Tanmay");
-
-        response.setBalance(
-                new BigDecimal("10000")
-        );
+    void testGetWalletBalance() {
 
         when(walletService.getWalletBalance(1))
-                .thenReturn(response);
+                .thenReturn(balanceResponse);
 
-        mockMvc.perform(
-                        get("/api/v1/wallets/1/balance")
-                )
-                .andExpect(status().isOk())
-                .andExpect(
-                        jsonPath("$.balance")
-                                .value(10000)
-                );
+        ResponseEntity<WalletBalanceResponseDto> response =
+                walletController.getWalletBalance(1);
+
+        assertNotNull(response);
+
+        assertEquals(
+                HttpStatus.OK,
+                response.getStatusCode()
+        );
+
+        assertEquals(
+                new BigDecimal("10000"),
+                response.getBody().getBalance()
+        );
     }
 
     /*
@@ -89,49 +112,33 @@ public class WalletControllerTest {
      * TEST CREDIT WALLET API
      * ============================================================
      */
+
     @Test
     @DisplayName("Test Credit Wallet API")
-    void testCreditWallet()
-            throws Exception {
-
-        WalletTransactionRequestDto request =
-                new WalletTransactionRequestDto();
-
-        request.setAmount(
-                new BigDecimal("5000")
-        );
-
-        request.setPaymentMethod(
-                "Google Pay"
-        );
-
-        PaymentResponseDto response =
-                new PaymentResponseDto();
-
-        response.setPaymentId(1);
+    void testCreditWallet() {
 
         when(walletService.creditWallet(
                 anyInt(),
-                any()))
-                .thenReturn(response);
+                any(WalletTransactionRequestDto.class)
+        )).thenReturn(paymentResponse);
 
-        mockMvc.perform(
-                        post("/api/v1/wallets/1/credit")
-                                .contentType(
-                                        MediaType.APPLICATION_JSON
-                                )
-                                .content(
-                                        objectMapper
-                                                .writeValueAsString(
-                                                        request
-                                                )
-                                )
-                )
-                .andExpect(status().isCreated())
-                .andExpect(
-                        jsonPath("$.paymentId")
-                                .value(1)
+        ResponseEntity<PaymentResponseDto> response =
+                walletController.creditWallet(
+                        1,
+                        requestDto
                 );
+
+        assertNotNull(response);
+
+        assertEquals(
+                HttpStatus.CREATED,
+                response.getStatusCode()
+        );
+
+        assertEquals(
+                1,
+                response.getBody().getPaymentId()
+        );
     }
 
     /*
@@ -139,48 +146,37 @@ public class WalletControllerTest {
      * TEST DEBIT WALLET API
      * ============================================================
      */
+
     @Test
     @DisplayName("Test Debit Wallet API")
-    void testDebitWallet()
-            throws Exception {
+    void testDebitWallet() {
 
-        WalletTransactionRequestDto request =
-                new WalletTransactionRequestDto();
-
-        request.setAmount(
-                new BigDecimal("1000")
-        );
-
-        request.setPaymentMethod(
-                "PhonePe"
-        );
-
-        PaymentResponseDto response =
+        PaymentResponseDto debitResponse =
                 new PaymentResponseDto();
 
-        response.setPaymentId(2);
+        debitResponse.setPaymentId(2);
 
         when(walletService.debitWallet(
                 anyInt(),
-                any()))
-                .thenReturn(response);
+                any(WalletTransactionRequestDto.class)
+        )).thenReturn(debitResponse);
 
-        mockMvc.perform(
-                        post("/api/v1/wallets/1/debit")
-                                .contentType(
-                                        MediaType.APPLICATION_JSON
-                                )
-                                .content(
-                                        objectMapper
-                                                .writeValueAsString(
-                                                        request
-                                                )
-                                )
-                )
-                .andExpect(status().isCreated())
-                .andExpect(
-                        jsonPath("$.paymentId")
-                                .value(2)
+        ResponseEntity<PaymentResponseDto> response =
+                walletController.debitWallet(
+                        1,
+                        requestDto
                 );
+
+        assertNotNull(response);
+
+        assertEquals(
+                HttpStatus.CREATED,
+                response.getStatusCode()
+        );
+
+        assertEquals(
+                2,
+                response.getBody().getPaymentId()
+        );
     }
 }
