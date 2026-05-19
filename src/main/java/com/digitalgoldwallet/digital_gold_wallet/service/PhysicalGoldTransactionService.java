@@ -11,9 +11,7 @@ import java.util.List;
  * ============================================================
  */
 
-public interface
-PhysicalGoldTransactionService {
-
+public interface PhysicalGoldTransactionService {
 
     /*
      * ============================================================
@@ -24,24 +22,16 @@ PhysicalGoldTransactionService {
      *
      * ============================================================
      */
-
-    PhysicalGoldTransactionResponseDto
-    convertToPhysical(
+    PhysicalGoldTransactionResponseDto convertToPhysical(
             PhysicalGoldTransactionRequestDto dto
     );
-
-
 
     /*
      * Existing Day-3 create
      */
-
-    PhysicalGoldTransactionResponseDto
-    createTransaction(
+    PhysicalGoldTransactionResponseDto createTransaction(
             PhysicalGoldTransactionRequestDto dto
     );
-
-
 
     /*
      * ============================================================
@@ -52,13 +42,9 @@ PhysicalGoldTransactionService {
      *
      * ============================================================
      */
-
-    List<PhysicalGoldTransactionResponseDto>
-    getByUser(
+    List<PhysicalGoldTransactionResponseDto> getByUser(
             Integer userId
     );
-
-
 
     /*
      * ============================================================
@@ -69,10 +55,7 @@ PhysicalGoldTransactionService {
      *
      * ============================================================
      */
-
-    PhysicalGoldTransactionResponseDto
-    getById(
+    PhysicalGoldTransactionResponseDto getById(
             Integer id
     );
-
 }

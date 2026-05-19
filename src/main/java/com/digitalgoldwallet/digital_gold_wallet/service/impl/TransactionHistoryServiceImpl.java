@@ -99,6 +99,15 @@ public class TransactionHistoryServiceImpl
             Integer userId
     ) {
 
+        if(!userRepository.existsById(userId)){
+
+            throw new UserNotFoundException(
+                    "User not found with ID: "
+                            + userId
+            );
+
+        }
+
         return repository
                 .findByUserUserId(userId)
                 .stream()
@@ -117,6 +126,15 @@ public class TransactionHistoryServiceImpl
     getTransactionsByBranch(
             Integer branchId
     ) {
+
+        if(!branchRepository.existsById(branchId)){
+
+            throw new VendorBranchNotFoundException(
+                    "Branch not found with ID: "
+                            + branchId
+            );
+
+        }
 
         return repository
                 .findByBranchBranchId(branchId)
