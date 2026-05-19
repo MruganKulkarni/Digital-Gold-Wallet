@@ -69,7 +69,7 @@ public class Payment {
     /*
      * Payment creation time
      */
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false) // updatable = false means never changes after insert
     private LocalDateTime createdAt;
 
     /*
@@ -148,5 +148,14 @@ public class Payment {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    /*
+     * Automatically sets createdAt timestamp
+     * before saving to database
+     */
+    @PrePersist // runs automatically just before saving to DB
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now(); // sets current timestamp on creation
     }
 }

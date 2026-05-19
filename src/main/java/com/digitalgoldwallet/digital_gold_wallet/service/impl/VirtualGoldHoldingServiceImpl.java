@@ -50,7 +50,9 @@ public class VirtualGoldHoldingServiceImpl
 
 
     /*
+     * ============================================================
      * Buy virtual gold
+     * ============================================================
      */
     @Override
     public VirtualGoldHoldingResponseDto buyGold(
@@ -94,7 +96,9 @@ public class VirtualGoldHoldingServiceImpl
 
 
     /*
+     * ============================================================
      * Sell gold
+     * ============================================================
      */
     @Override
     public VirtualGoldHoldingResponseDto sellGold(
@@ -102,11 +106,14 @@ public class VirtualGoldHoldingServiceImpl
     ) {
 
         return buyGold(dto);
+
     }
 
 
     /*
-     * Existing Day-3 method
+     * ============================================================
+     * Get holding by ID
+     * ============================================================
      */
     @Override
     public VirtualGoldHoldingResponseDto getHoldingById(
@@ -131,13 +138,24 @@ public class VirtualGoldHoldingServiceImpl
 
 
     /*
+     * ============================================================
      * User holdings
+     * ============================================================
      */
     @Override
     public List<VirtualGoldHoldingResponseDto>
     getHoldingsByUser(
             Integer userId
     ) {
+
+        if(!userRepository.existsById(userId)){
+
+            throw new UserNotFoundException(
+                    "User not found with ID: "
+                            + userId
+            );
+
+        }
 
         return repository
                 .findByUserUserId(userId)
@@ -153,13 +171,24 @@ public class VirtualGoldHoldingServiceImpl
 
 
     /*
+     * ============================================================
      * Branch holdings
+     * ============================================================
      */
     @Override
     public List<VirtualGoldHoldingResponseDto>
     getHoldingsByBranch(
             Integer branchId
     ) {
+
+        if(!branchRepository.existsById(branchId)){
+
+            throw new VendorBranchNotFoundException(
+                    "Branch not found with ID: "
+                            + branchId
+            );
+
+        }
 
         return repository
                 .findByBranchBranchId(branchId)
