@@ -1,4 +1,6 @@
-.DS_Store
 target/
+*.class
+*.log
 .idea/
-*.iml
+.vscode/
+.env
