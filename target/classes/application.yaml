@@ -11,7 +11,7 @@ spring:
 
   cloud:
     vault:
-      uri: http://127.0.0.1:8200
+      uri: http://3.25.125.197:8200
 
       token: ${VAULT_TOKEN}
 
