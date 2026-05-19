@@ -8,11 +8,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
 
 /*
  * ============================================================
@@ -21,29 +22,21 @@ import java.util.List;
  */
 
 @RestController
-
+@Validated
 @RequestMapping("/api/v1")
-
 @Tag(
         name="Physical Gold",
         description="Physical gold APIs"
 )
-
 public class PhysicalGoldTransactionController {
 
-    private final
-    PhysicalGoldTransactionService service;
+    private final PhysicalGoldTransactionService service;
 
-    public
-    PhysicalGoldTransactionController(
-
+    public PhysicalGoldTransactionController(
             PhysicalGoldTransactionService service
     ){
-
         this.service=service;
-
     }
-
 
 
     /*
@@ -55,26 +48,18 @@ public class PhysicalGoldTransactionController {
     @Operation(
             summary="Convert virtual gold"
     )
-
     @PostMapping(
             "/gold/physical/convert"
     )
-
-    public
-    PhysicalGoldTransactionResponseDto
+    public PhysicalGoldTransactionResponseDto
     convert(
 
             @Valid
-
             @RequestBody
-
             PhysicalGoldTransactionRequestDto dto
     ){
 
-        return service
-                .convertToPhysical(
-                        dto
-                );
+        return service.convertToPhysical(dto);
 
     }
 
@@ -89,16 +74,19 @@ public class PhysicalGoldTransactionController {
     @Operation(
             summary="Get user physical orders"
     )
-
     @GetMapping(
             "/users/{userId}/gold/physical"
     )
-
-    public
-    List<PhysicalGoldTransactionResponseDto>
+    public List<PhysicalGoldTransactionResponseDto>
     getUserOrders(
 
             @PathVariable
+
+            @Min(
+                    value=1,
+                    message="User ID must be positive"
+            )
+
             Integer userId
     ){
 
@@ -119,16 +107,20 @@ public class PhysicalGoldTransactionController {
     @Operation(
             summary="Get delivery details"
     )
-
     @GetMapping(
             "/physical-transactions/{transactionId}"
     )
-
-    public
-    PhysicalGoldTransactionResponseDto
+    public PhysicalGoldTransactionResponseDto
     getById(
 
             @PathVariable
+
+            @Min(
+                    value=1,
+                    message=
+                            "Transaction ID must be positive"
+            )
+
             Integer transactionId
     ){
 

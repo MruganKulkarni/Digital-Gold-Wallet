@@ -9,8 +9,12 @@ import com.digitalgoldwallet.digital_gold_wallet.dto.response.UserResponseDto;
 // importing service layer
 import com.digitalgoldwallet.digital_gold_wallet.service.UserService;
 
-// validation annotation
+// validation annotations
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+
+// enables validation on path variables
+import org.springframework.validation.annotation.Validated;
 
 // ResponseEntity used for HTTP response handling
 import org.springframework.http.ResponseEntity;
@@ -33,11 +37,20 @@ import java.util.List;
  *
  * Base URL:
  * /api/v1/users
+ *
+ * Validation:
+ * - Request body validation using @Valid
+ * - Path variable validation using @Min
+ *
  * ============================================================
  */
 
 @RestController
+
+@Validated
+
 @RequestMapping("/api/v1/users")
+
 public class UserController {
 
     /*
@@ -45,13 +58,18 @@ public class UserController {
      */
     private final UserService userService;
 
+
     /*
      * Constructor injection
      */
-    public UserController(UserService userService) {
+    public UserController(
+            UserService userService
+    ) {
 
         this.userService = userService;
+
     }
+
 
     /*
      * ============================================================
@@ -60,17 +78,29 @@ public class UserController {
      *
      * POST /api/v1/users
      */
+
     @PostMapping
+
     public ResponseEntity<UserResponseDto>
     createUser(
+
             @Valid
+
             @RequestBody
-            UserRequestDto requestDto) {
+
+            UserRequestDto requestDto
+    ) {
 
         return ResponseEntity.ok(
-                userService.createUser(requestDto)
+
+                userService.createUser(
+                        requestDto
+                )
+
         );
+
     }
+
 
     /*
      * ============================================================
@@ -79,16 +109,32 @@ public class UserController {
      *
      * GET /api/v1/users/{userId}
      */
+
     @GetMapping("/{userId}")
+
     public ResponseEntity<UserResponseDto>
     getUserById(
+
             @PathVariable
-            Integer userId) {
+
+            @Min(
+                    value=1,
+                    message="User ID must be positive"
+            )
+
+            Integer userId
+    ) {
 
         return ResponseEntity.ok(
-                userService.getUserById(userId)
+
+                userService.getUserById(
+                        userId
+                )
+
         );
+
     }
+
 
     /*
      * ============================================================
@@ -97,14 +143,20 @@ public class UserController {
      *
      * GET /api/v1/users
      */
+
     @GetMapping
+
     public ResponseEntity<List<UserResponseDto>>
     getAllUsers() {
 
         return ResponseEntity.ok(
+
                 userService.getAllUsers()
+
         );
+
     }
+
 
     /*
      * ============================================================
@@ -113,23 +165,40 @@ public class UserController {
      *
      * PUT /api/v1/users/{userId}
      */
+
     @PutMapping("/{userId}")
+
     public ResponseEntity<UserResponseDto>
     updateUser(
+
             @PathVariable
+
+            @Min(
+                    value=1,
+                    message="User ID must be positive"
+            )
+
             Integer userId,
 
             @Valid
+
             @RequestBody
-            UserRequestDto requestDto) {
+
+            UserRequestDto requestDto
+    ) {
 
         return ResponseEntity.ok(
+
                 userService.updateUser(
                         userId,
                         requestDto
                 )
+
         );
+
     }
+
+
 
     /*
      * ============================================================
@@ -138,18 +207,33 @@ public class UserController {
      *
      * DELETE /api/v1/users/{userId}
      */
+
     @DeleteMapping("/{userId}")
+
     public ResponseEntity<String>
     deleteUser(
-            @PathVariable
-            Integer userId) {
 
-        userService.deleteUser(userId);
+            @PathVariable
+
+            @Min(
+                    value=1,
+                    message="User ID must be positive"
+            )
+
+            Integer userId
+    ) {
+
+        userService.deleteUser(
+                userId
+        );
 
         return ResponseEntity.ok(
                 "User deleted successfully"
         );
+
     }
+
+
 
     /*
      * ============================================================
@@ -158,14 +242,30 @@ public class UserController {
      *
      * GET /api/v1/users/{userId}/balance
      */
+
     @GetMapping("/{userId}/balance")
+
     public ResponseEntity<BigDecimal>
     getUserBalance(
+
             @PathVariable
-            Integer userId) {
+
+            @Min(
+                    value=1,
+                    message="User ID must be positive"
+            )
+
+            Integer userId
+    ) {
 
         return ResponseEntity.ok(
-                userService.getUserBalance(userId)
+
+                userService.getUserBalance(
+                        userId
+                )
+
         );
+
     }
+
 }

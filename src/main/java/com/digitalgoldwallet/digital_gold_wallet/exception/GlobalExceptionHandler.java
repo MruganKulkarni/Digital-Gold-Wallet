@@ -1,16 +1,19 @@
-package com.digitalgoldwallet.digital_gold_wallet.exception; // package declaration for exception handling
+package com.digitalgoldwallet.digital_gold_wallet.exception;
 
-import com.digitalgoldwallet.digital_gold_wallet.exception.WalletException;
-import org.springframework.http.HttpStatus; // used for HTTP status codes
-import org.springframework.http.ResponseEntity; // used to return HTTP response with body and status
-import org.springframework.validation.FieldError; // used to extract field-level validation errors
-import org.springframework.web.bind.MethodArgumentNotValidException; // thrown when @Valid fails
-import org.springframework.web.bind.annotation.ExceptionHandler; // marks method as exception handler
-import org.springframework.web.bind.annotation.RestControllerAdvice; // makes this a global exception handler for REST controllers
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 
-import java.time.LocalDateTime; // used for error timestamp
-import java.util.HashMap; // used to store field-level error messages
-import java.util.Map; // used for key-value error map
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.NoSuchElementException;
 
 /*
  * ============================================================
@@ -19,27 +22,31 @@ import java.util.Map; // used for key-value error map
  *
  * Handles all custom exceptions globally
  * Returns structured JSON responses
- * Prevents raw stack traces from reaching client
- *
- * Applied globally to all REST controllers
  *
  * ============================================================
  */
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     /*
      * ============================================================
-     * HANDLE VendorNotFoundException
+     * COMMON METHOD
+     * Avoid duplicate code
      * ============================================================
      */
-    @ExceptionHandler(VendorNotFoundException.class)
-    public ResponseEntity<Map<String, Object>>
-    handleVendorNotFoundException(
-            VendorNotFoundException ex
-    ) {
 
-        Map<String, Object> error =
+    private ResponseEntity<Map<String,Object>>
+    buildError(
+
+            HttpStatus status,
+
+            String errorType,
+
+            String message
+    ){
+
+        Map<String,Object> error =
                 new HashMap<>();
 
         error.put(
@@ -49,344 +56,329 @@ public class GlobalExceptionHandler {
 
         error.put(
                 "status",
-                HttpStatus.NOT_FOUND.value()
+                status.value()
         );
 
         error.put(
                 "error",
-                "Vendor Not Found"
+                errorType
         );
 
         error.put(
                 "message",
-                ex.getMessage()
+                message
         );
 
         return new ResponseEntity<>(
                 error,
-                HttpStatus.NOT_FOUND
+                status
         );
+
     }
+
 
     /*
      * ============================================================
-     * HANDLE VendorBranchNotFoundException
+     * Vendor Not Found
      * ============================================================
      */
+
+    @ExceptionHandler(
+            VendorNotFoundException.class
+    )
+    public ResponseEntity<Map<String,Object>>
+    handleVendorNotFound(
+            VendorNotFoundException ex
+    ){
+
+        return buildError(
+                HttpStatus.NOT_FOUND,
+                "Vendor Not Found",
+                ex.getMessage()
+        );
+
+    }
+
+
+    /*
+     * ============================================================
+     * Vendor Branch Not Found
+     * ============================================================
+     */
+
     @ExceptionHandler(
             VendorBranchNotFoundException.class
     )
-    public ResponseEntity<Map<String, Object>>
-    handleVendorBranchNotFoundException(
+    public ResponseEntity<Map<String,Object>>
+    handleBranchNotFound(
             VendorBranchNotFoundException ex
-    ) {
+    ){
 
-        Map<String, Object> error =
-                new HashMap<>();
-
-        error.put(
-                "timestamp",
-                LocalDateTime.now()
-        );
-
-        error.put(
-                "status",
-                HttpStatus.NOT_FOUND.value()
-        );
-
-        error.put(
-                "error",
-                "Vendor Branch Not Found"
-        );
-
-        error.put(
-                "message",
+        return buildError(
+                HttpStatus.NOT_FOUND,
+                "Vendor Branch Not Found",
                 ex.getMessage()
         );
 
-        return new ResponseEntity<>(
-                error,
-                HttpStatus.NOT_FOUND
-        );
     }
+
 
     /*
      * ============================================================
-     * HANDLE DuplicateVendorException
+     * Address Not Found
      * ============================================================
      */
-    @ExceptionHandler(
-            DuplicateVendorException.class
-    )
-    public ResponseEntity<Map<String, Object>>
-    handleDuplicateVendorException(
-            DuplicateVendorException ex
-    ) {
 
-        Map<String, Object> error =
-                new HashMap<>();
-
-        error.put(
-                "timestamp",
-                LocalDateTime.now()
-        );
-
-        error.put(
-                "status",
-                HttpStatus.CONFLICT.value()
-        );
-
-        error.put(
-                "error",
-                "Duplicate Vendor"
-        );
-
-        error.put(
-                "message",
-                ex.getMessage()
-        );
-
-        return new ResponseEntity<>(
-                error,
-                HttpStatus.CONFLICT
-        );
-    }
-
-    /*
-     * ============================================================
-     * HANDLE DuplicateVendorBranchException
-     * ============================================================
-     */
-    @ExceptionHandler(
-            DuplicateVendorBranchException.class
-    )
-    public ResponseEntity<Map<String, Object>>
-    handleDuplicateVendorBranchException(
-            DuplicateVendorBranchException ex
-    ) {
-
-        Map<String, Object> error =
-                new HashMap<>();
-
-        error.put(
-                "timestamp",
-                LocalDateTime.now()
-        );
-
-        error.put(
-                "status",
-                HttpStatus.CONFLICT.value()
-        );
-
-        error.put(
-                "error",
-                "Duplicate Vendor Branch"
-        );
-
-        error.put(
-                "message",
-                ex.getMessage()
-        );
-
-        return new ResponseEntity<>(
-                error,
-                HttpStatus.CONFLICT
-        );
-    }
-
-    /*
-     * ============================================================
-     * HANDLE AddressNotFoundException
-     * ============================================================
-     */
     @ExceptionHandler(
             AddressNotFoundException.class
     )
-    public ResponseEntity<Map<String, Object>>
-    handleAddressNotFoundException(
+    public ResponseEntity<Map<String,Object>>
+    handleAddressNotFound(
             AddressNotFoundException ex
-    ) {
+    ){
 
-        Map<String, Object> error =
-                new HashMap<>();
-
-        error.put(
-                "timestamp",
-                LocalDateTime.now()
-        );
-
-        error.put(
-                "status",
-                HttpStatus.NOT_FOUND.value()
-        );
-
-        error.put(
-                "error",
-                "Address Not Found"
-        );
-
-        error.put(
-                "message",
+        return buildError(
+                HttpStatus.NOT_FOUND,
+                "Address Not Found",
                 ex.getMessage()
         );
 
-        return new ResponseEntity<>(
-                error,
-                HttpStatus.NOT_FOUND
-        );
     }
+
+
 
     /*
      * ============================================================
-     * HANDLE UserNotFoundException
+     * User Not Found
      * ============================================================
      */
+
     @ExceptionHandler(
             UserNotFoundException.class
     )
-    public ResponseEntity<Map<String, Object>>
-    handleUserNotFoundException(
+    public ResponseEntity<Map<String,Object>>
+    handleUserNotFound(
             UserNotFoundException ex
-    ) {
+    ){
 
-        Map<String, Object> error =
-                new HashMap<>();
-
-        error.put(
-                "timestamp",
-                LocalDateTime.now()
-        );
-
-        error.put(
-                "status",
-                HttpStatus.NOT_FOUND.value()
-        );
-
-        error.put(
-                "error",
-                "User Not Found"
-        );
-
-        error.put(
-                "message",
+        return buildError(
+                HttpStatus.NOT_FOUND,
+                "User Not Found",
                 ex.getMessage()
         );
 
-        return new ResponseEntity<>(
-                error,
-                HttpStatus.NOT_FOUND
-        );
     }
+
+
 
     /*
      * ============================================================
-     * HANDLE PaymentNotFoundException
+     * Payment Not Found
      * ============================================================
      */
+
     @ExceptionHandler(
             PaymentNotFoundException.class
     )
-    public ResponseEntity<Map<String, Object>>
-    handlePaymentNotFoundException(
+    public ResponseEntity<Map<String,Object>>
+    handlePaymentNotFound(
             PaymentNotFoundException ex
-    ) {
+    ){
 
-        Map<String, Object> error =
-                new HashMap<>();
-
-        error.put(
-                "timestamp",
-                LocalDateTime.now()
-        );
-
-        error.put(
-                "status",
-                HttpStatus.NOT_FOUND.value()
-        );
-
-        error.put(
-                "error",
-                "Payment Not Found"
-        );
-
-        error.put(
-                "message",
+        return buildError(
+                HttpStatus.NOT_FOUND,
+                "Payment Not Found",
                 ex.getMessage()
         );
 
-        return new ResponseEntity<>(
-                error,
-                HttpStatus.NOT_FOUND
-        );
     }
+
+
 
     /*
      * ============================================================
-     * HANDLE InsufficientBalanceException
+     * Transaction History Not Found
      * ============================================================
      */
+
+    @ExceptionHandler(
+            TransactionHistoryNotFoundException.class
+    )
+    public ResponseEntity<Map<String,Object>>
+    handleTransactionNotFound(
+            TransactionHistoryNotFoundException ex
+    ){
+
+        return buildError(
+                HttpStatus.NOT_FOUND,
+                "Transaction History Not Found",
+                ex.getMessage()
+        );
+
+    }
+
+
+
+    /*
+     * ============================================================
+     * Physical Transaction Not Found
+     * ============================================================
+     */
+
+    @ExceptionHandler(
+            PhysicalGoldTransactionNotFoundException.class
+    )
+    public ResponseEntity<Map<String,Object>>
+    handlePhysicalNotFound(
+            PhysicalGoldTransactionNotFoundException ex
+    ){
+
+        return buildError(
+                HttpStatus.NOT_FOUND,
+                "Physical Transaction Not Found",
+                ex.getMessage()
+        );
+
+    }
+
+
+
+    /*
+     * ============================================================
+     * Virtual Holding Not Found
+     * ============================================================
+     */
+
+    @ExceptionHandler(
+            VirtualGoldHoldingNotFoundException.class
+    )
+    public ResponseEntity<Map<String,Object>>
+    handleHoldingNotFound(
+            VirtualGoldHoldingNotFoundException ex
+    ){
+
+        return buildError(
+                HttpStatus.NOT_FOUND,
+                "Virtual Holding Not Found",
+                ex.getMessage()
+        );
+
+    }
+
+
+
+    /*
+     * ============================================================
+     * Duplicate Vendor
+     * ============================================================
+     */
+
+    @ExceptionHandler(
+            DuplicateVendorException.class
+    )
+    public ResponseEntity<Map<String,Object>>
+    handleDuplicateVendor(
+            DuplicateVendorException ex
+    ){
+
+        return buildError(
+                HttpStatus.CONFLICT,
+                "Duplicate Vendor",
+                ex.getMessage()
+        );
+
+    }
+
+
+
+    /*
+     * ============================================================
+     * Duplicate Branch
+     * ============================================================
+     */
+
+    @ExceptionHandler(
+            DuplicateVendorBranchException.class
+    )
+    public ResponseEntity<Map<String,Object>>
+    handleDuplicateBranch(
+            DuplicateVendorBranchException ex
+    ){
+
+        return buildError(
+                HttpStatus.CONFLICT,
+                "Duplicate Vendor Branch",
+                ex.getMessage()
+        );
+
+    }
+
+
+
+    /*
+     * ============================================================
+     * Wallet Error
+     * ============================================================
+     */
+
+    @ExceptionHandler(
+            WalletException.class
+    )
+    public ResponseEntity<Map<String,Object>>
+    handleWallet(
+            WalletException ex
+    ){
+
+        return buildError(
+                HttpStatus.BAD_REQUEST,
+                "Wallet Error",
+                ex.getMessage()
+        );
+
+    }
+
+
+
+    /*
+     * ============================================================
+     * Insufficient Balance
+     * ============================================================
+     */
+
     @ExceptionHandler(
             InsufficientBalanceException.class
     )
-    public ResponseEntity<Map<String, Object>>
-    handleInsufficientBalanceException(
+    public ResponseEntity<Map<String,Object>>
+    handleBalance(
             InsufficientBalanceException ex
-    ) {
+    ){
 
-        Map<String, Object> error =
-                new HashMap<>();
-
-        error.put(
-                "timestamp",
-                LocalDateTime.now()
-        );
-
-        error.put(
-                "status",
-                HttpStatus.BAD_REQUEST.value()
-        );
-
-        error.put(
-                "error",
-                "Insufficient Balance"
-        );
-
-        error.put(
-                "message",
+        return buildError(
+                HttpStatus.BAD_REQUEST,
+                "Insufficient Balance",
                 ex.getMessage()
         );
 
-        return new ResponseEntity<>(
-                error,
-                HttpStatus.BAD_REQUEST
-        );
     }
+
+
 
     /*
      * ============================================================
-     * HANDLE VALIDATION ERRORS
-     * ============================================================
-     *
-     * Handles @Valid validation failures
-     *
-     * Example:
-     * - invalid email
-     * - null amount
-     * - blank name
-     *
-     * Returns field-wise validation errors
-     *
+     * DTO Validation
+     * @Valid + RequestBody
      * ============================================================
      */
+
     @ExceptionHandler(
             MethodArgumentNotValidException.class
     )
-    public ResponseEntity<Map<String, Object>>
-    handleValidationException(
+    public ResponseEntity<Map<String,Object>>
+    handleValidation(
             MethodArgumentNotValidException ex
-    ) {
+    ){
 
-        Map<String, Object> error =
+        Map<String,Object> error =
                 new HashMap<>();
 
         error.put(
@@ -404,23 +396,24 @@ public class GlobalExceptionHandler {
                 "Validation Failed"
         );
 
-        /*
-         * Store field-wise validation messages
-         */
-        Map<String, String> fieldErrors =
+
+        Map<String,String>
+                fieldErrors =
                 new HashMap<>();
 
-        /*
-         * Loop through all validation errors
-         */
-        for (FieldError fieldError :
+
+        for(
+                FieldError fieldError :
+
                 ex.getBindingResult()
-                        .getFieldErrors()) {
+                        .getFieldErrors()
+        ){
 
             fieldErrors.put(
                     fieldError.getField(),
                     fieldError.getDefaultMessage()
             );
+
         }
 
         error.put(
@@ -432,202 +425,31 @@ public class GlobalExceptionHandler {
                 error,
                 HttpStatus.BAD_REQUEST
         );
+
     }
+
+
 
     /*
      * ============================================================
-     * HANDLE GENERIC EXCEPTION
-     * ============================================================
+     * Path Variable Validation
      *
-     * Fallback handler
-     * Catches unhandled exceptions
+     * Example:
+     * /users/-1
+     * @Min
      *
      * ============================================================
      */
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>>
-    handleGenericException(
-            Exception ex
-    ) {
-
-        Map<String, Object> error =
-                new HashMap<>();
-
-        error.put(
-                "timestamp",
-                LocalDateTime.now()
-        );
-
-        error.put(
-                "status",
-                HttpStatus.INTERNAL_SERVER_ERROR.value()
-        );
-
-        error.put(
-                "error",
-                "Internal Server Error"
-        );
-
-        error.put(
-                "message",
-                ex.getMessage()
-        );
-
-        return new ResponseEntity<>(
-                error,
-                HttpStatus.INTERNAL_SERVER_ERROR
-        );
-    }
-    /*
-     * ============================================================
-     * HANDLE TransactionHistoryNotFoundException
-     * ============================================================
-     */
 
     @ExceptionHandler(
-            TransactionHistoryNotFoundException.class
+            ConstraintViolationException.class
     )
     public ResponseEntity<Map<String,Object>>
-    handleTransactionHistoryNotFoundException(
-            TransactionHistoryNotFoundException ex
+    handleConstraintViolation(
+            ConstraintViolationException ex
     ){
 
         Map<String,Object> error=
-                new HashMap<>();
-
-        error.put(
-                "timestamp",
-                LocalDateTime.now()
-        );
-
-        error.put(
-                "status",
-                HttpStatus.NOT_FOUND.value()
-        );
-
-        error.put(
-                "error",
-                "Transaction History Not Found"
-        );
-
-        error.put(
-                "message",
-                ex.getMessage()
-        );
-
-        return new ResponseEntity<>(
-                error,
-                HttpStatus.NOT_FOUND
-        );
-
-    }
-
-
-
-    /*
-     * ============================================================
-     * HANDLE PhysicalGoldTransactionNotFoundException
-     * ============================================================
-     */
-
-    @ExceptionHandler(
-            PhysicalGoldTransactionNotFoundException.class
-    )
-    public ResponseEntity<Map<String,Object>>
-    handlePhysicalTransactionException(
-            PhysicalGoldTransactionNotFoundException ex
-    ){
-
-        Map<String,Object> error=
-                new HashMap<>();
-
-        error.put(
-                "timestamp",
-                LocalDateTime.now()
-        );
-
-        error.put(
-                "status",
-                HttpStatus.NOT_FOUND.value()
-        );
-
-        error.put(
-                "error",
-                "Physical Transaction Not Found"
-        );
-
-        error.put(
-                "message",
-                ex.getMessage()
-        );
-
-        return new ResponseEntity<>(
-                error,
-                HttpStatus.NOT_FOUND
-        );
-
-    }
-
-
-
-    /*
-     * ============================================================
-     * HANDLE VirtualHoldingNotFoundException
-     * ============================================================
-     */
-
-    @ExceptionHandler(
-            VirtualGoldHoldingNotFoundException.class
-    )
-    public ResponseEntity<Map<String,Object>>
-    handleHoldingException(
-            VirtualGoldHoldingNotFoundException ex
-    ){
-
-        Map<String,Object> error=
-                new HashMap<>();
-
-        error.put(
-                "timestamp",
-                LocalDateTime.now()
-        );
-
-        error.put(
-                "status",
-                HttpStatus.NOT_FOUND.value()
-        );
-
-        error.put(
-                "error",
-                "Virtual Holding Not Found"
-        );
-
-        error.put(
-                "message",
-                ex.getMessage()
-        );
-
-        return new ResponseEntity<>(
-                error,
-                HttpStatus.NOT_FOUND
-        );
-
-    }
-
-    /*
-     * ============================================================
-     * HANDLE WalletException
-     * ============================================================
-     */
-    @ExceptionHandler(
-            WalletException.class
-    )
-    public ResponseEntity<Map<String, Object>>
-    handleWalletException(
-            WalletException ex
-    ) {
-
-        Map<String, Object> error =
                 new HashMap<>();
 
         error.put(
@@ -642,17 +464,89 @@ public class GlobalExceptionHandler {
 
         error.put(
                 "error",
-                "Wallet Error"
+                "Validation Failed"
         );
 
+
+        Map<String,String>
+                fieldErrors=
+                new HashMap<>();
+
+
+        for(
+                ConstraintViolation<?> violation:
+
+                ex.getConstraintViolations()
+        ){
+
+            fieldErrors.put(
+                    violation.getPropertyPath()
+                            .toString(),
+
+                    violation.getMessage()
+            );
+
+        }
+
         error.put(
-                "message",
-                ex.getMessage()
+                "fieldErrors",
+                fieldErrors
         );
 
         return new ResponseEntity<>(
                 error,
                 HttpStatus.BAD_REQUEST
         );
+
     }
+
+
+
+    /*
+     * ============================================================
+     * Safety fallback
+     * catches raw Optional.orElseThrow()
+     * ============================================================
+     */
+
+    @ExceptionHandler(
+            NoSuchElementException.class
+    )
+    public ResponseEntity<Map<String,Object>>
+    handleNoSuchElement(
+            NoSuchElementException ex
+    ){
+
+        return buildError(
+                HttpStatus.NOT_FOUND,
+                "Resource Not Found",
+                "Requested resource does not exist"
+        );
+
+    }
+
+
+
+    /*
+     * ============================================================
+     * Generic fallback
+     * ============================================================
+     */
+
+    @ExceptionHandler(
+            Exception.class
+    )
+    public ResponseEntity<Map<String,Object>>
+    handleGeneric(
+            Exception ex
+    ){
+
+        return buildError(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Internal Server Error",
+                ex.getMessage()
+        );
+
+    }
+
 }

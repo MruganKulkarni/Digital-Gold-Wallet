@@ -9,8 +9,12 @@ import com.digitalgoldwallet.digital_gold_wallet.dto.response.AddressResponseDto
 // importing service layer
 import com.digitalgoldwallet.digital_gold_wallet.service.AddressService;
 
-// validation annotation
+// validation annotations
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+
+// enables path variable validation
+import org.springframework.validation.annotation.Validated;
 
 // HTTP response wrapper
 import org.springframework.http.ResponseEntity;
@@ -22,10 +26,25 @@ import org.springframework.web.bind.annotation.*;
  * ============================================================
  * Address REST Controller
  * ============================================================
+ *
+ * Handles all HTTP requests related to Address module.
+ *
+ * Base URL:
+ * /api/v1/addresses
+ *
+ * Validation:
+ * - Request body validation using @Valid
+ * - Path variable validation using @Min
+ *
+ * ============================================================
  */
 
 @RestController
+
+@Validated
+
 @RequestMapping("/api/v1/addresses")
+
 public class AddressController {
 
     /*
@@ -33,15 +52,19 @@ public class AddressController {
      */
     private final AddressService addressService;
 
+
     /*
      * Constructor injection
      */
     public AddressController(
-            AddressService addressService) {
+            AddressService addressService
+    ) {
 
         this.addressService =
                 addressService;
+
     }
+
 
     /*
      * ============================================================
@@ -50,19 +73,30 @@ public class AddressController {
      *
      * POST /api/v1/addresses
      */
+
     @PostMapping
+
     public ResponseEntity<AddressResponseDto>
     createAddress(
+
             @Valid
+
             @RequestBody
-            AddressRequestDto requestDto) {
+
+            AddressRequestDto requestDto
+    ) {
 
         return ResponseEntity.ok(
+
                 addressService.createAddress(
                         requestDto
                 )
+
         );
+
     }
+
+
 
     /*
      * ============================================================
@@ -71,18 +105,33 @@ public class AddressController {
      *
      * GET /api/v1/addresses/{addressId}
      */
+
     @GetMapping("/{addressId}")
+
     public ResponseEntity<AddressResponseDto>
     getAddressById(
+
             @PathVariable
-            Integer addressId) {
+
+            @Min(
+                    value=1,
+                    message="Address ID must be positive"
+            )
+
+            Integer addressId
+    ) {
 
         return ResponseEntity.ok(
+
                 addressService.getAddressById(
                         addressId
                 )
+
         );
+
     }
+
+
 
     /*
      * ============================================================
@@ -91,21 +140,37 @@ public class AddressController {
      *
      * PUT /api/v1/addresses/{addressId}
      */
+
     @PutMapping("/{addressId}")
+
     public ResponseEntity<AddressResponseDto>
     updateAddress(
+
             @PathVariable
+
+            @Min(
+                    value=1,
+                    message="Address ID must be positive"
+            )
+
             Integer addressId,
 
             @Valid
+
             @RequestBody
-            AddressRequestDto requestDto) {
+
+            AddressRequestDto requestDto
+    ) {
 
         return ResponseEntity.ok(
+
                 addressService.updateAddress(
                         addressId,
                         requestDto
                 )
+
         );
+
     }
+
 }
