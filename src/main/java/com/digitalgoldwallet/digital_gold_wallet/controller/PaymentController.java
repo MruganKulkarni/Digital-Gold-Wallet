@@ -8,10 +8,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,21 +29,31 @@ import java.util.List;
  * - payment history
  * - payment lookup
  *
+ * Validation:
+ * - Request body validation using @Valid
+ * - Path variable validation using @Min
+ *
  * ============================================================
  */
 
 @RestController
+
+@Validated
+
 @RequestMapping("/api/v1")
+
 @Tag(
         name = "Payment Controller",
         description = "APIs for wallet payments and payment history"
 )
+
 public class PaymentController {
 
     /*
      * Payment service dependency
      */
     private final PaymentService paymentService;
+
 
     /*
      * Constructor Injection
@@ -52,7 +64,9 @@ public class PaymentController {
 
         this.paymentService =
                 paymentService;
+
     }
+
 
     /*
      * ============================================================
@@ -64,27 +78,40 @@ public class PaymentController {
      *
      * ============================================================
      */
+
     @PostMapping("/payments")
+
     @Operation(
             summary = "Initiate payment"
     )
+
     public ResponseEntity<PaymentResponseDto>
     createPayment(
+
             @Valid
+
             @RequestBody
+
             PaymentRequestDto requestDto
     ) {
 
         PaymentResponseDto response =
+
                 paymentService.createPayment(
                         requestDto
                 );
 
         return new ResponseEntity<>(
+
                 response,
+
                 HttpStatus.CREATED
+
         );
+
     }
+
+
 
     /*
      * ============================================================
@@ -96,17 +123,28 @@ public class PaymentController {
      *
      * ============================================================
      */
+
     @GetMapping("/payments/{paymentId}")
+
     @Operation(
             summary = "Get payment by ID"
     )
+
     public ResponseEntity<PaymentResponseDto>
     getPaymentById(
+
             @PathVariable
+
+            @Min(
+                    value=1,
+                    message="Payment ID must be positive"
+            )
+
             Integer paymentId
     ) {
 
         PaymentResponseDto response =
+
                 paymentService.getPaymentById(
                         paymentId
                 );
@@ -114,7 +152,10 @@ public class PaymentController {
         return ResponseEntity.ok(
                 response
         );
+
     }
+
+
 
     /*
      * ============================================================
@@ -126,17 +167,28 @@ public class PaymentController {
      *
      * ============================================================
      */
+
     @GetMapping("/users/{userId}/payments")
+
     @Operation(
             summary = "Get payment history by user ID"
     )
+
     public ResponseEntity<List<PaymentResponseDto>>
     getPaymentsByUserId(
+
             @PathVariable
+
+            @Min(
+                    value=1,
+                    message="User ID must be positive"
+            )
+
             Integer userId
     ) {
 
         List<PaymentResponseDto> response =
+
                 paymentService.getPaymentsByUserId(
                         userId
                 );
@@ -144,5 +196,7 @@ public class PaymentController {
         return ResponseEntity.ok(
                 response
         );
+
     }
+
 }

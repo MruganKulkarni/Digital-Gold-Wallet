@@ -8,7 +8,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,6 +31,8 @@ import java.util.List;
  */
 
 @RestController
+
+@Validated
 
 @RequestMapping("/api/v1")
 
@@ -124,6 +128,12 @@ public class VirtualGoldHoldingController {
     getUserHoldings(
 
             @PathVariable
+
+            @Min(
+                    value=1,
+                    message="User ID must be positive"
+            )
+
             Integer userId
     ){
 
@@ -154,6 +164,12 @@ public class VirtualGoldHoldingController {
     getBranchHoldings(
 
             @PathVariable
+
+            @Min(
+                    value=1,
+                    message="Branch ID must be positive"
+            )
+
             Integer branchId
     ){
 

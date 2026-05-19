@@ -9,10 +9,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 /*
@@ -25,21 +27,31 @@ import org.springframework.web.bind.annotation.*;
  * - wallet credit
  * - wallet debit
  *
+ * Validation:
+ * - Request body validation using @Valid
+ * - Path variable validation using @Min
+ *
  * ============================================================
  */
 
 @RestController
+
+@Validated
+
 @RequestMapping("/api/v1/wallets")
+
 @Tag(
         name = "Wallet Controller",
         description = "APIs for wallet operations"
 )
+
 public class WalletController {
 
     /*
      * Wallet service dependency
      */
     private final WalletService walletService;
+
 
     /*
      * Constructor Injection
@@ -50,24 +62,37 @@ public class WalletController {
 
         this.walletService =
                 walletService;
+
     }
+
 
     /*
      * ============================================================
      * GET WALLET BALANCE
      * ============================================================
      */
+
     @GetMapping("/{userId}/balance")
+
     @Operation(
             summary = "Get wallet balance"
     )
+
     public ResponseEntity<WalletBalanceResponseDto>
     getWalletBalance(
+
             @PathVariable
+
+            @Min(
+                    value=1,
+                    message="User ID must be positive"
+            )
+
             Integer userId
     ) {
 
         WalletBalanceResponseDto response =
+
                 walletService.getWalletBalance(
                         userId
                 );
@@ -75,67 +100,107 @@ public class WalletController {
         return ResponseEntity.ok(
                 response
         );
+
     }
+
+
 
     /*
      * ============================================================
      * CREDIT WALLET
      * ============================================================
      */
+
     @PostMapping("/{userId}/credit")
+
     @Operation(
             summary = "Add money to wallet"
     )
+
     public ResponseEntity<PaymentResponseDto>
     creditWallet(
+
             @PathVariable
+
+            @Min(
+                    value=1,
+                    message="User ID must be positive"
+            )
+
             Integer userId,
 
             @Valid
+
             @RequestBody
+
             WalletTransactionRequestDto requestDto
     ) {
 
         PaymentResponseDto response =
+
                 walletService.creditWallet(
                         userId,
                         requestDto
                 );
 
         return new ResponseEntity<>(
+
                 response,
+
                 HttpStatus.CREATED
+
         );
+
     }
+
+
 
     /*
      * ============================================================
      * DEBIT WALLET
      * ============================================================
      */
+
     @PostMapping("/{userId}/debit")
+
     @Operation(
             summary = "Debit money from wallet"
     )
+
     public ResponseEntity<PaymentResponseDto>
     debitWallet(
+
             @PathVariable
+
+            @Min(
+                    value=1,
+                    message="User ID must be positive"
+            )
+
             Integer userId,
 
             @Valid
+
             @RequestBody
+
             WalletTransactionRequestDto requestDto
     ) {
 
         PaymentResponseDto response =
+
                 walletService.debitWallet(
                         userId,
                         requestDto
                 );
 
         return new ResponseEntity<>(
+
                 response,
+
                 HttpStatus.CREATED
+
         );
+
     }
+
 }
