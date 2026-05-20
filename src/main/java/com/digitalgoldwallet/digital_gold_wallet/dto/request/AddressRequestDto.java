@@ -1,6 +1,7 @@
 package com.digitalgoldwallet.digital_gold_wallet.dto.request;
 
 import jakarta.validation.constraints.NotBlank; // validates field is not null, empty, or blank
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size; // validates field length does not exceed max characters
 
 /*
@@ -44,7 +45,17 @@ public class AddressRequestDto {
      * DB column: VARCHAR(20) — matches Address entity @Column(length = 20)
      */
     @NotBlank(message = "Postal code is required") // field must not be null, empty, or whitespace-only
-    @Size(max = 20, message = "Postal code cannot exceed 20 characters") // matches DB column length 20
+    @Size(
+            min=3,
+            max=11,
+            message="Postal code must be between 3 and 10 characters"
+    ) // All around the world - country codes vary between 3 and 11 digits
+
+    @Pattern(
+            regexp="^[A-Za-z0-9\\- ]+$",
+            message="Postal code contains invalid characters"
+    )
+// matches DB column length 20
     private String postalCode;
 
     /*

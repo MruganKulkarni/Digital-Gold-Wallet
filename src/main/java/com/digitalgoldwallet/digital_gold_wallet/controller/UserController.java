@@ -210,7 +210,7 @@ public class UserController {
 
     @DeleteMapping("/{userId}")
 
-    public ResponseEntity<String>
+    public ResponseEntity<?>
     deleteUser(
 
             @PathVariable
@@ -223,12 +223,28 @@ public class UserController {
             Integer userId
     ) {
 
-        userService.deleteUser(
-                userId
-        );
+        /*
+         * Service returns deleted user details
+         */
+        UserResponseDto deletedUser =
 
+                userService.deleteUser(
+                        userId
+                );
+
+        /*
+         * Return success message + deleted details
+         */
         return ResponseEntity.ok(
-                "User deleted successfully"
+
+                java.util.Map.of(
+
+                        "message",
+                        "User deleted successfully",
+
+                        "deletedUser",
+                        deletedUser
+                )
         );
 
     }

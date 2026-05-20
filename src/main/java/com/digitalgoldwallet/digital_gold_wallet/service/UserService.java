@@ -20,12 +20,16 @@ public interface UserService {
     /*
      * Create new user
      */
-    UserResponseDto createUser(UserRequestDto requestDto);
+    UserResponseDto createUser(
+            UserRequestDto requestDto
+    );
 
     /*
      * Get user by ID
      */
-    UserResponseDto getUserById(Integer userId);
+    UserResponseDto getUserById(
+            Integer userId
+    );
 
     /*
      * Get all users
@@ -41,12 +45,16 @@ public interface UserService {
     );
 
     /*
-     * Delete user
+     * Delete user and return deleted details
      */
-    void deleteUser(Integer userId);
+    UserResponseDto deleteUser(
+            Integer userId
+    );
 
     /*
      * Get user balance
      */
-    BigDecimal getUserBalance(Integer userId);
+    BigDecimal getUserBalance(
+            Integer userId
+    );
 }
