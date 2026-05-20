@@ -164,10 +164,17 @@ public class SecurityConfig {
                  * AUTHORIZATION RULES
                  * ====================================================
                  */
+                /*
+                 * ====================================================
+                 * AUTHORIZATION RULES
+                 * ====================================================
+                 */
                 .authorizeHttpRequests(auth -> auth
 
                         /*
+                         * ====================================================
                          * SWAGGER
+                         * ====================================================
                          */
                         .requestMatchers(
                                 "/swagger-ui/**",
@@ -175,41 +182,135 @@ public class SecurityConfig {
                                 "/v3/api-docs/**"
                         ).permitAll()
 
+
+
+
                         /*
-                         * TANMAY
+                         * ====================================================
+                         * TANMAY - PAYMENT + WALLET
+                         * ====================================================
                          */
                         .requestMatchers(
-                                "/api/v1/payments/**",
-                                "/api/v1/wallets/**",
-                                "/api/v1/users/*/payments",
-                                "/api/v1/users/*/balance"
+
+                                /*
+                                 * Wallet APIs
+                                 */
+                                "/api/v1/wallets/*/debit",
+                                "/api/v1/wallets/*/credit",
+                                "/api/v1/wallets/*/balance",
+
+                                /*
+                                 * Payment APIs
+                                 */
+                                "/api/v1/payments",
+                                "/api/v1/payments/*",
+                                "/api/v1/users/*/payments"
+
                         ).hasRole("PAYMENT_DEV")
 
+
+
+
                         /*
-                         * VARSHA
+                         * ====================================================
+                         * VARSHA - USER + ADDRESS
+                         * ====================================================
                          */
                         .requestMatchers(
-                                "/api/v1/users/**",
-                                "/api/v1/addresses/**"
+
+                                /*
+                                 * User APIs
+                                 */
+                                "/api/v1/users",
+                                "/api/v1/users/*",
+
+                                /*
+                                 * Address APIs
+                                 */
+                                "/api/v1/addresses",
+                                "/api/v1/addresses/*"
+
                         ).hasRole("USER_DEV")
 
+
+
+
                         /*
-                         * SPARSH
+                         * ====================================================
+                         * SPARSH - VENDOR + BRANCH
+                         * ====================================================
                          */
                         .requestMatchers(
-                                "/api/v1/vendors/**",
-                                "/api/v1/branches/**"
+
+                                /*
+                                 * Vendor APIs
+                                 */
+                                "/api/v1/vendors",
+                                "/api/v1/vendors/*",
+                                "/api/v1/vendors/*/price",
+                                "/api/v1/vendors/*/branches",
+
+                                /*
+                                 * Vendor Branch APIs
+                                 */
+                                "/api/v1/branches/*",
+                                "/api/v1/branches/*/inventory"
+
                         ).hasRole("VENDOR_DEV")
 
+
+
+
                         /*
-                         * MRUGAN
+                         * ====================================================
+                         * MRUGAN - GOLD + TRANSACTIONS
+                         * ====================================================
                          */
                         .requestMatchers(
-                                "/api/v1/gold/**",
-                                "/api/v1/physical-transactions/**",
-                                "/api/v1/reports/**"
+
+                                /*
+                                 * Physical Gold APIs
+                                 */
+                                "/api/v1/gold/physical/convert",
+                                "/api/v1/users/*/gold/physical",
+                                "/api/v1/physical-transactions/*",
+
+                                /*
+                                 * Virtual Gold APIs
+                                 */
+                                "/api/v1/gold/virtual/buy",
+                                "/api/v1/gold/virtual/sell",
+                                "/api/v1/users/*/gold/virtual",
+                                "/api/v1/branches/*/gold/virtual",
+
+                                /*
+                                 * Transaction APIs
+                                 */
+                                "/api/v1/users/*/transactions",
+                                "/api/v1/branches/*/transactions"
+
                         ).hasRole("GOLD_DEV")
 
+
+
+
+                        /*
+                         * ====================================================
+                         * REPORTING APIs
+                         * ====================================================
+                         */
+                        .requestMatchers(
+                                "/api/v1/reports/**"
+                        ).permitAll()
+
+
+
+
+                        /*
+                         * ====================================================
+                         * ANY OTHER REQUEST
+                         * ====================================================
+                         */
                         .anyRequest()
                         .authenticated()
                 )

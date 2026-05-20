@@ -276,4 +276,65 @@ public class GlobalExceptionHandler {
     ) {
         return buildError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", ex.getMessage());
     }
+
+    /*
+     * ============================================================
+     * Email Already Exists
+     * ============================================================
+     */
+
+    /*
+     * ============================================================
+     * Email Already Exists
+     * ============================================================
+     */
+
+    @ExceptionHandler(
+            EmailAlreadyExistsException.class
+    )
+
+    public ResponseEntity<Map<String,Object>>
+    handleEmailAlreadyExists(
+
+            EmailAlreadyExistsException ex
+    ) {
+
+        return buildError(
+
+                HttpStatus.CONFLICT,
+
+                "Conflict",
+
+                ex.getMessage()
+
+        );
+
+    }
+    /*
+     * ============================================================
+     * Database Integrity Violation
+     * ============================================================
+     */
+
+    @ExceptionHandler(
+            org.springframework.dao.DataIntegrityViolationException.class
+    )
+
+    public ResponseEntity<Map<String,Object>>
+    handleIntegrityViolation(
+
+            org.springframework.dao.DataIntegrityViolationException ex
+    ) {
+
+        return buildError(
+
+                HttpStatus.CONFLICT,
+
+                "Delete Not Allowed",
+
+                "User cannot be deleted because related records exist"
+
+        );
+
+    }
 }
