@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <title>Sell Gold</title>
+
+    <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+            rel="stylesheet">
+
+</head>
+
+<body class="bg-light">
+
+<div class="container mt-5">
+
+    <div class="card shadow-lg p-5">
+
+        <h1 class="text-danger fw-bold mb-4">
+
+            Sell Virtual Gold
+
+        </h1>
+
+        <form method="post">
+
+            <div class="mb-3">
+
+                <label class="form-label">
+
+                    User ID
+
+                </label>
+
+                <input
+                        type="number"
+                        class="form-control">
+
+            </div>
+
+            <div class="mb-4">
+
+                <label class="form-label">
+
+                    Gold Quantity
+
+                </label>
+
+                <input
+                        type="number"
+                        step="0.01"
+                        class="form-control">
+
+            </div>
+
+            <button
+                    class="btn btn-danger">
+
+                Sell Gold
+
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>
