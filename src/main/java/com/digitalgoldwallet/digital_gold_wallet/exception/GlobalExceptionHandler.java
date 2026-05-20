@@ -207,6 +207,30 @@ public class GlobalExceptionHandler {
 
     /*
      * ============================================================
+     * Report Exception
+     * ============================================================
+     */
+
+    @ExceptionHandler(
+            ReportException.class
+    )
+    public ResponseEntity<Map<String,Object>>
+    handleReportException(
+            ReportException ex
+    ){
+
+        return buildError(
+                HttpStatus.BAD_REQUEST,
+                "Report Error",
+                ex.getMessage()
+        );
+
+    }
+
+
+
+    /*
+     * ============================================================
      * DTO Validation
      * @Valid + RequestBody
      * ============================================================
