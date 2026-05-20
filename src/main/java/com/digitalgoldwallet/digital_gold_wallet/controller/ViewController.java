@@ -34,5 +34,16 @@ public class ViewController {
 
         return "user-module";
     }
+    /*
+     * ============================================================
+     * REPORTS MODULE PAGE
+     * ============================================================
+     */
+
+    @GetMapping("/reports-module")
+    public String reportsModulePage() {
+
+        return "reports-module";
+    }
 
 }
