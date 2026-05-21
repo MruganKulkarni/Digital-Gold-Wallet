@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <title>Gold Module</title>
+
+    <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+            rel="stylesheet">
+
+</head>
+
+<body class="bg-light">
+
+<div class="container mt-5">
+
+    <!-- HEADER -->
+
+    <div class="text-center mb-5">
+
+        <img
+                th:src="@{/images/mrugan.jpeg}"
+
+                class="rounded-circle shadow-lg mb-3"
+
+                style="
+                    width: 180px;
+                    height: 180px;
+                    object-fit: cover;
+                "
+
+                alt="Mrugan">
+
+        <h1 class="display-4 text-warning fw-bold">
+
+            Mrugan
+
+        </h1>
+
+        <h4 class="text-secondary">
+
+            GOLD MODULE DEVELOPER
+
+        </h4>
+
+    </div>
+
+    <!-- ENDPOINTS -->
+
+    <div class="card shadow-lg p-4 mb-5">
+
+        <h2 class="text-warning mb-4">
+
+            Implemented Endpoints
+
+        </h2>
+
+        <ul class="list-group">
+
+            <li class="list-group-item">
+                POST /api/v1/gold/virtual/buy
+            </li>
+
+            <li class="list-group-item">
+                POST /api/v1/gold/virtual/sell
+            </li>
+
+            <li class="list-group-item">
+                GET /api/v1/users/{userId}/gold/virtual
+            </li>
+
+            <li class="list-group-item">
+                GET /api/v1/branches/{branchId}/gold/virtual
+            </li>
+
+            <li class="list-group-item">
+                POST /api/v1/gold/physical/convert
+            </li>
+
+            <li class="list-group-item">
+                GET /api/v1/users/{userId}/gold/physical
+            </li>
+
+            <li class="list-group-item">
+                GET /api/v1/physical-transactions/{transactionId}
+            </li>
+
+            <li class="list-group-item">
+                GET /api/v1/users/{userId}/transactions
+            </li>
+
+            <li class="list-group-item">
+                GET /api/v1/branches/{branchId}/transactions
+            </li>
+
+        </ul>
+
+    </div>
+
+    <!-- DASHBOARD -->
+
+    <div class="card shadow-lg p-4 mb-5">
+
+        <h2 class="text-primary mb-4">
+
+            Interactive Gold Dashboard
+
+        </h2>
+
+        <div class="row">
+
+            <!-- BUY GOLD -->
+
+            <div class="col-md-4 mb-4">
+
+                <div class="border rounded p-4 text-center h-100">
+
+                    <h4>Buy Gold</h4>
+
+                    <p>Buy virtual gold.</p>
+
+                    <p class="fw-bold text-success">
+
+                        POST /api/v1/gold/virtual/buy
+
+                    </p>
+
+                    <a
+                            th:href="@{/gold/buy}"
+
+                            class="btn btn-success">
+
+                        Buy
+
+                    </a>
+
+                </div>
+
+            </div>
+
+            <!-- SELL GOLD -->
+
+            <div class="col-md-4 mb-4">
+
+                <div class="border rounded p-4 text-center h-100">
+
+                    <h4>Sell Gold</h4>
+
+                    <p>Sell virtual gold.</p>
+
+                    <p class="fw-bold text-danger">
+
+                        POST /api/v1/gold/virtual/sell
+
+                    </p>
+
+                    <a
+                            th:href="@{/gold/sell}"
+
+                            class="btn btn-danger">
+
+                        Sell
+
+                    </a>
+
+                </div>
+
+            </div>
+
+            <!-- USER GOLD -->
+
+            <div class="col-md-4 mb-4">
+
+                <div class="border rounded p-4 text-center h-100">
+
+                    <h4>User Gold</h4>
+
+                    <p>User gold holdings.</p>
+
+                    <p class="fw-bold text-primary">
+
+                        GET /api/v1/users/{userId}/gold/virtual
+
+                    </p>
+
+                    <input
+                            type="number"
+
+                            id="userGoldId"
+
+                            class="form-control mb-3"
+
+                            placeholder="Enter User ID">
+
+                    <button
+                            class="btn btn-primary"
+
+                            onclick="userGold()">
+
+                        View
+
+                    </button>
+
+                </div>
+
+            </div>
+
+            <!-- BRANCH GOLD -->
+
+            <div class="col-md-4 mb-4">
+
+                <div class="border rounded p-4 text-center h-100">
+
+                    <h4>Branch Gold</h4>
+
+                    <p>Branch gold holdings.</p>
+
+                    <p class="fw-bold text-secondary">
+
+                        GET /api/v1/branches/{branchId}/gold/virtual
+
+                    </p>
+
+                    <input
+                            type="number"
+
+                            id="branchGoldId"
+
+                            class="form-control mb-3"
+
+                            placeholder="Enter Branch ID">
+
+                    <button
+                            class="btn btn-secondary"
+
+                            onclick="branchGold()">
+
+                        View
+
+                    </button>
+
+                </div>
+
+            </div>
+
+            <!-- CONVERT GOLD -->
+
+            <div class="col-md-4 mb-4">
+
+                <div class="border rounded p-4 text-center h-100">
+
+                    <h4>Convert Gold</h4>
+
+                    <p>Convert virtual to physical.</p>
+
+                    <p class="fw-bold text-warning">
+
+                        POST /api/v1/gold/physical/convert
+
+                    </p>
+
+                    <a
+                            th:href="@{/gold/convert}"
+
+                            class="btn btn-warning">
+
+                        Convert
+
+                    </a>
+
+                </div>
+
+            </div>
+
+            <!-- PHYSICAL GOLD -->
+
+            <div class="col-md-4 mb-4">
+
+                <div class="border rounded p-4 text-center h-100">
+
+                    <h4>Physical Gold</h4>
+
+                    <p>User physical gold orders.</p>
+
+                    <p class="fw-bold text-dark">
+
+                        GET /api/v1/users/{userId}/gold/physical
+
+                    </p>
+
+                    <input
+                            type="number"
+
+                            id="physicalGoldId"
+
+                            class="form-control mb-3"
+
+                            placeholder="Enter User ID">
+
+                    <button
+                            class="btn btn-dark"
+
+                            onclick="physicalGold()">
+
+                        View
+
+                    </button>
+
+                </div>
+
+            </div>
+
+            <!-- PHYSICAL TRANSACTION -->
+
+            <div class="col-md-4 mb-4">
+
+                <div class="border rounded p-4 text-center h-100">
+
+                    <h4>Physical Transaction</h4>
+
+                    <p>Delivery transaction details.</p>
+
+                    <p class="fw-bold text-info">
+
+                        GET /api/v1/physical-transactions/{transactionId}
+
+                    </p>
+
+                    <input
+                            type="number"
+
+                            id="physicalTransactionId"
+
+                            class="form-control mb-3"
+
+                            placeholder="Enter Transaction ID">
+
+                    <button
+                            class="btn btn-info"
+
+                            onclick="physicalTransaction()">
+
+                        View
+
+                    </button>
+
+                </div>
+
+            </div>
+
+            <!-- USER TRANSACTIONS -->
+
+            <div class="col-md-4 mb-4">
+
+                <div class="border rounded p-4 text-center h-100">
+
+                    <h4>User Transactions</h4>
+
+                    <p>User transaction history.</p>
+
+                    <p class="fw-bold text-success">
+
+                        GET /api/v1/users/{userId}/transactions
+
+                    </p>
+
+                    <input
+                            type="number"
+
+                            id="userTransactionId"
+
+                            class="form-control mb-3"
+
+                            placeholder="Enter User ID">
+
+                    <button
+                            class="btn btn-success"
+
+                            onclick="userTransactions()">
+
+                        View
+
+                    </button>
+
+                </div>
+
+            </div>
+
+            <!-- BRANCH TRANSACTIONS -->
+
+            <div class="col-md-4 mb-4">
+
+                <div class="border rounded p-4 text-center h-100">
+
+                    <h4>Branch Transactions</h4>
+
+                    <p>Branch transaction history.</p>
+
+                    <p class="fw-bold text-danger">
+
+                        GET /api/v1/branches/{branchId}/transactions
+
+                    </p>
+
+                    <input
+                            type="number"
+
+                            id="branchTransactionId"
+
+                            class="form-control mb-3"
+
+                            placeholder="Enter Branch ID">
+
+                    <button
+                            class="btn btn-danger"
+
+                            onclick="branchTransactions()">
+
+                        View
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- FOOTER BUTTONS -->
+
+    <div class="text-center mt-4 mb-5">
+
+        <a
+                href="http://localhost:8080/swagger-ui/index.html"
+
+                class="btn btn-dark btn-lg me-3">
+
+            Open Swagger
+
+        </a>
+
+        <a
+                th:href="@{/}"
+
+                class="btn btn-secondary btn-lg">
+
+            Back To Home
+
+        </a>
+
+    </div>
+
+</div>
+
+<script>
+
+    function userGold() {
+
+        let id =
+            document.getElementById(
+                "userGoldId"
+            ).value;
+
+        window.location.href =
+            "/gold/user/" + id;
+    }
+
+    function branchGold() {
+
+        let id =
+            document.getElementById(
+                "branchGoldId"
+            ).value;
+
+        window.location.href =
+            "/gold/branch/" + id;
+    }
+
+    function physicalGold() {
+
+        let id =
+            document.getElementById(
+                "physicalGoldId"
+            ).value;
+
+        window.location.href =
+            "/gold/physical/" + id;
+    }
+
+    function physicalTransaction() {
+
+        let id =
+            document.getElementById(
+                "physicalTransactionId"
+            ).value;
+
+        window.location.href =
+            "/physical-transactions/" + id;
+    }
+
+    function userTransactions() {
+
+        let id =
+            document.getElementById(
+                "userTransactionId"
+            ).value;
+
+        window.location.href =
+            "/transactions/user/" + id;
+    }
+
+    function branchTransactions() {
+
+        let id =
+            document.getElementById(
+                "branchTransactionId"
+            ).value;
+
+        window.location.href =
+            "/transactions/branch/" + id;
+    }
+
+</script>
+
+</body>
+
+</html>

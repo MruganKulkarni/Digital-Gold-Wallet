@@ -1,7 +1,8 @@
 package com.digitalgoldwallet.digital_gold_wallet.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank; // validates field is not null, empty, or blank
+import jakarta.validation.constraints.Size; // validates field length does not exceed max characters
 
 import java.util.List;
 
@@ -11,9 +12,13 @@ import java.util.List;
  * ============================================================
  *
  * Maps to addresses table in MySQL database.
+ *
+ * @Size added to every String field to match the column
+ * lengths defined in @Column(length = X).
+ * This ensures entity-level validation catches oversized
+ * values before they ever reach the DB layer.
  * ============================================================
  */
-
 @Entity
 @Table(name = "addresses")
 public class Address implements Comparable<Address> {
@@ -28,8 +33,10 @@ public class Address implements Comparable<Address> {
 
     /*
      * Street
+     * DB column: VARCHAR(150)
      */
-    @NotBlank(message = "Street is required")
+    @NotBlank(message = "Street is required") // must not be null, empty, or whitespace-only
+    @Size(max = 150, message = "Street cannot exceed 150 characters") // must match @Column(length = 150)
     @Column(name = "street",
             nullable = false,
             length = 150)
@@ -37,8 +44,10 @@ public class Address implements Comparable<Address> {
 
     /*
      * City
+     * DB column: VARCHAR(100)
      */
-    @NotBlank(message = "City is required")
+    @NotBlank(message = "City is required") // must not be null, empty, or whitespace-only
+    @Size(max = 100, message = "City cannot exceed 100 characters") // must match @Column(length = 100)
     @Column(name = "city",
             nullable = false,
             length = 100)
@@ -46,8 +55,10 @@ public class Address implements Comparable<Address> {
 
     /*
      * State
+     * DB column: VARCHAR(100)
      */
-    @NotBlank(message = "State is required")
+    @NotBlank(message = "State is required") // must not be null, empty, or whitespace-only
+    @Size(max = 100, message = "State cannot exceed 100 characters") // must match @Column(length = 100)
     @Column(name = "state",
             nullable = false,
             length = 100)
@@ -55,8 +66,10 @@ public class Address implements Comparable<Address> {
 
     /*
      * Postal Code
+     * DB column: VARCHAR(20)
      */
-    @NotBlank(message = "Postal code is required")
+    @NotBlank(message = "Postal code is required") // must not be null, empty, or whitespace-only
+    @Size(max = 20, message = "Postal code cannot exceed 20 characters") // must match @Column(length = 20)
     @Column(name = "postal_code",
             nullable = false,
             length = 20)
@@ -64,8 +77,10 @@ public class Address implements Comparable<Address> {
 
     /*
      * Country
+     * DB column: VARCHAR(100)
      */
-    @NotBlank(message = "Country is required")
+    @NotBlank(message = "Country is required") // must not be null, empty, or whitespace-only
+    @Size(max = 100, message = "Country cannot exceed 100 characters") // must match @Column(length = 100)
     @Column(name = "country",
             nullable = false,
             length = 100)

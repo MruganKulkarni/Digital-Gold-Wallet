@@ -7,6 +7,7 @@ import com.digitalgoldwallet.digital_gold_wallet.entity.Address;
 import com.digitalgoldwallet.digital_gold_wallet.entity.User;
 
 import com.digitalgoldwallet.digital_gold_wallet.exception.AddressNotFoundException;
+import com.digitalgoldwallet.digital_gold_wallet.exception.EmailAlreadyExistsException;
 import com.digitalgoldwallet.digital_gold_wallet.exception.UserNotFoundException;
 
 import com.digitalgoldwallet.digital_gold_wallet.mapper.UserMapper;
@@ -65,7 +66,7 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByEmail(
                 requestDto.getEmail())) {
 
-            throw new RuntimeException(
+            throw new EmailAlreadyExistsException(
                     "Email already exists"
             );
         }
@@ -173,16 +174,40 @@ public class UserServiceImpl implements UserService {
      * Delete User
      */
     @Override
-    public void deleteUser(Integer userId) {
+    public UserResponseDto deleteUser(
+            Integer userId
+    ) {
 
         User user =
                 userRepository.findById(userId)
-                        .orElseThrow(() ->
-                                new UserNotFoundException(
-                                        "User not found"
-                                ));
+                        .orElseThrow(
+                                () ->
+                                        new UserNotFoundException(
+                                                "User not found"
+                                        )
+                        );
 
-        userRepository.delete(user);
+        /*
+         * Convert entity to DTO before delete
+         */
+        UserResponseDto deletedUser =
+
+                userMapper.toResponseDto(
+                        user
+                );
+
+        /*
+         * Delete user
+         */
+        userRepository.delete(
+                user
+        );
+
+        /*
+         * Return deleted user details
+         */
+        return deletedUser;
+
     }
 
     /*

@@ -7,6 +7,7 @@ import com.digitalgoldwallet.digital_gold_wallet.entity.PhysicalGoldTransaction;
 import com.digitalgoldwallet.digital_gold_wallet.entity.User;
 import com.digitalgoldwallet.digital_gold_wallet.entity.VendorBranch;
 import com.digitalgoldwallet.digital_gold_wallet.exception.AddressNotFoundException;
+import com.digitalgoldwallet.digital_gold_wallet.exception.PhysicalGoldTransactionNotFoundException;
 import com.digitalgoldwallet.digital_gold_wallet.exception.UserNotFoundException;
 import com.digitalgoldwallet.digital_gold_wallet.exception.VendorBranchNotFoundException;
 import com.digitalgoldwallet.digital_gold_wallet.mapper.PhysicalGoldTransactionMapper;
@@ -14,161 +15,110 @@ import com.digitalgoldwallet.digital_gold_wallet.repository.AddressRepository;
 import com.digitalgoldwallet.digital_gold_wallet.repository.PhysicalGoldTransactionRepository;
 import com.digitalgoldwallet.digital_gold_wallet.repository.UserRepository;
 import com.digitalgoldwallet.digital_gold_wallet.repository.VendorBranchRepository;
+import com.digitalgoldwallet.digital_gold_wallet.repository.VirtualGoldHoldingRepository;
 import com.digitalgoldwallet.digital_gold_wallet.service.PhysicalGoldTransactionService;
 
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
-
-/*
- * ============================================================
- * Physical Gold Transaction Service Implementation
- * ============================================================
- *
- * Handles:
- *
- * - Convert virtual gold to physical
- * - Create transaction
- * - Get user transactions
- * - Get transaction by ID
- *
- * ============================================================
- */
 
 @Service
 public class PhysicalGoldTransactionServiceImpl
         implements PhysicalGoldTransactionService {
 
-    /*
-     * Repository dependencies
-     */
     private final PhysicalGoldTransactionRepository repository;
-
     private final UserRepository userRepository;
-
     private final VendorBranchRepository branchRepository;
-
     private final AddressRepository addressRepository;
-
     private final PhysicalGoldTransactionMapper mapper;
-
-
-    /*
-     * Constructor injection
-     */
+    private final VirtualGoldHoldingRepository virtualGoldHoldingRepository;
 
     public PhysicalGoldTransactionServiceImpl(
-
             PhysicalGoldTransactionRepository repository,
-
             UserRepository userRepository,
-
             VendorBranchRepository branchRepository,
-
             AddressRepository addressRepository,
-
-            PhysicalGoldTransactionMapper mapper
+            PhysicalGoldTransactionMapper mapper,
+            VirtualGoldHoldingRepository virtualGoldHoldingRepository
     ) {
 
-        this.repository = repository;
+        this.repository=repository;
+        this.userRepository=userRepository;
+        this.branchRepository=branchRepository;
+        this.addressRepository=addressRepository;
+        this.mapper=mapper;
+        this.virtualGoldHoldingRepository=virtualGoldHoldingRepository;
 
-        this.userRepository = userRepository;
-
-        this.branchRepository = branchRepository;
-
-        this.addressRepository = addressRepository;
-
-        this.mapper = mapper;
     }
 
-
-    /*
-     * ============================================================
-     * Convert virtual to physical
-     * ============================================================
-     */
-
     @Override
-    public PhysicalGoldTransactionResponseDto
-    convertToPhysical(
+    public PhysicalGoldTransactionResponseDto convertToPhysical(
             PhysicalGoldTransactionRequestDto dto
     ) {
+
+        BigDecimal totalHoldings=
+                virtualGoldHoldingRepository
+                        .sumQuantityByUserIdAndBranchId(
+                                dto.getUserId(),
+                                dto.getBranchId()
+                        );
+
+        if(totalHoldings==null){
+
+            totalHoldings=BigDecimal.ZERO;
+
+        }
+
+        if(dto.getQuantity().compareTo(totalHoldings)>0){
+
+            throw new IllegalArgumentException(
+                    "Insufficient virtual gold holdings"
+            );
+
+        }
 
         return createTransaction(dto);
 
     }
 
-
-    /*
-     * ============================================================
-     * Create physical transaction
-     * ============================================================
-     */
-
     @Override
-    public PhysicalGoldTransactionResponseDto
-    createTransaction(
+    public PhysicalGoldTransactionResponseDto createTransaction(
             PhysicalGoldTransactionRequestDto dto
     ) {
 
-        /*
-         * Fetch user
-         */
-
-        User user =
+        User user=
                 userRepository.findById(
-                                dto.getUserId()
+                        dto.getUserId()
+                ).orElseThrow(
+                        ()->new UserNotFoundException(
+                                "User not found with ID: "
+                                        + dto.getUserId()
                         )
-                        .orElseThrow(
-                                () ->
-                                        new UserNotFoundException(
-                                                "User not found with ID: "
-                                                        + dto.getUserId()
-                                        )
-                        );
+                );
 
-
-        /*
-         * Fetch branch
-         */
-
-        VendorBranch branch =
+        VendorBranch branch=
                 branchRepository.findById(
-                                dto.getBranchId()
+                        dto.getBranchId()
+                ).orElseThrow(
+                        ()->new VendorBranchNotFoundException(
+                                "Branch not found with ID: "
+                                        + dto.getBranchId()
                         )
-                        .orElseThrow(
-                                () ->
-                                        new VendorBranchNotFoundException(
-                                                "Branch not found with ID: "
-                                                        + dto.getBranchId()
-                                        )
-                        );
+                );
 
-
-        /*
-         * Fetch delivery address
-         */
-
-        Address address =
+        Address address=
                 addressRepository.findById(
-                                dto.getAddressId()
+                        dto.getAddressId()
+                ).orElseThrow(
+                        ()->new AddressNotFoundException(
+                                "Address not found with ID: "
+                                        + dto.getAddressId()
                         )
-                        .orElseThrow(
-                                () ->
-                                        new AddressNotFoundException(
-                                                "Address not found with ID: "
-                                                        + dto.getAddressId()
-                                        )
-                        );
+                );
 
-
-        /*
-         * DTO → Entity
-         */
-
-        PhysicalGoldTransaction transaction =
-
+        PhysicalGoldTransaction transaction=
                 mapper.toEntity(
                         dto,
                         user,
@@ -176,20 +126,10 @@ public class PhysicalGoldTransactionServiceImpl
                         address
                 );
 
-
-        /*
-         * Save transaction
-         */
-
-        transaction =
+        transaction=
                 repository.save(
                         transaction
                 );
-
-
-        /*
-         * Entity → DTO
-         */
 
         return mapper.toResponseDto(
                 transaction
@@ -198,22 +138,23 @@ public class PhysicalGoldTransactionServiceImpl
     }
 
 
-    /*
-     * ============================================================
-     * Get transactions by user
-     * ============================================================
-     */
-
     @Override
     public List<PhysicalGoldTransactionResponseDto>
     getByUser(
             Integer userId
     ) {
 
+        if(!userRepository.existsById(userId)){
+
+            throw new UserNotFoundException(
+                    "User not found with ID: "
+                            + userId
+            );
+
+        }
+
         return repository
-                .findByUserUserId(
-                        userId
-                )
+                .findByUserUserId(userId)
                 .stream()
                 .map(
                         mapper::toResponseDto
@@ -225,31 +166,21 @@ public class PhysicalGoldTransactionServiceImpl
     }
 
 
-
-    /*
-     * ============================================================
-     * Get transaction by ID
-     * ============================================================
-     */
-
     @Override
     public PhysicalGoldTransactionResponseDto
     getById(
             Integer id
     ) {
 
-        PhysicalGoldTransaction transaction =
-
+        PhysicalGoldTransaction transaction=
                 repository.findById(id)
-
                         .orElseThrow(
-                                () ->
-                                        new RuntimeException(
+                                ()->
+                                        new PhysicalGoldTransactionNotFoundException(
                                                 "Physical transaction not found with ID: "
                                                         + id
                                         )
                         );
-
 
         return mapper.toResponseDto(
                 transaction
