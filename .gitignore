@@ -4,3 +4,5 @@ target/
 .idea/
 .vscode/
 .env
+.DS_Store
+**/.DS_Store
