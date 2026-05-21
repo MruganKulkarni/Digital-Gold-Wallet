@@ -91,4 +91,17 @@ public interface VirtualGoldHoldingRepository
             @Param("userId") Integer userId, // binds userId param to query
             @Param("branchId") Integer branchId // binds branchId param to query
     );
+
+    /*
+     * ============================================================
+     * Fetch all holdings for a user at a specific branch
+     *
+     * Used by sellGold and convertToPhysical
+     * to locate rows that need to be reduced/removed.
+     * ============================================================
+     */
+    List<VirtualGoldHolding> findByUserUserIdAndBranchBranchId(
+            @Param("userId") Integer userId,
+            @Param("branchId") Integer branchId
+    );
 }
