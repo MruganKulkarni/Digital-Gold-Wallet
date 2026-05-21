@@ -1,306 +1,605 @@
-package com.digitalgoldwallet.digital_gold_wallet.service; // package declaration for service tests
+package com.digitalgoldwallet.digital_gold_wallet.service;
 
-import com.digitalgoldwallet.digital_gold_wallet.dto.request.VendorBranchRequestDto; // request DTO for vendor branch
-import com.digitalgoldwallet.digital_gold_wallet.dto.response.VendorBranchResponseDto; // response DTO for vendor branch
-import com.digitalgoldwallet.digital_gold_wallet.entity.Address; // Address entity — needed to link branch to address
-import com.digitalgoldwallet.digital_gold_wallet.entity.Vendor; // Vendor entity — needed to link branch to vendor
-import com.digitalgoldwallet.digital_gold_wallet.entity.VendorBranch; // VendorBranch entity
-import com.digitalgoldwallet.digital_gold_wallet.exception.DuplicateVendorBranchException; // thrown for duplicate branch
-import com.digitalgoldwallet.digital_gold_wallet.exception.VendorBranchNotFoundException; // thrown when branch not found
-import com.digitalgoldwallet.digital_gold_wallet.exception.VendorNotFoundException; // thrown when vendor not found
-import com.digitalgoldwallet.digital_gold_wallet.repository.AddressRepository; // address repository — will be mocked
-import com.digitalgoldwallet.digital_gold_wallet.repository.VendorBranchRepository; // vendor branch repository — will be mocked
-import com.digitalgoldwallet.digital_gold_wallet.repository.VendorRepository; // vendor repository — will be mocked
-import com.digitalgoldwallet.digital_gold_wallet.service.impl.VendorBranchServiceImpl; // concrete service implementation
+import com.digitalgoldwallet.digital_gold_wallet.dto.request.VendorBranchRequestDto;
+import com.digitalgoldwallet.digital_gold_wallet.dto.response.VendorBranchResponseDto;
 
-import org.junit.jupiter.api.DisplayName; // used to give readable names to test cases
-import org.junit.jupiter.api.Test; // marks method as a JUnit 5 test case
-import org.junit.jupiter.api.extension.ExtendWith; // used to register extensions with JUnit 5
+import com.digitalgoldwallet.digital_gold_wallet.entity.Address;
+import com.digitalgoldwallet.digital_gold_wallet.entity.Vendor;
+import com.digitalgoldwallet.digital_gold_wallet.entity.VendorBranch;
 
-import org.mockito.InjectMocks; // injects mocks into the class under test
-import org.mockito.Mock; // creates a mock object
-import org.mockito.junit.jupiter.MockitoExtension; // enables Mockito annotations in JUnit 5
+import com.digitalgoldwallet.digital_gold_wallet.exception.DuplicateVendorBranchException;
+import com.digitalgoldwallet.digital_gold_wallet.exception.VendorBranchNotFoundException;
+import com.digitalgoldwallet.digital_gold_wallet.exception.VendorNotFoundException;
 
-import java.math.BigDecimal; // used for gold quantity values
-import java.time.LocalDateTime; // used for timestamp field
-import java.util.List; // used for list of branches
-import java.util.Optional; // used for optional result
+import com.digitalgoldwallet.digital_gold_wallet.repository.AddressRepository;
+import com.digitalgoldwallet.digital_gold_wallet.repository.VendorBranchRepository;
+import com.digitalgoldwallet.digital_gold_wallet.repository.VendorRepository;
 
-import static org.junit.jupiter.api.Assertions.*; // imports all assertion methods
-import static org.mockito.ArgumentMatchers.any; // matches any argument of given type
-import static org.mockito.Mockito.when; // used to define mock behaviour
+import com.digitalgoldwallet.digital_gold_wallet.service.impl.VendorBranchServiceImpl;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+import static org.mockito.ArgumentMatchers.any;
+
+import static org.mockito.Mockito.*;
 
 /*
- * Mockito-based unit tests for VendorBranchServiceImpl
- *
- * WHY @ExtendWith(MockitoExtension.class):
- * Enables Mockito annotations — no Spring context, no DB
- * Pure unit tests — fast execution, no network/DB dependency
- *
- * WHY @Mock:
- * Creates mock repositories — no real DB calls
- * We control what each repository returns
- *
- * WHY @InjectMocks:
- * Creates a real VendorBranchServiceImpl and injects all @Mock fields into it
+ * ============================================================
+ * Vendor Branch Service Test
+ * ============================================================
  */
-@ExtendWith(MockitoExtension.class) // enables Mockito annotations for JUnit 5
+
+@ExtendWith(MockitoExtension.class)
 public class VendorBranchServiceTest {
 
-    @Mock // creates a mock VendorBranchRepository — no real DB calls
+    /*
+     * ============================================================
+     * MOCK REPOSITORIES
+     * ============================================================
+     */
+    @Mock
     private VendorBranchRepository vendorBranchRepository;
 
-    @Mock // creates a mock VendorRepository — no real DB calls
+    @Mock
     private VendorRepository vendorRepository;
 
-    @Mock // creates a mock AddressRepository — no real DB calls
+    @Mock
     private AddressRepository addressRepository;
 
-    @InjectMocks // creates VendorBranchServiceImpl and injects all mock repositories into it
+    /*
+     * ============================================================
+     * INJECT MOCKS
+     * ============================================================
+     */
+    @InjectMocks
     private VendorBranchServiceImpl vendorBranchService;
 
-    // ================================================================
-    //  HELPER METHODS
-    // ================================================================
-
+    /*
+     * ============================================================
+     * COMMON VENDOR
+     * ============================================================
+     */
     private Vendor createMockVendor() {
-        // creates and returns a mock Vendor entity
 
-        Vendor vendor = new Vendor(); // creates new Vendor entity
-        vendor.setVendorId(1); // sets vendor id
-        vendor.setVendorName("Test Gold Traders"); // sets vendor name
-        vendor.setTotalGoldQuantity(new BigDecimal("1000.00")); // sets total gold quantity
-        vendor.setCurrentGoldPrice(new BigDecimal("6400.00")); // sets current gold price
-        return vendor; // returns mock vendor
+        Vendor vendor = new Vendor();
+
+        vendor.setVendorId(1);
+
+        vendor.setVendorName("Test Gold Traders");
+
+        vendor.setTotalGoldQuantity(
+                new BigDecimal("1000.00")
+        );
+
+        vendor.setCurrentGoldPrice(
+                new BigDecimal("6400.00")
+        );
+
+        return vendor;
     }
 
+    /*
+     * ============================================================
+     * COMMON ADDRESS
+     * ============================================================
+     */
     private Address createMockAddress() {
-        // creates and returns a mock Address entity
 
-        Address address = new Address(); // creates new Address entity
-        address.setAddressId(1); // sets address id
-        address.setStreet("MG Road"); // sets street
-        address.setCity("Bangalore"); // sets city
-        address.setState("Karnataka"); // sets state
-        address.setPostalCode("560001"); // sets postal code
-        address.setCountry("India"); // sets country
-        return address; // returns mock address
+        Address address = new Address();
+
+        address.setAddressId(1);
+
+        address.setStreet("MG Road");
+
+        address.setCity("Bangalore");
+
+        address.setState("Karnataka");
+
+        address.setPostalCode("560001");
+
+        address.setCountry("India");
+
+        return address;
     }
 
-    private VendorBranch createMockBranch(Vendor vendor, Address address) {
-        // creates and returns a mock VendorBranch entity
+    /*
+     * ============================================================
+     * COMMON BRANCH
+     * ============================================================
+     */
+    private VendorBranch createMockBranch(
+            Vendor vendor,
+            Address address
+    ) {
 
-        VendorBranch branch = new VendorBranch(); // creates new VendorBranch entity
-        branch.setBranchId(1); // sets branch id
-        branch.setVendor(vendor); // links to mock vendor
-        branch.setAddress(address); // links to mock address
-        branch.setQuantity(new BigDecimal("500.00")); // sets gold quantity
-        branch.setCreatedAt(LocalDateTime.now()); // sets creation timestamp
-        return branch; // returns mock branch
+        VendorBranch branch =
+                new VendorBranch();
+
+        branch.setBranchId(1);
+
+        branch.setVendor(vendor);
+
+        branch.setAddress(address);
+
+        branch.setQuantity(
+                new BigDecimal("500.00")
+        );
+
+        branch.setCreatedAt(
+                LocalDateTime.now()
+        );
+
+        return branch;
     }
 
-    // ================================================================
-    //  ADD BRANCH TESTS
-    // ================================================================
+    /*
+     * ============================================================
+     * COMMON REQUEST DTO
+     * ============================================================
+     */
+    private VendorBranchRequestDto buildRequestDto() {
 
-    @Test // tells JUnit to run this method as a test case
-    @DisplayName("Test Add Branch - Success") // readable name shown in test report
+        VendorBranchRequestDto dto =
+                new VendorBranchRequestDto();
+
+        dto.setVendorId(1);
+
+        dto.setAddressId(1);
+
+        dto.setQuantity(
+                new BigDecimal("500.00")
+        );
+
+        return dto;
+    }
+
+    /*
+     * ============================================================
+     * TEST ADD BRANCH SUCCESS
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Add Branch Success")
     public void testAddBranch_Success() {
-        // verifies that addBranch returns correct response when branch is created successfully
 
-        Vendor mockVendor = createMockVendor(); // creates mock vendor
-        Address mockAddress = createMockAddress(); // creates mock address
-        VendorBranch mockBranch = createMockBranch(mockVendor, mockAddress); // creates mock branch
+        Vendor vendor =
+                createMockVendor();
 
-        VendorBranchRequestDto requestDto = new VendorBranchRequestDto(); // creates request DTO
-        requestDto.setVendorId(1); // sets vendor id
-        requestDto.setAddressId(1); // sets address id
-        requestDto.setQuantity(new BigDecimal("500.00")); // sets quantity
+        Address address =
+                createMockAddress();
 
-        when(vendorRepository.findById(1)) // when repository finds vendor by ID 1
-                .thenReturn(Optional.of(mockVendor)); // return mock vendor
+        VendorBranch branch =
+                createMockBranch(
+                        vendor,
+                        address
+                );
 
-        when(addressRepository.findById(1)) // when repository finds address by ID 1
-                .thenReturn(Optional.of(mockAddress)); // return mock address
+        VendorBranchRequestDto dto =
+                buildRequestDto();
 
-        when(vendorBranchRepository.existsByVendorVendorIdAndAddressAddressId(1, 1)) // when checking for duplicate branch
-                .thenReturn(false); // return false — no duplicate
+        when(vendorRepository.findById(1))
+                .thenReturn(Optional.of(vendor));
 
-        when(vendorBranchRepository.save(any(VendorBranch.class))) // when repository saves any branch
-                .thenReturn(mockBranch); // return mock branch with generated ID
+        when(addressRepository.findById(1))
+                .thenReturn(Optional.of(address));
 
-        VendorBranchResponseDto response = vendorBranchService.addBranch(1, requestDto); // calls service method
+        when(vendorBranchRepository
+                .existsByVendorVendorIdAndAddressAddressId(1,1))
+                .thenReturn(false);
 
-        assertNotNull(response); // confirms response is not null
-        assertEquals(1, response.getBranchId()); // confirms branch ID is set
-        assertEquals(1, response.getVendorId()); // confirms vendor ID matches
-        assertEquals(new BigDecimal("500.00"), response.getQuantity()); // confirms quantity matches
+        when(vendorBranchRepository.save(any(VendorBranch.class)))
+                .thenReturn(branch);
 
-        System.out.println("TEST PASSED: testAddBranch_Success - Branch added with ID = " + response.getBranchId());
+        VendorBranchResponseDto response =
+                vendorBranchService.addBranch(1,dto);
+
+        assertNotNull(response);
+
+        assertEquals(
+                1,
+                response.getBranchId()
+        );
+
+        verify(vendorBranchRepository, times(1))
+                .save(any(VendorBranch.class));
     }
 
-    @Test // tells JUnit to run this method as a test case
-    @DisplayName("Test Add Branch - Vendor Not Found") // readable name shown in test report
+    /*
+     * ============================================================
+     * TEST VENDOR NOT FOUND
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Vendor Not Found")
     public void testAddBranch_VendorNotFound() {
-        // verifies that addBranch throws VendorNotFoundException when vendor does not exist
 
-        VendorBranchRequestDto requestDto = new VendorBranchRequestDto(); // creates request DTO
-        requestDto.setVendorId(99999); // sets non-existent vendor id
-        requestDto.setAddressId(1); // sets valid address id
-        requestDto.setQuantity(new BigDecimal("500.00")); // sets valid quantity
+        VendorBranchRequestDto dto =
+                buildRequestDto();
 
-        when(vendorRepository.findById(99999)) // when repository tries to find vendor by ID 99999
-                .thenReturn(Optional.empty()); // return empty Optional — vendor not found
+        when(vendorRepository.findById(999))
+                .thenReturn(Optional.empty());
 
-        assertThrows(VendorNotFoundException.class, // expects VendorNotFoundException to be thrown
-                () -> vendorBranchService.addBranch(99999, requestDto)); // lambda that calls service method
+        assertThrows(
+                VendorNotFoundException.class,
 
-        System.out.println("TEST PASSED: testAddBranch_VendorNotFound - VendorNotFoundException thrown as expected");
+                () ->
+                        vendorBranchService
+                                .addBranch(999,dto)
+        );
     }
 
-    @Test // tells JUnit to run this method as a test case
-    @DisplayName("Test Add Branch - Duplicate Branch") // readable name shown in test report
+    /*
+     * ============================================================
+     * TEST DUPLICATE BRANCH
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Duplicate Branch")
     public void testAddBranch_DuplicateBranch() {
-        // verifies that addBranch throws DuplicateVendorBranchException when branch already exists
 
-        Vendor mockVendor = createMockVendor(); // creates mock vendor
-        Address mockAddress = createMockAddress(); // creates mock address
+        Vendor vendor =
+                createMockVendor();
 
-        VendorBranchRequestDto requestDto = new VendorBranchRequestDto(); // creates request DTO
-        requestDto.setVendorId(1); // sets vendor id
-        requestDto.setAddressId(1); // sets address id
-        requestDto.setQuantity(new BigDecimal("500.00")); // sets quantity
+        Address address =
+                createMockAddress();
 
-        when(vendorRepository.findById(1)) // when repository finds vendor by ID 1
-                .thenReturn(Optional.of(mockVendor)); // return mock vendor
+        VendorBranchRequestDto dto =
+                buildRequestDto();
 
-        when(addressRepository.findById(1)) // when repository finds address by ID 1
-                .thenReturn(Optional.of(mockAddress)); // return mock address
+        when(vendorRepository.findById(1))
+                .thenReturn(Optional.of(vendor));
 
-        when(vendorBranchRepository.existsByVendorVendorIdAndAddressAddressId(1, 1)) // when checking for duplicate branch
-                .thenReturn(true); // return true — duplicate exists
+        when(addressRepository.findById(1))
+                .thenReturn(Optional.of(address));
 
-        assertThrows(DuplicateVendorBranchException.class, // expects DuplicateVendorBranchException to be thrown
-                () -> vendorBranchService.addBranch(1, requestDto)); // lambda that calls service method
+        when(vendorBranchRepository
+                .existsByVendorVendorIdAndAddressAddressId(1,1))
+                .thenReturn(true);
 
-        System.out.println("TEST PASSED: testAddBranch_DuplicateBranch - DuplicateVendorBranchException thrown as expected");
+        assertThrows(
+                DuplicateVendorBranchException.class,
+
+                () ->
+                        vendorBranchService
+                                .addBranch(1,dto)
+        );
     }
 
-    // ================================================================
-    //  GET BRANCH BY ID TESTS
-    // ================================================================
-
-    @Test // tells JUnit to run this method as a test case
-    @DisplayName("Test Get Branch By ID - Success") // readable name shown in test report
+    /*
+     * ============================================================
+     * TEST GET BRANCH SUCCESS
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Get Branch Success")
     public void testGetBranchById_Success() {
-        // verifies that getBranchById returns correct response when branch exists
 
-        Vendor mockVendor = createMockVendor(); // creates mock vendor
-        Address mockAddress = createMockAddress(); // creates mock address
-        VendorBranch mockBranch = createMockBranch(mockVendor, mockAddress); // creates mock branch
+        Vendor vendor =
+                createMockVendor();
 
-        when(vendorBranchRepository.findById(1)) // when repository finds branch by ID 1
-                .thenReturn(Optional.of(mockBranch)); // return mock branch wrapped in Optional
+        Address address =
+                createMockAddress();
 
-        VendorBranchResponseDto response = vendorBranchService.getBranchById(1); // calls service method
+        VendorBranch branch =
+                createMockBranch(
+                        vendor,
+                        address
+                );
 
-        assertNotNull(response); // confirms response is not null
-        assertEquals(1, response.getBranchId()); // confirms branch ID matches
-        assertEquals(1, response.getVendorId()); // confirms vendor ID matches
+        when(vendorBranchRepository.findById(1))
+                .thenReturn(Optional.of(branch));
 
-        System.out.println("TEST PASSED: testGetBranchById_Success - Branch found with ID = " + response.getBranchId());
+        VendorBranchResponseDto response =
+                vendorBranchService.getBranchById(1);
+
+        assertNotNull(response);
+
+        assertEquals(
+                1,
+                response.getBranchId()
+        );
     }
 
-    @Test // tells JUnit to run this method as a test case
-    @DisplayName("Test Get Branch By ID - Not Found") // readable name shown in test report
+    /*
+     * ============================================================
+     * TEST GET BRANCH NOT FOUND
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Get Branch Not Found")
     public void testGetBranchById_NotFound() {
-        // verifies that getBranchById throws VendorBranchNotFoundException when branch does not exist
 
-        when(vendorBranchRepository.findById(99999)) // when repository tries to find branch by ID 99999
-                .thenReturn(Optional.empty()); // return empty Optional — branch not found
+        when(vendorBranchRepository.findById(999))
+                .thenReturn(Optional.empty());
 
-        assertThrows(VendorBranchNotFoundException.class, // expects VendorBranchNotFoundException to be thrown
-                () -> vendorBranchService.getBranchById(99999)); // lambda that calls service method
+        assertThrows(
+                VendorBranchNotFoundException.class,
 
-        System.out.println("TEST PASSED: testGetBranchById_NotFound - VendorBranchNotFoundException thrown as expected");
+                () ->
+                        vendorBranchService
+                                .getBranchById(999)
+        );
     }
 
-    // ================================================================
-    //  GET BRANCHES BY VENDOR ID TESTS
-    // ================================================================
-
-    @Test // tells JUnit to run this method as a test case
-    @DisplayName("Test Get Branches By Vendor ID - Success") // readable name shown in test report
+    /*
+     * ============================================================
+     * TEST GET BRANCHES BY VENDOR SUCCESS
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Get Branches By Vendor Success")
     public void testGetBranchesByVendorId_Success() {
-        // verifies that getBranchesByVendorId returns list of branches when vendor exists
 
-        Vendor mockVendor = createMockVendor(); // creates mock vendor
-        Address mockAddress = createMockAddress(); // creates mock address
-        VendorBranch mockBranch = createMockBranch(mockVendor, mockAddress); // creates mock branch
+        Vendor vendor =
+                createMockVendor();
 
-        when(vendorRepository.existsById(1)) // when repository checks if vendor exists
-                .thenReturn(true); // return true — vendor exists
+        Address address =
+                createMockAddress();
 
-        when(vendorBranchRepository.findByVendorVendorId(1)) // when repository fetches branches by vendor ID
-                .thenReturn(List.of(mockBranch)); // return list with one mock branch
+        VendorBranch branch =
+                createMockBranch(
+                        vendor,
+                        address
+                );
 
-        List<VendorBranchResponseDto> response = vendorBranchService.getBranchesByVendorId(1); // calls service method
+        when(vendorRepository.existsById(1))
+                .thenReturn(true);
 
-        assertNotNull(response); // confirms response is not null
-        assertFalse(response.isEmpty()); // confirms list has at least one branch
-        assertEquals(1, response.get(0).getBranchId()); // confirms first branch ID matches
+        when(vendorBranchRepository.findByVendorVendorId(1))
+                .thenReturn(List.of(branch));
 
-        System.out.println("TEST PASSED: testGetBranchesByVendorId_Success - Branches found = " + response.size());
+        List<VendorBranchResponseDto> response =
+                vendorBranchService
+                        .getBranchesByVendorId(1);
+
+        assertFalse(
+                response.isEmpty()
+        );
+
+        assertEquals(
+                1,
+                response.get(0).getBranchId()
+        );
     }
 
-    @Test // tells JUnit to run this method as a test case
-    @DisplayName("Test Get Branches By Vendor ID - Not Found") // readable name shown in test report
+    /*
+     * ============================================================
+     * TEST GET BRANCHES BY VENDOR NOT FOUND
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Get Branches By Vendor Not Found")
     public void testGetBranchesByVendorId_NotFound() {
-        // verifies that getBranchesByVendorId throws VendorNotFoundException when vendor does not exist
 
-        when(vendorRepository.existsById(99999)) // when repository checks if vendor 99999 exists
-                .thenReturn(false); // return false — vendor does not exist
+        when(vendorRepository.existsById(999))
+                .thenReturn(false);
 
-        assertThrows(VendorNotFoundException.class, // expects VendorNotFoundException to be thrown
-                () -> vendorBranchService.getBranchesByVendorId(99999)); // lambda that calls service method
+        assertThrows(
+                VendorNotFoundException.class,
 
-        System.out.println("TEST PASSED: testGetBranchesByVendorId_NotFound - VendorNotFoundException thrown as expected");
+                () ->
+                        vendorBranchService
+                                .getBranchesByVendorId(999)
+        );
     }
 
-    // ================================================================
-    //  GET INVENTORY TESTS
-    // ================================================================
-
-    @Test // tells JUnit to run this method as a test case
-    @DisplayName("Test Get Inventory By Branch ID - Success") // readable name shown in test report
+    /*
+     * ============================================================
+     * TEST GET INVENTORY SUCCESS
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Get Inventory Success")
     public void testGetInventoryByBranchId_Success() {
-        // verifies that getInventoryByBranchId returns correct inventory when branch exists
 
-        when(vendorBranchRepository.existsById(1)) // when repository checks if branch exists
-                .thenReturn(true); // return true — branch exists
+        when(vendorBranchRepository.existsById(1))
+                .thenReturn(true);
 
-        when(vendorBranchRepository.findInventoryByBranchId(1)) // when repository fetches inventory
-                .thenReturn(new BigDecimal("500.00")); // return mock inventory quantity
+        when(vendorBranchRepository.findInventoryByBranchId(1))
+                .thenReturn(
+                        new BigDecimal("500.00")
+                );
 
-        BigDecimal inventory = vendorBranchService.getInventoryByBranchId(1); // calls service method
+        BigDecimal inventory =
+                vendorBranchService
+                        .getInventoryByBranchId(1);
 
-        assertNotNull(inventory); // confirms inventory is not null
-        assertEquals(new BigDecimal("500.00"), inventory); // confirms inventory matches
-
-        System.out.println("TEST PASSED: testGetInventoryByBranchId_Success - Inventory = " + inventory);
+        assertEquals(
+                new BigDecimal("500.00"),
+                inventory
+        );
     }
 
-    @Test // tells JUnit to run this method as a test case
-    @DisplayName("Test Get Inventory By Branch ID - Not Found") // readable name shown in test report
+    /*
+     * ============================================================
+     * TEST GET INVENTORY NOT FOUND
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Get Inventory Not Found")
     public void testGetInventoryByBranchId_NotFound() {
-        // verifies that getInventoryByBranchId throws VendorBranchNotFoundException when branch does not exist
 
-        when(vendorBranchRepository.existsById(99999)) // when repository checks if branch 99999 exists
-                .thenReturn(false); // return false — branch does not exist
+        when(vendorBranchRepository.existsById(999))
+                .thenReturn(false);
 
-        assertThrows(VendorBranchNotFoundException.class, // expects VendorBranchNotFoundException to be thrown
-                () -> vendorBranchService.getInventoryByBranchId(99999)); // lambda that calls service method
+        assertThrows(
+                VendorBranchNotFoundException.class,
 
-        System.out.println("TEST PASSED: testGetInventoryByBranchId_NotFound - VendorBranchNotFoundException thrown as expected");
+                () ->
+                        vendorBranchService
+                                .getInventoryByBranchId(999)
+        );
     }
+
+    /*
+     * ============================================================
+     * TEST NULL VENDOR ID
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Null Vendor Id")
+    public void testNullVendorId() {
+
+        VendorBranchRequestDto dto =
+                buildRequestDto();
+
+        dto.setVendorId(null);
+
+        assertNull(
+                dto.getVendorId()
+        );
+    }
+
+    /*
+     * ============================================================
+     * TEST NULL ADDRESS ID
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Null Address Id")
+    public void testNullAddressId() {
+
+        VendorBranchRequestDto dto =
+                buildRequestDto();
+
+        dto.setAddressId(null);
+
+        assertNull(
+                dto.getAddressId()
+        );
+    }
+
+    /*
+     * ============================================================
+     * TEST NEGATIVE QUANTITY
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Negative Quantity")
+    public void testNegativeQuantity() {
+
+        VendorBranchRequestDto dto =
+                buildRequestDto();
+
+        dto.setQuantity(
+                new BigDecimal("-100")
+        );
+
+        assertEquals(
+                new BigDecimal("-100"),
+                dto.getQuantity()
+        );
+    }
+
+    /*
+     * ============================================================
+     * TEST ZERO QUANTITY
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Zero Quantity")
+    public void testZeroQuantity() {
+
+        VendorBranchRequestDto dto =
+                buildRequestDto();
+
+        dto.setQuantity(
+                BigDecimal.ZERO
+        );
+
+        assertEquals(
+                BigDecimal.ZERO,
+                dto.getQuantity()
+        );
+    }
+
+    /*
+     * ============================================================
+     * TEST SAVE METHOD CALLED
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Save Method Called")
+    public void testSaveMethodCalled() {
+
+        Vendor vendor =
+                createMockVendor();
+
+        Address address =
+                createMockAddress();
+
+        VendorBranch branch =
+                createMockBranch(
+                        vendor,
+                        address
+                );
+
+        VendorBranchRequestDto dto =
+                buildRequestDto();
+
+        when(vendorRepository.findById(1))
+                .thenReturn(Optional.of(vendor));
+
+        when(addressRepository.findById(1))
+                .thenReturn(Optional.of(address));
+
+        when(vendorBranchRepository
+                .existsByVendorVendorIdAndAddressAddressId(1,1))
+                .thenReturn(false);
+
+        when(vendorBranchRepository.save(any(VendorBranch.class)))
+                .thenReturn(branch);
+
+        vendorBranchService.addBranch(1,dto);
+
+        verify(vendorBranchRepository, times(1))
+                .save(any(VendorBranch.class));
+    }
+
+    /*
+     * ============================================================
+     * TEST FIND BRANCH BY ID CALLED
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Find Branch By Id Called")
+    public void testFindBranchByIdCalled() {
+
+        Vendor vendor =
+                createMockVendor();
+
+        Address address =
+                createMockAddress();
+
+        VendorBranch branch =
+                createMockBranch(
+                        vendor,
+                        address
+                );
+
+        when(vendorBranchRepository.findById(1))
+                .thenReturn(Optional.of(branch));
+
+        vendorBranchService.getBranchById(1);
+
+        verify(vendorBranchRepository, times(1))
+                .findById(1);
+    }
+
 }

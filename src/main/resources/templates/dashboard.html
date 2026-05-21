@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard — Digital Gold Wallet</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --gold: #C9A84C; --gold-light: #E8C96A; --gold-dim: #8A6B28;
+            --deep: #0D0D0D; --surface: #141410; --card: #1B1B16; --card-hover: #1F1F19;
+            --border: rgba(201,168,76,0.18); --border-soft: rgba(255,255,255,0.06);
+            --text: #F5F0E8; --muted: rgba(245,240,232,0.45); --muted2: rgba(245,240,232,0.25);
+            --locked: rgba(255,255,255,0.04);
+        }
+        html, body { min-height: 100vh; background: var(--deep); color: var(--text); font-family: 'DM Sans', sans-serif; }
+        .bg-glow {
+            position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            background: radial-gradient(ellipse 70% 45% at 50% -5%, rgba(201,168,76,0.10) 0%, transparent 65%),
+                        radial-gradient(ellipse 35% 25% at 90% 100%, rgba(201,168,76,0.05) 0%, transparent 60%);
+        }
+        .bg-grid {
+            position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            background-image: linear-gradient(rgba(201,168,76,0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(201,168,76,0.03) 1px, transparent 1px);
+            background-size: 48px 48px;
+        }
+
+        /* NAV */
+        nav {
+            position: relative; z-index: 10;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1.1rem 3rem; border-bottom: 1px solid var(--border);
+            background: rgba(13,13,13,0.75); backdrop-filter: blur(12px);
+        }
+        .nav-brand { display: flex; align-items: center; gap: 0.75rem; }
+        .nav-coin {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+            display: flex; align-items: center; justify-content: center;
+        }
+        .nav-coin svg { width: 16px; height: 16px; fill: var(--deep); }
+        .nav-title { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 600; }
+        .nav-title span { color: var(--gold); }
+        .nav-right { display: flex; align-items: center; gap: 1.25rem; }
+        .nav-user { font-size: 0.8rem; color: var(--muted); }
+        .nav-user strong { color: var(--text); font-weight: 500; }
+        .role-badge {
+            padding: 0.2rem 0.65rem; background: rgba(201,168,76,0.12);
+            border: 1px solid rgba(201,168,76,0.28); border-radius: 20px;
+            font-size: 0.7rem; font-weight: 500; color: var(--gold);
+            letter-spacing: 0.06em; text-transform: uppercase;
+        }
+        .logout-btn {
+            display: flex; align-items: center; gap: 0.4rem; padding: 0.45rem 1rem;
+            background: transparent; border: 1px solid var(--border); border-radius: 6px;
+            font-family: 'DM Sans', sans-serif; font-size: 0.78rem; color: var(--muted);
+            cursor: pointer; transition: border-color 0.2s, color 0.2s; text-decoration: none;
+        }
+        .logout-btn:hover { border-color: rgba(201,168,76,0.4); color: var(--text); }
+
+        /* MAIN */
+        main { position: relative; z-index: 1; max-width: 1000px; margin: 0 auto; padding: 4.5rem 2rem 4rem; }
+
+        /* HERO */
+        .hero { text-align: center; margin-bottom: 3.5rem; animation: fadeUp 0.6s cubic-bezier(0.22,1,0.36,1) both; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .eyebrow {
+            display: inline-block; font-size: 0.7rem; font-weight: 500; letter-spacing: 0.18em;
+            text-transform: uppercase; color: var(--gold); border: 1px solid rgba(201,168,76,0.3);
+            padding: 0.28rem 0.9rem; border-radius: 20px; margin-bottom: 1.5rem;
+        }
+        .hero h1 {
+            font-family: 'Cormorant Garamond', serif; font-size: clamp(2.6rem, 5.5vw, 4rem);
+            font-weight: 600; line-height: 1.1; letter-spacing: -0.01em; margin-bottom: 1.2rem;
+        }
+        .hero h1 em { font-style: italic; color: var(--gold); }
+        .hero p {
+            max-width: 540px; margin: 0 auto 2rem; font-size: 0.97rem; font-weight: 300;
+            line-height: 1.8; color: var(--muted);
+        }
+        .hero-divider { display: flex; align-items: center; justify-content: center; gap: 0.8rem; margin: 0 0 2.5rem; }
+        .hero-divider::before, .hero-divider::after {
+            content: ''; flex: 1; max-width: 100px; height: 1px;
+        }
+        .hero-divider::before { background: linear-gradient(90deg, transparent, rgba(201,168,76,0.4)); }
+        .hero-divider::after  { background: linear-gradient(90deg, rgba(201,168,76,0.4), transparent); }
+        .hero-divider span { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); }
+
+        /* SWAGGER BTN */
+        .swagger-btn {
+            display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.8rem 1.8rem;
+            background: linear-gradient(135deg, var(--gold-dim) 0%, var(--gold) 60%, var(--gold-light) 100%);
+            border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif;
+            font-size: 0.88rem; font-weight: 500; letter-spacing: 0.04em; color: var(--deep);
+            text-decoration: none; cursor: pointer;
+            transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+            box-shadow: 0 4px 20px rgba(201,168,76,0.22);
+        }
+        .swagger-btn:hover { opacity: 0.88; transform: translateY(-1px); box-shadow: 0 6px 28px rgba(201,168,76,0.3); }
+        .swagger-btn:active { transform: scale(0.97); }
+        .swagger-btn svg { width: 17px; height: 17px; fill: var(--deep); }
+
+        /* SECTION LABEL */
+        .section-label {
+            font-size: 0.7rem; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase;
+            color: var(--muted2); margin-bottom: 1rem;
+            animation: fadeUp 0.6s 0.2s cubic-bezier(0.22,1,0.36,1) both;
+        }
+
+        /* MODULE GRID */
+        .modules {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 1rem; margin-top: 0;
+            animation: fadeUp 0.6s 0.28s cubic-bezier(0.22,1,0.36,1) both;
+        }
+
+        /* MODULE CARD — clickable if owner, locked if not */
+        .module-card {
+            background: var(--card); border: 1px solid var(--border-soft);
+            border-radius: 14px; padding: 1.6rem 1.5rem;
+            text-decoration: none; color: inherit; display: block;
+            transition: border-color 0.2s, background 0.2s, transform 0.2s;
+            position: relative; overflow: hidden;
+        }
+        .module-card.owner {
+            cursor: pointer;
+        }
+        .module-card.owner:hover {
+            border-color: rgba(201,168,76,0.3); background: var(--card-hover);
+            transform: translateY(-2px);
+        }
+        .module-card.owner:hover .module-arrow { opacity: 1; transform: translateX(0); }
+        .module-card.locked {
+            cursor: not-allowed; opacity: 0.45; background: var(--locked);
+        }
+        .module-icon {
+            width: 40px; height: 40px; border-radius: 10px; background: rgba(201,168,76,0.1);
+            display: flex; align-items: center; justify-content: center; margin-bottom: 1.1rem;
+        }
+        .module-icon svg { width: 20px; height: 20px; fill: var(--gold); }
+        .module-name { font-size: 0.92rem; font-weight: 500; color: var(--text); margin-bottom: 0.28rem; }
+        .module-owner-label { font-size: 0.73rem; color: var(--muted); margin-bottom: 0.8rem; }
+        .module-desc { font-size: 0.78rem; color: var(--muted2); line-height: 1.55; }
+        .module-arrow {
+            position: absolute; right: 1.4rem; bottom: 1.4rem;
+            opacity: 0; transform: translateX(-4px); transition: opacity 0.2s, transform 0.2s;
+        }
+        .module-arrow svg { width: 16px; height: 16px; fill: var(--gold); }
+        .lock-icon {
+            position: absolute; right: 1.2rem; top: 1.2rem;
+        }
+        .lock-icon svg { width: 14px; height: 14px; fill: rgba(245,240,232,0.2); }
+
+        footer {
+            position: relative; z-index: 1; text-align: center; padding: 2rem;
+            border-top: 1px solid var(--border-soft); font-size: 0.73rem; color: var(--muted2);
+        }
+    </style>
+</head>
+<body>
+<div class="bg-glow"></div>
+<div class="bg-grid"></div>
+
+<nav>
+    <div class="nav-brand">
+        <div class="nav-coin">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14.93V18h-2v-1.07C9.39 16.52 8 15.28 8 13.5h2c0 .83.9 1.5 2 1.5s2-.67 2-1.5c0-.84-.78-1.17-2.38-1.59C9.86 11.44 8 10.79 8 8.5 8 6.72 9.39 5.48 11 5.07V4h2v1.07C14.61 5.48 16 6.72 16 8.5h-2c0-.83-.9-1.5-2-1.5s-2 .67-2 1.5c0 .84.78 1.17 2.38 1.59C14.14 10.56 16 11.21 16 13.5c0 1.78-1.39 3.02-3 3.43z"/></svg>
+        </div>
+        <span class="nav-title">Digital <span>Gold</span> Wallet</span>
+    </div>
+    <div class="nav-right">
+        <div class="nav-user">Signed in as&nbsp;<strong th:text="${username}">developer</strong></div>
+        <span class="role-badge" th:text="${role}">DEV</span>
+        <form th:action="@{/logout}" method="post" style="margin:0;">
+            <button type="submit" class="logout-btn">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+                Sign out
+            </button>
+        </form>
+    </div>
+</nav>
+
+<main>
+    <div class="hero">
+        <div class="eyebrow">Developer Portal</div>
+        <h1>Digital <em>Gold</em><br>Wallet Platform</h1>
+        <p>
+            A unified backend for managing virtual and physical gold transactions,
+            multi-user wallets, vendor networks, and secure payment processing —
+            built with Spring Boot.
+        </p>
+        <div class="hero-divider"><span></span></div>
+        <a href="/swagger-ui/index.html" class="swagger-btn" target="_blank">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zm-2 9H7v-2h4v2zm4-4H7v-2h8v2zm0-4H7V8h8v2z"/></svg>
+            Explore API Docs (Swagger)
+        </a>
+    </div>
+
+    <p class="section-label">Platform Modules — click your assigned module</p>
+
+    <div class="modules">
+
+        <!-- PAYMENT & WALLETS — owner: PAYMENT_DEV -->
+        <a th:href="${role == 'PAYMENT_DEV'} ? '/module/payment' : '#'"
+           th:classappend="${role == 'PAYMENT_DEV'} ? 'owner' : 'locked'"
+           class="module-card">
+            <div th:if="${role != 'PAYMENT_DEV'}" class="lock-icon">
+                <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/></svg>
+            </div>
+            <div class="module-icon">
+                <svg viewBox="0 0 24 24"><path d="M21 7.28V5c0-1.1-.9-2-2-2H5C3.9 3 3 3.9 3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-2.28A2 2 0 0 0 22 15v-6a2 2 0 0 0-1-1.72zM20 9v6h-7V9h7zM5 19V5h14v2h-6c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h6v2H5z"/><circle cx="16" cy="12" r="1.5"/></svg>
+            </div>
+            <div class="module-name">Payments &amp; Wallets</div>
+            <div class="module-owner-label">Tanmay · PAYMENT_DEV</div>
+            <div class="module-desc">Wallet debit/credit, balance enquiry, payment creation and user payment history.</div>
+            <div class="module-arrow"><svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></div>
+        </a>
+
+        <!-- USER & ADDRESS — owner: USER_DEV -->
+        <a th:href="${role == 'USER_DEV'} ? '/module/user' : '#'"
+           th:classappend="${role == 'USER_DEV'} ? 'owner' : 'locked'"
+           class="module-card">
+            <div th:if="${role != 'USER_DEV'}" class="lock-icon">
+                <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/></svg>
+            </div>
+            <div class="module-icon">
+                <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            </div>
+            <div class="module-name">Users &amp; Addresses</div>
+            <div class="module-owner-label">Varsha · USER_DEV</div>
+            <div class="module-desc">User registration, profile management, address creation and lookup.</div>
+            <div class="module-arrow"><svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></div>
+        </a>
+
+        <!-- VENDOR & BRANCH — owner: VENDOR_DEV -->
+        <a th:href="${role == 'VENDOR_DEV'} ? '/module/vendor' : '#'"
+           th:classappend="${role == 'VENDOR_DEV'} ? 'owner' : 'locked'"
+           class="module-card">
+            <div th:if="${role != 'VENDOR_DEV'}" class="lock-icon">
+                <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/></svg>
+            </div>
+            <div class="module-icon">
+                <svg viewBox="0 0 24 24"><path d="M20 4H4v2l8 5 8-5V4zm0 4.236l-8 5-8-5V20h16V8.236z"/></svg>
+            </div>
+            <div class="module-name">Vendors &amp; Branches</div>
+            <div class="module-owner-label">Sparsh · VENDOR_DEV</div>
+            <div class="module-desc">Vendor onboarding, gold price management, branch creation and inventory tracking.</div>
+            <div class="module-arrow"><svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></div>
+        </a>
+
+        <!-- GOLD & TRANSACTIONS — owner: GOLD_DEV -->
+        <a th:href="${role == 'GOLD_DEV'} ? '/module/gold' : '#'"
+           th:classappend="${role == 'GOLD_DEV'} ? 'owner' : 'locked'"
+           class="module-card">
+            <div th:if="${role != 'GOLD_DEV'}" class="lock-icon">
+                <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/></svg>
+            </div>
+            <div class="module-icon">
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14.93V18h-2v-1.07C9.39 16.52 8 15.28 8 13.5h2c0 .83.9 1.5 2 1.5s2-.67 2-1.5c0-.84-.78-1.17-2.38-1.59C9.86 11.44 8 10.79 8 8.5 8 6.72 9.39 5.48 11 5.07V4h2v1.07C14.61 5.48 16 6.72 16 8.5h-2c0-.83-.9-1.5-2-1.5s-2 .67-2 1.5c0 .84.78 1.17 2.38 1.59C14.14 10.56 16 11.21 16 13.5c0 1.78-1.39 3.02-3 3.43z"/></svg>
+            </div>
+            <div class="module-name">Gold &amp; Transactions</div>
+            <div class="module-owner-label">Mrugan · GOLD_DEV</div>
+            <div class="module-desc">Virtual gold buy/sell, physical gold conversion, transaction history per user and branch.</div>
+            <div class="module-arrow"><svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></div>
+        </a>
+
+    </div>
+</main>
+
+<footer>Digital Gold Wallet &copy; 2025 &mdash; Internal Developer Portal &mdash; Authorised access only</footer>
+</body>
+</html>
