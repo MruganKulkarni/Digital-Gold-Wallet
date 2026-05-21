@@ -29,10 +29,10 @@ public interface VendorService {
     VendorResponseDto getVendorById(Integer vendorId); // fetches vendor by ID and returns response
 
     /*
-     * Get all vendors — paginated
+     * Get all vendors — no pagination
      * GET /api/v1/vendors
      */
-    Page<VendorResponseDto> getAllVendors(Pageable pageable); // returns paginated list of vendors
+    List<VendorResponseDto> getAllVendors(); // returns all vendors as a simple list — no pagination needed
 
     /*
      * Update vendor by ID
