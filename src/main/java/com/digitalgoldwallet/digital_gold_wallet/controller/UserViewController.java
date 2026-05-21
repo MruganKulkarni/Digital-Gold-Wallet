@@ -1,35 +1,26 @@
 package com.digitalgoldwallet.digital_gold_wallet.controller;
 
+import com.digitalgoldwallet.digital_gold_wallet.dto.request.AddressRequestDto;
 import com.digitalgoldwallet.digital_gold_wallet.dto.request.UserRequestDto;
-
+import com.digitalgoldwallet.digital_gold_wallet.dto.response.AddressResponseDto;
 import com.digitalgoldwallet.digital_gold_wallet.dto.response.UserResponseDto;
-
+import com.digitalgoldwallet.digital_gold_wallet.service.AddressService;
 import com.digitalgoldwallet.digital_gold_wallet.service.UserService;
 
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.stereotype.Controller;
-
 import org.springframework.ui.Model;
-
 import org.springframework.validation.BindingResult;
-
 import org.springframework.web.bind.annotation.GetMapping;
-
 import org.springframework.web.bind.annotation.ModelAttribute;
-
 import org.springframework.web.bind.annotation.PathVariable;
-
 import org.springframework.web.bind.annotation.PostMapping;
-
 import org.springframework.web.bind.annotation.RequestMapping;
-
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.math.BigDecimal;
-
 import java.util.List;
 
 /*
@@ -47,14 +38,19 @@ public class UserViewController {
      * SERVICE INJECTION
      * ============================================================
      */
+
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private AddressService addressService;
 
     /*
      * ============================================================
      * GET ALL USERS
      * ============================================================
      */
+
     @GetMapping
     public String getAllUsers(Model model) {
 
@@ -71,9 +67,10 @@ public class UserViewController {
 
     /*
      * ============================================================
-     * CREATE FORM
+     * CREATE USER FORM
      * ============================================================
      */
+
     @GetMapping("/create")
     public String showCreateForm(Model model) {
 
@@ -90,11 +87,11 @@ public class UserViewController {
      * SAVE USER
      * ============================================================
      */
+
     @PostMapping("/save")
     public String saveUser(
 
             @Valid
-
             @ModelAttribute
             UserRequestDto userRequestDto,
 
@@ -113,9 +110,10 @@ public class UserViewController {
 
     /*
      * ============================================================
-     * VIEW USER BY ID
+     * VIEW USER
      * ============================================================
      */
+
     @GetMapping("/view")
     public String viewUser(
 
@@ -141,6 +139,7 @@ public class UserViewController {
      * EDIT USER FORM
      * ============================================================
      */
+
     @GetMapping("/edit")
     public String editUser(
 
@@ -150,21 +149,12 @@ public class UserViewController {
             Model model
     ) {
 
-        /*
-         * Get user from database
-         */
         UserResponseDto user =
                 userService.getUserById(id);
 
-        /*
-         * Create DTO object
-         */
         UserRequestDto dto =
                 new UserRequestDto();
 
-        /*
-         * Set values
-         */
         dto.setName(
                 user.getName()
         );
@@ -177,9 +167,6 @@ public class UserViewController {
                 user.getBalance()
         );
 
-        /*
-         * Send values to HTML
-         */
         model.addAttribute(
                 "userId",
                 id
@@ -190,9 +177,6 @@ public class UserViewController {
                 dto
         );
 
-        /*
-         * Return edit page
-         */
         return "edit-user";
     }
 
@@ -201,6 +185,7 @@ public class UserViewController {
      * UPDATE USER
      * ============================================================
      */
+
     @PostMapping("/update/{id}")
     public String updateUser(
 
@@ -224,6 +209,7 @@ public class UserViewController {
      * DELETE USER
      * ============================================================
      */
+
     @GetMapping("/delete")
     public String deleteUser(
 
@@ -241,6 +227,7 @@ public class UserViewController {
      * USER BALANCE
      * ============================================================
      */
+
     @GetMapping("/balance")
     public String viewBalance(
 
@@ -264,5 +251,116 @@ public class UserViewController {
         );
 
         return "user-balance";
+    }
+
+    /*
+     * ============================================================
+     * CREATE ADDRESS PAGE
+     * ============================================================
+     */
+
+    @GetMapping("/addresses/create")
+    public String createAddressPage(Model model) {
+
+        model.addAttribute(
+                "address",
+                new AddressRequestDto()
+        );
+
+        return "create-address";
+    }
+
+    /*
+     * ============================================================
+     * SAVE ADDRESS
+     * ============================================================
+     */
+
+    @PostMapping("/addresses/save")
+    public String saveAddress(
+            @ModelAttribute AddressRequestDto addressRequestDto
+    ) {
+
+        addressService.createAddress(
+                addressRequestDto
+        );
+
+        return "redirect:/user-module";
+    }
+
+    /*
+     * ============================================================
+     * VIEW ADDRESS
+     * ============================================================
+     */
+
+    @GetMapping("/addresses/view/{id}")
+    public String viewAddress(
+
+            @PathVariable
+            Integer id,
+
+            Model model
+    ) {
+
+        AddressResponseDto address =
+                addressService.getAddressById(id);
+
+        model.addAttribute(
+                "address",
+                address
+        );
+
+        return "view-address";
+    }
+
+    /*
+     * ============================================================
+     * EDIT ADDRESS PAGE
+     * ============================================================
+     */
+
+    @GetMapping("/addresses/update/{id}")
+    public String editAddressPage(
+
+            @PathVariable
+            Integer id,
+
+            Model model
+    ) {
+
+        AddressResponseDto address =
+                addressService.getAddressById(id);
+
+        model.addAttribute(
+                "address",
+                address
+        );
+
+        return "edit-address";
+    }
+
+    /*
+     * ============================================================
+     * UPDATE ADDRESS
+     * ============================================================
+     */
+
+    @PostMapping("/addresses/update/{id}")
+    public String updateAddress(
+
+            @PathVariable
+            Integer id,
+
+            @ModelAttribute
+            AddressRequestDto addressRequestDto
+    ) {
+
+        addressService.updateAddress(
+                id,
+                addressRequestDto
+        );
+
+        return "redirect:/users/addresses/view/" + id;
     }
 }

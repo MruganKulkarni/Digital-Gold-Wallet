@@ -24,15 +24,12 @@
 
         <img
                 th:src="@{/images/varsha.jpeg}"
-
                 class="rounded-circle shadow-lg mb-3"
-
                 style="
                     width: 200px;
                     height: 200px;
                     object-fit: cover;
                 "
-
                 alt="Varsha">
 
         <h1 class="display-4 text-primary fw-bold">
@@ -115,34 +112,23 @@
 
         <div class="row">
 
-            <!-- ========================================== -->
             <!-- VIEW USERS -->
-            <!-- ========================================== -->
             <div class="col-md-4 mb-4">
 
                 <div class="border rounded p-4 text-center h-100">
 
-                    <h4>
-
-                        View Users
-
-                    </h4>
+                    <h4>View Users</h4>
 
                     <p>
-
                         Displays all users from database.
-
                     </p>
 
                     <p class="text-primary fw-bold">
-
                         GET /users
-
                     </p>
 
                     <a
                             th:href="@{/users}"
-
                             class="btn btn-primary">
 
                         Open Users
@@ -153,34 +139,23 @@
 
             </div>
 
-            <!-- ========================================== -->
             <!-- CREATE USER -->
-            <!-- ========================================== -->
             <div class="col-md-4 mb-4">
 
                 <div class="border rounded p-4 text-center h-100">
 
-                    <h4>
-
-                        Create User
-
-                    </h4>
+                    <h4>Create User</h4>
 
                     <p>
-
                         Add a new user using Thymeleaf form.
-
                     </p>
 
                     <p class="text-success fw-bold">
-
                         POST /users/save
-
                     </p>
 
                     <a
                             th:href="@{/users/create}"
-
                             class="btn btn-success">
 
                         Create User
@@ -191,50 +166,41 @@
 
             </div>
 
-            <!-- ========================================== -->
-            <!-- GET USER BY ID -->
-            <!-- ========================================== -->
+            <!-- GET USER -->
             <div class="col-md-4 mb-4">
 
                 <div class="border rounded p-4 text-center h-100">
 
-                    <h4>
-
-                        Get User By ID
-
-                    </h4>
+                    <h4>Get User By ID</h4>
 
                     <p>
-
                         Search user using user ID.
-
                     </p>
 
                     <p class="text-warning fw-bold">
-
                         GET /users/view/{id}
-
                     </p>
 
                     <form
-                            th:action="@{/users/view}"
+                            onsubmit="
+                            event.preventDefault();
 
-                            method="get">
+                            let id =
+                            this.userId.value;
+
+                            window.location.href =
+                            '/users/view/' + id;
+                            ">
 
                         <input
                                 type="number"
-
-                                name="id"
-
+                                name="userId"
                                 class="form-control mb-3"
-
                                 placeholder="Enter User ID"
-
                                 required>
 
                         <button
                                 type="submit"
-
                                 class="btn btn-warning">
 
                             Search User
@@ -247,50 +213,41 @@
 
             </div>
 
-            <!-- ========================================== -->
             <!-- UPDATE USER -->
-            <!-- ========================================== -->
             <div class="col-md-4 mb-4">
 
                 <div class="border rounded p-4 text-center h-100">
 
-                    <h4>
-
-                        Update User
-
-                    </h4>
+                    <h4>Update User</h4>
 
                     <p>
-
                         Open edit form using user ID.
-
                     </p>
 
                     <p class="text-info fw-bold">
-
                         PUT /users/update/{id}
-
                     </p>
 
                     <form
-                            th:action="@{/users/edit}"
+                            onsubmit="
+                            event.preventDefault();
 
-                            method="get">
+                            let id =
+                            this.userId.value;
+
+                            window.location.href =
+                            '/users/edit/' + id;
+                            ">
 
                         <input
                                 type="number"
-
-                                name="id"
-
+                                name="userId"
                                 class="form-control mb-3"
-
                                 placeholder="Enter User ID"
-
                                 required>
 
                         <button
                                 type="submit"
-
                                 class="btn btn-info text-white">
 
                             Edit User
@@ -303,50 +260,41 @@
 
             </div>
 
-            <!-- ========================================== -->
             <!-- DELETE USER -->
-            <!-- ========================================== -->
             <div class="col-md-4 mb-4">
 
                 <div class="border rounded p-4 text-center h-100">
 
-                    <h4>
-
-                        Delete User
-
-                    </h4>
+                    <h4>Delete User</h4>
 
                     <p>
-
                         Delete user using user ID.
-
                     </p>
 
                     <p class="text-danger fw-bold">
-
                         DELETE /users/delete/{id}
-
                     </p>
 
                     <form
-                            th:action="@{/users/delete}"
+                            onsubmit="
+                            event.preventDefault();
 
-                            method="get">
+                            let id =
+                            this.userId.value;
+
+                            window.location.href =
+                            '/users/delete/' + id;
+                            ">
 
                         <input
                                 type="number"
-
-                                name="id"
-
+                                name="userId"
                                 class="form-control mb-3"
-
                                 placeholder="Enter User ID"
-
                                 required>
 
                         <button
                                 type="submit"
-
                                 class="btn btn-danger">
 
                             Delete User
@@ -359,50 +307,41 @@
 
             </div>
 
-            <!-- ========================================== -->
             <!-- USER BALANCE -->
-            <!-- ========================================== -->
             <div class="col-md-4 mb-4">
 
                 <div class="border rounded p-4 text-center h-100">
 
-                    <h4>
-
-                        User Balance
-
-                    </h4>
+                    <h4>User Balance</h4>
 
                     <p>
-
                         Display balance using user ID.
-
                     </p>
 
                     <p class="text-secondary fw-bold">
-
                         GET /users/balance/{id}
-
                     </p>
 
                     <form
-                            th:action="@{/users/balance}"
+                            onsubmit="
+                            event.preventDefault();
 
-                            method="get">
+                            let id =
+                            this.userId.value;
+
+                            window.location.href =
+                            '/users/balance/' + id;
+                            ">
 
                         <input
                                 type="number"
-
-                                name="id"
-
+                                name="userId"
                                 class="form-control mb-3"
-
                                 placeholder="Enter User ID"
-
                                 required>
 
                         <button
                                 type="submit"
-
                                 class="btn btn-secondary">
 
                             View Balance
@@ -415,88 +354,72 @@
 
             </div>
 
-            <!-- ========================================== -->
             <!-- CREATE ADDRESS -->
-            <!-- ========================================== -->
             <div class="col-md-4 mb-4">
 
                 <div class="border rounded p-4 text-center h-100">
 
-                    <h4>
-
-                        Create Address
-
-                    </h4>
+                    <h4>Create Address</h4>
 
                     <p>
-
                         Add a new address.
-
                     </p>
 
                     <p class="text-success fw-bold">
-
-                        POST /addresses/save
-
+                        POST /users/addresses/save
                     </p>
 
-                    <a
-                            href="#"
+                    <form
+                            th:action="@{/users/addresses/create}"
+                            method="get">
 
-                            class="btn btn-success">
+                        <button class="btn btn-success">
 
-                        Create Address
+                            Create Address
 
-                    </a>
+                        </button>
+
+                    </form>
 
                 </div>
 
             </div>
 
-            <!-- ========================================== -->
             <!-- GET ADDRESS -->
-            <!-- ========================================== -->
             <div class="col-md-4 mb-4">
 
                 <div class="border rounded p-4 text-center h-100">
 
-                    <h4>
-
-                        Get Address
-
-                    </h4>
+                    <h4>Get Address</h4>
 
                     <p>
-
                         Search address using address ID.
-
                     </p>
 
                     <p class="text-primary fw-bold">
-
-                        GET /addresses/view/{id}
-
+                        GET /users/addresses/view/{id}
                     </p>
 
                     <form
-                            action="#"
+                            onsubmit="
+                            event.preventDefault();
 
-                            method="get">
+                            let id =
+                            this.addressId.value;
+
+                            window.location.href =
+                            '/users/addresses/view/' + id;
+                            ">
 
                         <input
                                 type="number"
-
-                                name="id"
-
+                                name="addressId"
                                 class="form-control mb-3"
-
                                 placeholder="Enter Address ID"
-
                                 required>
 
                         <button
                                 type="submit"
-
                                 class="btn btn-primary">
 
                             View Address
@@ -509,50 +432,41 @@
 
             </div>
 
-            <!-- ========================================== -->
             <!-- UPDATE ADDRESS -->
-            <!-- ========================================== -->
             <div class="col-md-4 mb-4">
 
                 <div class="border rounded p-4 text-center h-100">
 
-                    <h4>
-
-                        Update Address
-
-                    </h4>
+                    <h4>Update Address</h4>
 
                     <p>
-
                         Update address using address ID.
-
                     </p>
 
                     <p class="text-warning fw-bold">
-
-                        PUT /addresses/update/{id}
-
+                        PUT /users/addresses/update/{id}
                     </p>
 
                     <form
-                            action="#"
+                            onsubmit="
+                            event.preventDefault();
 
-                            method="get">
+                            let id =
+                            this.addressId.value;
+
+                            window.location.href =
+                            '/users/addresses/update/' + id;
+                            ">
 
                         <input
                                 type="number"
-
-                                name="id"
-
+                                name="addressId"
                                 class="form-control mb-3"
-
                                 placeholder="Enter Address ID"
-
                                 required>
 
                         <button
                                 type="submit"
-
                                 class="btn btn-warning">
 
                             Edit Address
@@ -576,7 +490,6 @@
 
         <a
                 href="http://localhost:8080/swagger-ui/index.html"
-
                 class="btn btn-dark btn-lg me-3">
 
             Open Swagger
@@ -585,7 +498,6 @@
 
         <a
                 th:href="@{/}"
-
                 class="btn btn-secondary btn-lg">
 
             Back To Home
