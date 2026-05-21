@@ -31,47 +31,32 @@ public class CustomAuthenticationEntryPoint
             AuthenticationException authException
     ) throws IOException {
 
-        /*
-         * ====================================================
-         * HTTP STATUS
-         * ====================================================
-         */
-        response.setStatus(
-                HttpServletResponse.SC_UNAUTHORIZED
-        );
+        String accept = request.getHeader("Accept");
 
-        /*
-         * ====================================================
-         * THIS TEXT APPEARS IN BROWSER LOGIN POPUP
-         * ====================================================
-         */
-        response.setHeader(
-                "WWW-Authenticate",
-                "Basic realm=\"Invalid credentials. Please login again.\""
-        );
+        boolean isApiRequest =
+                (request.getRequestURI() != null && request.getRequestURI().startsWith("/api/")) ||
+                (accept != null
+                && accept.contains("application/json")
+                && !accept.contains("text/html"));
 
-        /*
-         * ====================================================
-         * RESPONSE TYPE
-         * ====================================================
-         */
-        response.setContentType(
-                "application/json"
-        );
-
-        /*
-         * ====================================================
-         * RESPONSE BODY
-         * ====================================================
-         */
-        response.getWriter().write(
-                """
-                {
-                    "status": 401,
-                    "error": "Unauthorized",
-                    "message": "Invalid username or password. Please login again."
-                }
-                """
-        );
+        if (isApiRequest) {
+            response.setStatus(
+                    HttpServletResponse.SC_UNAUTHORIZED
+            );
+            response.setContentType(
+                    "application/json"
+            );
+            response.getWriter().write(
+                    """
+                    {
+                        "status": 401,
+                        "error": "Unauthorized",
+                        "message": "You need to log in to access this endpoint."
+                    }
+                    """
+            );
+        } else {
+            response.sendRedirect("/login");
+        }
     }
 }

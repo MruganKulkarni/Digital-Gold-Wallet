@@ -1,545 +1,314 @@
 <!DOCTYPE html>
-
-<html xmlns:th="http://www.thymeleaf.org">
-
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
 <head>
-
-    <title>Vendor Module</title>
-
-    <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-            rel="stylesheet">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Module — Digital Gold Wallet</title>
+    <meta name="description" content="Vendor and Branch Management">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
-
-<body class="bg-light">
-
-<div class="container mt-5">
-
-    <!-- ================================================= -->
-    <!-- HEADER -->
-    <!-- ================================================= -->
-    <div class="text-center mb-5">
-
-        <img
-                th:src="@{/images/sparsh.jpeg}"
-
-                class="rounded-circle shadow-lg mb-3"
-
-                style="
-                    width: 180px;
-                    height: 180px;
-                    object-fit: cover;
-                "
-
-                alt="Sparsh">
-
-        <h1 class="display-4 text-success fw-bold">
-
-            Sparsh
-
-        </h1>
-
-        <h4 class="text-secondary">
-
-            VENDOR MODULE DEVELOPER
-
-        </h4>
-
-    </div>
-
-    <!-- ================================================= -->
-    <!-- IMPLEMENTED ENDPOINTS -->
-    <!-- ================================================= -->
-    <div class="card shadow-lg p-4 mb-5">
-
-        <h2 class="text-success mb-4">
-
-            Implemented Endpoints
-
-        </h2>
-
-        <ul class="list-group">
-
-            <li class="list-group-item">
-                POST /api/v1/vendors
-            </li>
-
-            <li class="list-group-item">
-                GET /api/v1/vendors/{vendorId}
-            </li>
-
-            <li class="list-group-item">
-                GET /api/v1/vendors
-            </li>
-
-            <li class="list-group-item">
-                PUT /api/v1/vendors/{vendorId}
-            </li>
-
-            <li class="list-group-item">
-                GET /api/v1/vendors/{vendorId}/price
-            </li>
-
-            <li class="list-group-item">
-                POST /api/v1/vendors/{vendorId}/branches
-            </li>
-
-            <li class="list-group-item">
-                GET /api/v1/branches/{branchId}
-            </li>
-
-            <li class="list-group-item">
-                GET /api/v1/vendors/{vendorId}/branches
-            </li>
-
-            <li class="list-group-item">
-                GET /api/v1/branches/{branchId}/inventory
-            </li>
-
-        </ul>
-
-    </div>
-
-    <!-- ================================================= -->
-    <!-- INTERACTIVE DASHBOARD -->
-    <!-- ================================================= -->
-    <div class="card shadow-lg p-4 mb-5">
-
-        <h2 class="text-primary mb-4">
-
-            Interactive Vendor Dashboard
-
-        </h2>
-
-        <div class="row">
-
-            <!-- VIEW VENDORS -->
-            <div class="col-md-4 mb-4">
-
-                <div class="border rounded p-4 text-center h-100">
-
-                    <h4>
-                        View Vendors
-                    </h4>
-
-                    <p>
-                        Displays all vendors.
-                    </p>
-
-                    <p class="fw-bold text-success">
-
-                        GET /api/v1/vendors
-
-                    </p>
-
-                    <a
-                            th:href="@{/vendors}"
-
-                            class="btn btn-success">
-
-                        Open Vendors
-
-                    </a>
-
-                </div>
-
-            </div>
-
-            <!-- CREATE VENDOR -->
-            <div class="col-md-4 mb-4">
-
-                <div class="border rounded p-4 text-center h-100">
-
-                    <h4>
-                        Create Vendor
-                    </h4>
-
-                    <p>
-                        Add a new vendor.
-                    </p>
-
-                    <p class="fw-bold text-primary">
-
-                        POST /api/v1/vendors
-
-                    </p>
-
-                    <a
-                            th:href="@{/vendors/create}"
-
-                            class="btn btn-primary">
-
-                        Create Vendor
-
-                    </a>
-
-                </div>
-
-            </div>
-
-            <!-- GET VENDOR -->
-            <div class="col-md-4 mb-4">
-
-                <div class="border rounded p-4 text-center h-100">
-
-                    <h4>
-                        Get Vendor By ID
-                    </h4>
-
-                    <p>
-                        Search vendor using ID.
-                    </p>
-
-                    <p class="fw-bold text-warning">
-
-                        GET /api/v1/vendors/{vendorId}
-
-                    </p>
-
-                    <input
-                            type="number"
-
-                            id="viewVendorId"
-
-                            class="form-control mb-3"
-
-                            placeholder="Enter Vendor ID">
-
-                    <button
-                            class="btn btn-warning"
-
-                            onclick="viewVendor()">
-
-                        Search Vendor
-
-                    </button>
-
-                </div>
-
-            </div>
-
-            <!-- UPDATE VENDOR -->
-            <div class="col-md-4 mb-4">
-
-                <div class="border rounded p-4 text-center h-100">
-
-                    <h4>
-                        Update Vendor
-                    </h4>
-
-                    <p>
-                        Open edit form using vendor ID.
-                    </p>
-
-                    <p class="fw-bold text-info">
-
-                        PUT /api/v1/vendors/{vendorId}
-
-                    </p>
-
-                    <input
-                            type="number"
-
-                            id="editVendorId"
-
-                            class="form-control mb-3"
-
-                            placeholder="Enter Vendor ID">
-
-                    <button
-                            class="btn btn-info"
-
-                            onclick="editVendor()">
-
-                        Edit Vendor
-
-                    </button>
-
-                </div>
-
-            </div>
-
-            <!-- VENDOR PRICE -->
-            <div class="col-md-4 mb-4">
-
-                <div class="border rounded p-4 text-center h-100">
-
-                    <h4>
-                        Vendor Price
-                    </h4>
-
-                    <p>
-                        Display current gold price.
-                    </p>
-
-                    <p class="fw-bold text-dark">
-
-                        GET /api/v1/vendors/{vendorId}/price
-
-                    </p>
-
-                    <input
-                            type="number"
-
-                            id="priceVendorId"
-
-                            class="form-control mb-3"
-
-                            placeholder="Enter Vendor ID">
-
-                    <button
-                            class="btn btn-dark"
-
-                            onclick="vendorPrice()">
-
-                        View Price
-
-                    </button>
-
-                </div>
-
-            </div>
-
-            <!-- BRANCHES -->
-            <div class="col-md-4 mb-4">
-
-                <div class="border rounded p-4 text-center h-100">
-
-                    <h4>
-                        Vendor Branches
-                    </h4>
-
-                    <p>
-                        Display vendor branches.
-                    </p>
-
-                    <p class="fw-bold text-secondary">
-
-                        GET /api/v1/vendors/{vendorId}/branches
-
-                    </p>
-
-                    <a
-                            th:href="@{/branches}"
-
-                            class="btn btn-secondary">
-
-                        Open Branches
-
-                    </a>
-
-                </div>
-
-            </div>
-
-            <!-- CREATE BRANCH -->
-            <div class="col-md-4 mb-4">
-
-                <div class="border rounded p-4 text-center h-100">
-
-                    <h4>
-                        Create Branch
-                    </h4>
-
-                    <p>
-                        Add a new branch.
-                    </p>
-
-                    <p class="fw-bold text-success">
-
-                        POST /api/v1/vendors/{vendorId}/branches
-
-                    </p>
-
-                    <a
-                            th:href="@{/branches/create}"
-
-                            class="btn btn-success">
-
-                        Create Branch
-
-                    </a>
-
-                </div>
-
-            </div>
-
-            <!-- VIEW BRANCH -->
-            <div class="col-md-4 mb-4">
-
-                <div class="border rounded p-4 text-center h-100">
-
-                    <h4>
-                        Get Branch
-                    </h4>
-
-                    <p>
-                        Search branch using branch ID.
-                    </p>
-
-                    <p class="fw-bold text-primary">
-
-                        GET /api/v1/branches/{branchId}
-
-                    </p>
-
-                    <input
-                            type="number"
-
-                            id="branchId"
-
-                            class="form-control mb-3"
-
-                            placeholder="Enter Branch ID">
-
-                    <button
-                            class="btn btn-primary"
-
-                            onclick="viewBranch()">
-
-                        View Branch
-
-                    </button>
-
-                </div>
-
-            </div>
-
-            <!-- BRANCH INVENTORY -->
-            <div class="col-md-4 mb-4">
-
-                <div class="border rounded p-4 text-center h-100">
-
-                    <h4>
-                        Branch Inventory
-                    </h4>
-
-                    <p>
-                        Display branch gold inventory.
-                    </p>
-
-                    <p class="fw-bold text-danger">
-
-                        GET /api/v1/branches/{branchId}/inventory
-
-                    </p>
-
-                    <input
-                            type="number"
-
-                            id="inventoryBranchId"
-
-                            class="form-control mb-3"
-
-                            placeholder="Enter Branch ID">
-
-                    <button
-                            class="btn btn-danger"
-
-                            onclick="branchInventory()">
-
-                        View Inventory
-
-                    </button>
-
-                </div>
-
-            </div>
-
+<body>
+
+<nav class="dgw-navbar">
+    <a th:href="@{/}" class="dgw-navbar-brand">
+        <div class="brand-icon">🪙</div>
+        <div class="brand-name">Digital <span>Gold</span> Wallet</div>
+    </a>
+    <div class="dgw-navbar-right">
+        <div class="dgw-user-chip">
+            <span sec:authentication="name">User</span>
+            <span class="role-badge" style="background:rgba(212,175,55,0.15);color:var(--accent-vendor);border-color:rgba(212,175,55,0.3);">Vendor Dev</span>
         </div>
+        <a th:href="@{/}" class="btn-ghost" style="padding:0.45rem 1rem;font-size:0.82rem;">Home</a>
+        <a th:href="@{/logout}" class="btn-ghost" style="padding:0.45rem 1rem;font-size:0.82rem;">Sign Out</a>
+    </div>
+</nav>
 
+<div class="dgw-page">
+
+    <div class="dgw-breadcrumb">
+        <a th:href="@{/}">Home</a><span class="sep">›</span>
+        <span class="current">Vendor Module</span>
     </div>
 
-    <!-- ================================================= -->
-    <!-- FOOTER -->
-    <!-- ================================================= -->
-    <div class="text-center">
+    <!-- MODULE HEADER -->
+    <div class="module-header" style="border-color:rgba(212,175,55,0.25);">
+        <img th:src="@{/images/rahul.jpg}" class="dev-photo" alt="Rahul"
+             style="border-color:rgba(212,175,55,0.5);">
+        <div class="dev-info">
+            <div class="dev-name">Rahul Sharma</div>
+            <div class="dev-title" style="color:var(--accent-vendor);">Vendor Module Developer</div>
+            <div class="dev-tags">
+                <span class="dev-tag">Vendor APIs</span>
+                <span class="dev-tag">Branch APIs</span>
+                <span class="dev-tag">Security</span>
+                <span class="dev-tag">Pricing</span>
+            </div>
+        </div>
+    </div>
 
-        <a
-                href="http://localhost:8080/swagger-ui/index.html"
+    <!-- ENDPOINTS LIST -->
+    <div class="dgw-card" style="margin-bottom:1.75rem;">
+        <h2 class="section-title">⚡ Implemented Endpoints</h2>
+        <ul class="endpoint-list">
+            <li class="endpoint-item">
+                <span class="method-badge method-GET">GET</span>
+                /api/v1/vendors
+            </li>
+            <li class="endpoint-item">
+                <span class="method-badge method-POST">POST</span>
+                /api/v1/vendors
+            </li>
+            <li class="endpoint-item">
+                <span class="method-badge method-GET">GET</span>
+                /api/v1/vendors/{vendorId}
+            </li>
+            <li class="endpoint-item">
+                <span class="method-badge method-PUT">PUT</span>
+                /api/v1/vendors/{vendorId}
+            </li>
+            <li class="endpoint-item">
+                <span class="method-badge method-GET">GET</span>
+                /api/v1/vendors/{vendorId}/price
+            </li>
+            <li class="endpoint-item">
+                <span class="method-badge method-POST">POST</span>
+                /api/v1/vendors/{vendorId}/branches
+            </li>
+            <li class="endpoint-item">
+                <span class="method-badge method-GET">GET</span>
+                /api/v1/branches/{branchId}
+            </li>
+            <li class="endpoint-item">
+                <span class="method-badge method-GET">GET</span>
+                /api/v1/vendors/{vendorId}/branches
+            </li>
+            <li class="endpoint-item">
+                <span class="method-badge method-GET">GET</span>
+                /api/v1/branches/{branchId}/inventory
+            </li>
+        </ul>
+    </div>
 
-                class="btn btn-dark btn-lg me-3">
+    <!-- DASHBOARD -->
+    <h2 class="section-title">🔧 Interactive Dashboard</h2>
 
-            Open Swagger
+    <div class="action-grid">
 
+        <!-- ALL VENDORS -->
+        <a th:href="@{/vendors}" class="action-card">
+            <div class="action-card-icon">🏪</div>
+            <div class="action-title">All Vendors</div>
+            <div class="action-endpoint">GET /api/v1/vendors</div>
+            <div class="action-desc">View a list of all registered gold vendors.</div>
+            <div class="action-card-footer">View Vendors →</div>
         </a>
 
-        <a
-                th:href="@{/}"
+        <!-- CREATE VENDOR -->
+        <a th:href="@{/vendors/create}" class="action-card">
+            <div class="action-card-icon">➕</div>
+            <div class="action-title">Create Vendor</div>
+            <div class="action-endpoint">POST /api/v1/vendors</div>
+            <div class="action-desc">Register a new vendor in the system.</div>
+            <div class="action-card-footer">Create Vendor →</div>
+        </a>
 
-                class="btn btn-secondary btn-lg">
+        <!-- VIEW VENDOR -->
+        <a href="javascript:void(0)" class="action-card" onclick="openModal('viewVendorModal')">
+            <div class="action-card-icon">👁️</div>
+            <div class="action-title">Vendor Details</div>
+            <div class="action-endpoint">GET /api/v1/vendors/{vendorId}</div>
+            <div class="action-desc">Look up a specific vendor's details.</div>
+            <div class="action-card-footer">View Vendor →</div>
+        </a>
 
-            Back To Home
+        <!-- EDIT VENDOR -->
+        <a href="javascript:void(0)" class="action-card" onclick="openModal('editVendorModal')">
+            <div class="action-card-icon">📝</div>
+            <div class="action-title">Edit Vendor</div>
+            <div class="action-endpoint">PUT /api/v1/vendors/{vendorId}</div>
+            <div class="action-desc">Update an existing vendor's information.</div>
+            <div class="action-card-footer">Edit Vendor →</div>
+        </a>
 
+        <!-- VENDOR PRICE -->
+        <a href="javascript:void(0)" class="action-card" onclick="openModal('priceVendorModal')">
+            <div class="action-card-icon">💵</div>
+            <div class="action-title">Vendor Gold Price</div>
+            <div class="action-endpoint">GET /api/v1/vendors/{vendorId}/price</div>
+            <div class="action-desc">Check the current gold price set by a vendor.</div>
+            <div class="action-card-footer">Check Price →</div>
+        </a>
+
+        <!-- ALL BRANCHES -->
+        <a th:href="@{/branches}" class="action-card">
+            <div class="action-card-icon">🏬</div>
+            <div class="action-title">All Branches</div>
+            <div class="action-endpoint">Internal View</div>
+            <div class="action-desc">View a list of all vendor branches in the DB.</div>
+            <div class="action-card-footer">View Branches →</div>
+        </a>
+
+        <!-- CREATE BRANCH -->
+        <a th:href="@{/branches/create}" class="action-card">
+            <div class="action-card-icon">🏢</div>
+            <div class="action-title">Create Branch</div>
+            <div class="action-endpoint">POST /api/v1/vendors/{vId}/branches</div>
+            <div class="action-desc">Add a new physical branch for a vendor.</div>
+            <div class="action-card-footer">Create Branch →</div>
+        </a>
+
+        <!-- VIEW BRANCH -->
+        <a href="javascript:void(0)" class="action-card" onclick="openModal('viewBranchModal')">
+            <div class="action-card-icon">📍</div>
+            <div class="action-title">Branch Details</div>
+            <div class="action-endpoint">GET /api/v1/branches/{branchId}</div>
+            <div class="action-desc">Look up details of a specific branch.</div>
+            <div class="action-card-footer">View Branch →</div>
+        </a>
+
+        <!-- BRANCH INVENTORY -->
+        <a href="javascript:void(0)" class="action-card" onclick="openModal('inventoryBranchModal')">
+            <div class="action-card-icon">📦</div>
+            <div class="action-title">Branch Inventory</div>
+            <div class="action-endpoint">GET /api/v1/branches/{branchId}/inventory</div>
+            <div class="action-desc">Check physical gold quantity at a branch.</div>
+            <div class="action-card-footer">Check Inventory →</div>
         </a>
 
     </div>
 
 </div>
 
-<!-- ================================================= -->
-<!-- JAVASCRIPT -->
-<!-- ================================================= -->
+<!-- MODALS -->
+<div class="dgw-modal-backdrop" id="viewVendorModal">
+    <div class="dgw-modal-card">
+        <button class="dgw-modal-close" onclick="closeModal('viewVendorModal')">×</button>
+        <div class="dgw-modal-header">
+            <div class="dgw-modal-title">Vendor Details</div>
+            <div class="dgw-modal-desc">Enter a Vendor ID to look up details.</div>
+        </div>
+        <form class="dgw-form" onsubmit="goViewVendor(event)">
+            <div class="form-group">
+                <label class="form-label" for="viewVendorId">Vendor ID</label>
+                <input type="number" id="viewVendorId" class="form-control" placeholder="e.g. 1" min="1" required>
+            </div>
+            <button type="submit" class="btn-gold" style="width:100%;justify-content:center;">View Vendor →</button>
+        </form>
+    </div>
+</div>
+
+<div class="dgw-modal-backdrop" id="editVendorModal">
+    <div class="dgw-modal-card">
+        <button class="dgw-modal-close" onclick="closeModal('editVendorModal')">×</button>
+        <div class="dgw-modal-header">
+            <div class="dgw-modal-title">Edit Vendor</div>
+            <div class="dgw-modal-desc">Enter a Vendor ID to update its information.</div>
+        </div>
+        <form class="dgw-form" onsubmit="goEditVendor(event)">
+            <div class="form-group">
+                <label class="form-label" for="editVendorId">Vendor ID</label>
+                <input type="number" id="editVendorId" class="form-control" placeholder="e.g. 1" min="1" required>
+            </div>
+            <button type="submit" class="btn-gold" style="width:100%;justify-content:center;">Edit Vendor →</button>
+        </form>
+    </div>
+</div>
+
+<div class="dgw-modal-backdrop" id="priceVendorModal">
+    <div class="dgw-modal-card">
+        <button class="dgw-modal-close" onclick="closeModal('priceVendorModal')">×</button>
+        <div class="dgw-modal-header">
+            <div class="dgw-modal-title">Vendor Gold Price</div>
+            <div class="dgw-modal-desc">Enter a Vendor ID to check their gold price.</div>
+        </div>
+        <form class="dgw-form" onsubmit="goVendorPrice(event)">
+            <div class="form-group">
+                <label class="form-label" for="priceVendorId">Vendor ID</label>
+                <input type="number" id="priceVendorId" class="form-control" placeholder="e.g. 1" min="1" required>
+            </div>
+            <button type="submit" class="btn-gold" style="width:100%;justify-content:center;">Check Price →</button>
+        </form>
+    </div>
+</div>
+
+<div class="dgw-modal-backdrop" id="viewBranchModal">
+    <div class="dgw-modal-card">
+        <button class="dgw-modal-close" onclick="closeModal('viewBranchModal')">×</button>
+        <div class="dgw-modal-header">
+            <div class="dgw-modal-title">Branch Details</div>
+            <div class="dgw-modal-desc">Enter a Branch ID to look up details.</div>
+        </div>
+        <form class="dgw-form" onsubmit="goViewBranch(event)">
+            <div class="form-group">
+                <label class="form-label" for="viewBranchId">Branch ID</label>
+                <input type="number" id="viewBranchId" class="form-control" placeholder="e.g. 1" min="1" required>
+            </div>
+            <button type="submit" class="btn-gold" style="width:100%;justify-content:center;">View Branch →</button>
+        </form>
+    </div>
+</div>
+
+<div class="dgw-modal-backdrop" id="inventoryBranchModal">
+    <div class="dgw-modal-card">
+        <button class="dgw-modal-close" onclick="closeModal('inventoryBranchModal')">×</button>
+        <div class="dgw-modal-header">
+            <div class="dgw-modal-title">Branch Inventory</div>
+            <div class="dgw-modal-desc">Enter a Branch ID to check its physical gold stock.</div>
+        </div>
+        <form class="dgw-form" onsubmit="goBranchInventory(event)">
+            <div class="form-group">
+                <label class="form-label" for="inventoryBranchId">Branch ID</label>
+                <input type="number" id="inventoryBranchId" class="form-control" placeholder="e.g. 1" min="1" required>
+            </div>
+            <button type="submit" class="btn-gold" style="width:100%;justify-content:center;">Check Inventory →</button>
+        </form>
+    </div>
+</div>
+
 <script>
-
-    function viewVendor() {
-
-        let id =
-            document.getElementById(
-                "viewVendorId"
-            ).value;
-
-        window.location.href =
-            "/vendors/view/" + id;
+    function openModal(id) {
+        document.getElementById(id).classList.add('show');
+    }
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('show');
+    }
+    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        if (event.target.classList.contains('dgw-modal-backdrop')) {
+            event.target.classList.remove('show');
+        }
     }
 
-    function editVendor() {
-
-        let id =
-            document.getElementById(
-                "editVendorId"
-            ).value;
-
-        window.location.href =
-            "/vendors/update/" + id;
+    function goViewVendor(e) {
+        e.preventDefault();
+        const id = document.getElementById('viewVendorId').value;
+        if (id) window.location.href = '/vendors/view/' + id;
     }
-
-    function vendorPrice() {
-
-        let id =
-            document.getElementById(
-                "priceVendorId"
-            ).value;
-
-        window.location.href =
-            "/vendors/price/" + id;
+    function goEditVendor(e) {
+        e.preventDefault();
+        const id = document.getElementById('editVendorId').value;
+        if (id) window.location.href = '/vendors/update/' + id;
     }
-
-    function viewBranch() {
-
-        let id =
-            document.getElementById(
-                "branchId"
-            ).value;
-
-        window.location.href =
-            "/branches/view/" + id;
+    function goVendorPrice(e) {
+        e.preventDefault();
+        const id = document.getElementById('priceVendorId').value;
+        if (id) window.location.href = '/vendors/price/' + id;
     }
-
-    function branchInventory() {
-
-        let id =
-            document.getElementById(
-                "inventoryBranchId"
-            ).value;
-
-        window.location.href =
-            "/branches/inventory/" + id;
+    function goViewBranch(e) {
+        e.preventDefault();
+        const id = document.getElementById('viewBranchId').value;
+        if (id) window.location.href = '/branches/view/' + id;
     }
-
+    function goBranchInventory(e) {
+        e.preventDefault();
+        const id = document.getElementById('inventoryBranchId').value;
+        if (id) window.location.href = '/branches/inventory/' + id;
+    }
 </script>
 
 </body>
-
 </html>

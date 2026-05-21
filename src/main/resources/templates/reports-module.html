@@ -1,258 +1,176 @@
 <!DOCTYPE html>
-
-<html xmlns:th="http://www.thymeleaf.org">
-
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
 <head>
-
-    <title>Reports Module</title>
-
-    <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-            rel="stylesheet">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports Module — Digital Gold Wallet</title>
+    <meta name="description" content="Analytics and Reporting Module">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
+<body>
 
-<body class="bg-light">
+<nav class="dgw-navbar">
+    <a th:href="@{/}" class="dgw-navbar-brand">
+        <div class="brand-icon">🪙</div>
+        <div class="brand-name">Digital <span>Gold</span> Wallet</div>
+    </a>
+    <div class="dgw-navbar-right">
+        <div class="dgw-user-chip">
+            <span sec:authentication="name">User</span>
+            <span class="role-badge" style="background:rgba(255,255,255,0.1);color:#fff;border-color:rgba(255,255,255,0.2);">Analyst</span>
+        </div>
+        <a th:href="@{/}" class="btn-ghost" style="padding:0.45rem 1rem;font-size:0.82rem;">Home</a>
+        <a th:href="@{/logout}" class="btn-ghost" style="padding:0.45rem 1rem;font-size:0.82rem;">Sign Out</a>
+    </div>
+</nav>
 
-<div class="container mt-5">
+<div class="dgw-page">
 
-    <!-- HEADER -->
+    <div class="dgw-breadcrumb">
+        <a th:href="@{/}">Home</a><span class="sep">›</span>
+        <span class="current">Reports Module</span>
+    </div>
 
-    <div class="text-center mb-5">
+    <!-- MODULE HEADER -->
+    <div class="module-header" style="border-color:rgba(255,255,255,0.15);">
+        <img th:src="@{/images/team.jpg}" class="dev-photo" alt="Team"
+             style="border-color:rgba(255,255,255,0.3);">
+        <div class="dev-info">
+            <div class="dev-name">Shared Module</div>
+            <div class="dev-title" style="color:#e0e0e0;">Analytics & Reporting</div>
+            <div class="dev-tags">
+                <span class="dev-tag">Performance</span>
+                <span class="dev-tag">Investors</span>
+                <span class="dev-tag">Inventory</span>
+                <span class="dev-tag">Insights</span>
+            </div>
+        </div>
+    </div>
 
-        <h1 class="fw-bold text-dark display-4">
+    <!-- ENDPOINTS LIST -->
+    <div class="dgw-card" style="margin-bottom:1.75rem;">
+        <h2 class="section-title">⚡ Implemented Endpoints</h2>
+        <ul class="endpoint-list">
+            <li class="endpoint-item">
+                <span class="method-badge method-GET">GET</span>
+                /api/v1/reports/vendors/performance
+            </li>
+            <li class="endpoint-item">
+                <span class="method-badge method-GET">GET</span>
+                /api/v1/reports/top-investors
+            </li>
+            <li class="endpoint-item">
+                <span class="method-badge method-GET">GET</span>
+                /api/v1/reports/branches/{branchId}/inventory-status
+            </li>
+        </ul>
+    </div>
 
-            REPORTS DASHBOARD
+    <!-- DASHBOARD -->
+    <h2 class="section-title">📊 Interactive Dashboard</h2>
 
-        </h1>
+    <div class="action-grid">
 
-        <h5 class="text-secondary">
+        <!-- VENDOR PERFORMANCE -->
+        <a href="javascript:void(0)" class="action-card" onclick="fetchReport('/api/v1/reports/vendors/performance', 'Vendor Performance')">
+            <div class="action-card-icon">📈</div>
+            <div class="action-title">Vendor Performance</div>
+            <div class="action-endpoint">GET /api/v1/reports/vendors/performance</div>
+            <div class="action-desc">Vendor analytics report.</div>
+            <div class="action-card-footer">Open Report →</div>
+        </a>
 
-            Analytics & Reporting APIs
+        <!-- TOP INVESTORS -->
+        <a href="javascript:void(0)" class="action-card" onclick="fetchReport('/api/v1/reports/top-investors', 'Top Investors')">
+            <div class="action-card-icon">🏆</div>
+            <div class="action-title">Top Investors</div>
+            <div class="action-endpoint">GET /api/v1/reports/top-investors</div>
+            <div class="action-desc">Investor ranking report.</div>
+            <div class="action-card-footer">Open Report →</div>
+        </a>
 
-        </h5>
+        <!-- BRANCH INVENTORY -->
+        <a href="javascript:void(0)" class="action-card" onclick="openModal('reportBranchModal')">
+            <div class="action-card-icon">📊</div>
+            <div class="action-title">Branch Inventory Status</div>
+            <div class="action-endpoint">GET /api/v1/reports/branches/{id}/inventory-status</div>
+            <div class="action-desc">Branch inventory status report.</div>
+            <div class="action-card-footer">Open Report →</div>
+        </a>
 
     </div>
 
-    <!-- IMPLEMENTED ENDPOINTS -->
-
-    <div class="card shadow-lg p-4 mb-5">
-
-        <h2 class="text-primary fw-bold mb-4">
-
-            Implemented Endpoints
-
-        </h2>
-
-        <table class="table table-bordered">
-
-            <tbody>
-
-            <tr>
-                <td>
-                    GET /api/v1/reports/vendors/performance
-                </td>
-            </tr>
-
-            <tr>
-                <td>
-                    GET /api/v1/reports/top-investors
-                </td>
-            </tr>
-
-            <tr>
-                <td>
-                    GET /api/v1/reports/branches/{branchId}/inventory-status
-                </td>
-            </tr>
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-    <!-- INTERACTIVE DASHBOARD -->
-
-    <div class="card shadow-lg p-4">
-
-        <h2 class="text-success fw-bold mb-4">
-
-            Interactive Reports Dashboard
-
-        </h2>
-
-        <div class="row g-4">
-
-            <!-- VENDOR PERFORMANCE -->
-
-            <div class="col-md-4">
-
-                <div class="border rounded p-4 text-center h-100">
-
-                    <h4 class="fw-bold">
-
-                        Vendor Performance
-
-                    </h4>
-
-                    <p>
-
-                        Vendor analytics report.
-
-                    </p>
-
-                    <h6 class="text-primary">
-
-                        GET /api/v1/reports/vendors/performance
-
-                    </h6>
-
-                    <a
-                            href="/api/v1/reports/vendors/performance"
-                            class="btn btn-primary mt-3">
-
-                        Open Report
-
-                    </a>
-
-                </div>
-
-            </div>
-
-            <!-- TOP INVESTORS -->
-
-            <div class="col-md-4">
-
-                <div class="border rounded p-4 text-center h-100">
-
-                    <h4 class="fw-bold">
-
-                        Top Investors
-
-                    </h4>
-
-                    <p>
-
-                        Investor ranking report.
-
-                    </p>
-
-                    <h6 class="text-success">
-
-                        GET /api/v1/reports/top-investors
-
-                    </h6>
-
-                    <a
-                            href="/api/v1/reports/top-investors"
-                            class="btn btn-success mt-3">
-
-                        Open Report
-
-                    </a>
-
-                </div>
-
-            </div>
-
-            <!-- BRANCH INVENTORY -->
-
-            <div class="col-md-4">
-
-                <div class="border rounded p-4 text-center h-100">
-
-                    <h4 class="fw-bold">
-
-                        Branch Inventory
-
-                    </h4>
-
-                    <p>
-
-                        Branch inventory status report.
-
-                    </p>
-
-                    <h6 class="text-danger">
-
-                        GET /api/v1/reports/branches/{branchId}/inventory-status
-
-                    </h6>
-
-                    <form
-                            onsubmit="openBranchReport(event)">
-
-                        <input
-                                type="number"
-                                id="branchId"
-                                class="form-control mt-3"
-                                placeholder="Enter Branch ID"
-                                required>
-
-                        <button
-                                type="submit"
-                                class="btn btn-danger mt-3">
-
-                            Open Report
-
-                        </button>
-
-                    </form>
-
-                </div>
-
-            </div>
-
+    <!-- REPORT MODAL/DISPLAY AREA -->
+    <div id="reportContainer" style="display:none; margin-top:3rem; padding:1.5rem; background:#111; border:1px solid var(--border-gold); border-radius:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <h3 id="reportTitle" style="color:var(--gold-primary); margin:0;">Report Results</h3>
+            <button class="btn-ghost" onclick="document.getElementById('reportContainer').style.display='none'" style="padding:0.2rem 0.5rem; color:#aaa;">✕ Close</button>
         </div>
-
-        <!-- BUTTONS -->
-
-        <div class="text-center mt-5">
-
-            <a
-                    href="/swagger-ui/index.html"
-                    class="btn btn-dark btn-lg me-3">
-
-                Open Swagger
-
-            </a>
-
-            <a
-                    href="/"
-                    class="btn btn-secondary btn-lg">
-
-                Back To Home
-
-            </a>
-
-        </div>
-
+        <pre id="reportOutput" style="color:#e0e0e0; overflow-x:auto; font-size:0.85rem; padding:1rem; background:#1a1a1a; border-radius:6px; max-height:400px;"></pre>
     </div>
 
 </div>
 
-<!-- SCRIPT -->
+<!-- MODALS -->
+<div class="dgw-modal-backdrop" id="reportBranchModal">
+    <div class="dgw-modal-card">
+        <button class="dgw-modal-close" onclick="closeModal('reportBranchModal')">×</button>
+        <div class="dgw-modal-header">
+            <div class="dgw-modal-title">Branch Inventory Status</div>
+            <div class="dgw-modal-desc">Enter a Branch ID to run the report.</div>
+        </div>
+        <form class="dgw-form" onsubmit="openBranchReport(event)">
+            <div class="form-group">
+                <label class="form-label" for="branchId">Branch ID</label>
+                <input type="number" id="branchId" class="form-control" placeholder="e.g. 1" min="1" required>
+            </div>
+            <button type="submit" class="btn-gold" style="width:100%;justify-content:center;">Run Report →</button>
+        </form>
+    </div>
+</div>
 
 <script>
-
-    function openBranchReport(event) {
-
-        event.preventDefault();
-
-        let branchId =
-            document.getElementById(
-                "branchId"
-            ).value;
-
-        window.location.href =
-            "/api/v1/reports/branches/"
-            + branchId +
-            "/inventory-status";
+    function openModal(id) {
+        document.getElementById(id).classList.add('show');
+    }
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('show');
+    }
+    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        if (event.target.classList.contains('dgw-modal-backdrop')) {
+            event.target.classList.remove('show');
+        }
     }
 
+    async function fetchReport(url, title) {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => null);
+                throw new Error(errorData?.message || `HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            document.getElementById('reportTitle').innerText = title;
+            document.getElementById('reportOutput').innerText = JSON.stringify(data, null, 2);
+            document.getElementById('reportContainer').style.display = 'block';
+            document.getElementById('reportContainer').scrollIntoView({ behavior: 'smooth' });
+        } catch (error) {
+            alert('Failed to load report: ' + error.message);
+        }
+    }
+
+    function openBranchReport(e) {
+        e.preventDefault();
+        const id = document.getElementById('branchId').value;
+        if (!id) { alert('Enter a Branch ID'); return; }
+        closeModal('reportBranchModal');
+        fetchReport('/api/v1/reports/branches/' + id + '/inventory-status', 'Branch Inventory Status (ID: ' + id + ')');
+    }
 </script>
 
 </body>
-
 </html>

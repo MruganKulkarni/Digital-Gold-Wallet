@@ -12,7 +12,6 @@ spring:
   cloud:
     vault:
       uri: http://3.25.125.197:8200
-
       token: ${VAULT_TOKEN}
 
       kv:
@@ -25,6 +24,7 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
+
     hikari:
       maximum-pool-size: 5
       minimum-idle: 2
@@ -37,6 +37,14 @@ spring:
       ddl-auto: none
 
     show-sql: true
+
+
+springdoc:
+  swagger-ui:
+    custom-js-url: /swagger-custom.js
+    custom-css-url: /swagger-custom.css
+    display-request-duration: true
+
 
 logging:
   level:

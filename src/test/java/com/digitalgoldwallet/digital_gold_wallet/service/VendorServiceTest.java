@@ -317,27 +317,22 @@ public class VendorServiceTest {
     @Test
     @DisplayName("Test Get All Vendors Success")
     public void testGetAllVendors_Success() {
+        // verifies that getAllVendors returns list of vendors
 
         Vendor vendor =
                 createMockVendor();
 
-        Page<Vendor> mockPage =
-                new PageImpl<>(
+        when(vendorRepository.findAll()) // when repository fetches all vendors
+                .thenReturn(List.of(mockVendor)); // return mock list
 
-                        List.of(vendor),
+        List<VendorResponseDto> response = vendorService.getAllVendors(); // calls service method
 
-                        PageRequest.of(0,10),
+        assertNotNull(response); // confirms response is not null
+        assertFalse(response.isEmpty()); // confirms list has at least one vendor
+        assertEquals("Test Gold Traders", response.get(0).getVendorName()); // confirms first vendor name
 
-                        1
-                );
-
-        when(vendorRepository.findAll(any(PageRequest.class)))
-                .thenReturn(mockPage);
-
-        Page<VendorResponseDto> response =
-                vendorService.getAllVendors(
-                        PageRequest.of(0,10)
-                );
+        System.out.println("TEST PASSED: testGetAllVendors_Success - Total vendors = " + response.size());
+    }
 
         assertFalse(
                 response.getContent().isEmpty()

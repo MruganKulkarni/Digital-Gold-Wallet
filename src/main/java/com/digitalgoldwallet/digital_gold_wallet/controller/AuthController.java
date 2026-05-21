@@ -1,62 +1,24 @@
 package com.digitalgoldwallet.digital_gold_wallet.controller;
 
 import org.springframework.security.core.Authentication;
-
 import org.springframework.security.core.GrantedAuthority;
-
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
-import java.util.Map;
-
-/*
- * ============================================================
- * AUTH CONTROLLER
- * ============================================================
- */
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 public class AuthController {
-
-    /*
-     * ============================================================
-     * GET CURRENT LOGGED-IN ROLE
-     * ============================================================
-     */
     @GetMapping("/api/auth/me")
-    public Map<String, String> getCurrentUser(
-            Authentication authentication
-    ) {
-
-        /*
-         * Response map
-         */
-        Map<String, String> response =
-                new HashMap<>();
-
-        /*
-         * Username
-         */
-        response.put(
-                "username",
-                authentication.getName()
-        );
-
-        /*
-         * First role
-         */
-        GrantedAuthority authority =
-                authentication
-                        .getAuthorities()
-                        .iterator()
-                        .next();
-
-        response.put(
-                "role",
-                authority.getAuthority()
-        );
-
-        return response;
+    public List<String> getCurrentUserRoles() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return List.of();
+        }
+        return authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
     }
 }

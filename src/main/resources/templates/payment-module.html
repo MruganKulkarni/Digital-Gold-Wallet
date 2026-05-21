@@ -1,402 +1,275 @@
 <!DOCTYPE html>
-
-<html xmlns:th="http://www.thymeleaf.org">
-
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
 <head>
-
-    <title>Payment Module</title>
-
-    <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-            rel="stylesheet">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Module — Digital Gold Wallet</title>
+    <meta name="description" content="Payment and Wallet Module">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
+<body>
 
-<body class="bg-light">
+<nav class="dgw-navbar">
+    <a th:href="@{/}" class="dgw-navbar-brand">
+        <div class="brand-icon">🪙</div>
+        <div class="brand-name">Digital <span>Gold</span> Wallet</div>
+    </a>
+    <div class="dgw-navbar-right">
+        <div class="dgw-user-chip">
+            <span sec:authentication="name">User</span>
+            <span class="role-badge">Payment Dev</span>
+        </div>
+        <a th:href="@{/}" class="btn-ghost" style="padding:0.45rem 1rem;font-size:0.82rem;">Home</a>
+        <a th:href="@{/logout}" class="btn-ghost" style="padding:0.45rem 1rem;font-size:0.82rem;">Sign Out</a>
+    </div>
+</nav>
 
-<div class="container mt-5">
+<div class="dgw-page">
 
-    <!-- HEADER -->
-    <div class="text-center mb-5">
-
-        <img
-                th:src="@{/images/tanmay.jpeg}"
-
-                class="rounded-circle shadow-lg mb-3"
-
-                style="
-                    width: 180px;
-                    height: 180px;
-                    object-fit: cover;
-                "
-
-                alt="Tanmay">
-
-        <h1 class="display-4 text-danger fw-bold">
-
-            Tanmay
-
-        </h1>
-
-        <h4 class="text-secondary">
-
-            PAYMENT MODULE DEVELOPER
-
-        </h4>
-
+    <div class="dgw-breadcrumb">
+        <a th:href="@{/}">Home</a><span class="sep">›</span>
+        <span class="current">Payment Module</span>
     </div>
 
-    <!-- ENDPOINTS -->
-    <div class="card shadow-lg p-4 mb-5">
+    <!-- MODULE HEADER -->
+    <div class="module-header" style="border-color:rgba(240,93,122,0.25);">
+        <img th:src="@{/images/tanmay.jpeg}" class="dev-photo" alt="Tanmay"
+             style="border-color:rgba(240,93,122,0.5);">
+        <div class="dev-info">
+            <div class="dev-name">Tanmay</div>
+            <div class="dev-title" style="color:var(--accent-payment);">Payment Module Developer</div>
+            <div class="dev-tags">
+                <span class="dev-tag">Payment APIs</span>
+                <span class="dev-tag">Wallet APIs</span>
+                <span class="dev-tag">Transaction Management</span>
+                <span class="dev-tag">Testing</span>
+            </div>
+        </div>
+    </div>
 
-        <h2 class="text-danger mb-4">
-
-            Implemented Endpoints
-
-        </h2>
-
-        <ul class="list-group">
-
-            <li class="list-group-item">
-                POST /api/v1/wallets/{userId}/credit
+    <!-- ENDPOINTS LIST -->
+    <div class="dgw-card" style="margin-bottom:1.75rem;">
+        <h2 class="section-title">⚡ Implemented Endpoints</h2>
+        <ul class="endpoint-list">
+            <li class="endpoint-item">
+                <span class="method-badge method-GET">GET</span>
+                /api/v1/wallets/{userId}/balance
             </li>
-
-            <li class="list-group-item">
-                POST /api/v1/wallets/{userId}/debit
+            <li class="endpoint-item">
+                <span class="method-badge method-POST">POST</span>
+                /api/v1/wallets/{userId}/credit
             </li>
-
-            <li class="list-group-item">
-                GET /api/v1/wallets/{userId}/balance
+            <li class="endpoint-item">
+                <span class="method-badge method-POST">POST</span>
+                /api/v1/wallets/{userId}/debit
             </li>
-
-            <li class="list-group-item">
-                POST /api/v1/payments
+            <li class="endpoint-item">
+                <span class="method-badge method-POST">POST</span>
+                /api/v1/payments
             </li>
-
-            <li class="list-group-item">
-                GET /api/v1/payments/{paymentId}
+            <li class="endpoint-item">
+                <span class="method-badge method-GET">GET</span>
+                /api/v1/payments/{paymentId}
             </li>
-
-            <li class="list-group-item">
-                GET /api/v1/users/{userId}/payments
+            <li class="endpoint-item">
+                <span class="method-badge method-GET">GET</span>
+                /api/v1/users/{userId}/payments
             </li>
-
         </ul>
-
     </div>
 
     <!-- DASHBOARD -->
-    <div class="card shadow-lg p-4 mb-5">
-
-        <h2 class="text-primary mb-4">
-
-            Interactive Payment Dashboard
-
-        </h2>
-
-        <div class="row">
-
-            <!-- CREDIT -->
-            <div class="col-md-4 mb-4">
-
-                <div class="border rounded p-4 text-center h-100">
-
-                    <h4>Credit Wallet</h4>
-
-                    <p>Add money to wallet.</p>
-
-                    <p class="fw-bold text-success">
-
-                        POST /api/v1/wallets/{userId}/credit
-
-                    </p>
-
-                    <input
-                            type="number"
-
-                            id="creditUserId"
-
-                            class="form-control mb-3"
-
-                            placeholder="Enter User ID">
-
-                    <button
-                            class="btn btn-success"
-
-                            onclick="creditWallet()">
-
-                        Credit
-
-                    </button>
-
-                </div>
-
-            </div>
-
-            <!-- DEBIT -->
-            <div class="col-md-4 mb-4">
-
-                <div class="border rounded p-4 text-center h-100">
-
-                    <h4>Debit Wallet</h4>
-
-                    <p>Debit money from wallet.</p>
-
-                    <p class="fw-bold text-danger">
-
-                        POST /api/v1/wallets/{userId}/debit
-
-                    </p>
-
-                    <input
-                            type="number"
-
-                            id="debitUserId"
-
-                            class="form-control mb-3"
-
-                            placeholder="Enter User ID">
-
-                    <button
-                            class="btn btn-danger"
-
-                            onclick="debitWallet()">
-
-                        Debit
-
-                    </button>
-
-                </div>
-
-            </div>
-
-            <!-- BALANCE -->
-            <div class="col-md-4 mb-4">
-
-                <div class="border rounded p-4 text-center h-100">
-
-                    <h4>Wallet Balance</h4>
-
-                    <p>View wallet balance.</p>
-
-                    <p class="fw-bold text-secondary">
-
-                        GET /api/v1/wallets/{userId}/balance
-
-                    </p>
-
-                    <input
-                            type="number"
-
-                            id="balanceUserId"
-
-                            class="form-control mb-3"
-
-                            placeholder="Enter User ID">
-
-                    <button
-                            class="btn btn-secondary"
-
-                            onclick="walletBalance()">
-
-                        Balance
-
-                    </button>
-
-                </div>
-
-            </div>
-
-            <!-- CREATE PAYMENT -->
-            <div class="col-md-4 mb-4">
-
-                <div class="border rounded p-4 text-center h-100">
-
-                    <h4>Create Payment</h4>
-
-                    <p>Create new payment.</p>
-
-                    <p class="fw-bold text-primary">
-
-                        POST /api/v1/payments
-
-                    </p>
-
-                    <a
-                            th:href="@{/payments/create}"
-
-                            class="btn btn-primary">
-
-                        Create
-
-                    </a>
-
-                </div>
-
-            </div>
-
-            <!-- VIEW PAYMENT -->
-            <div class="col-md-4 mb-4">
-
-                <div class="border rounded p-4 text-center h-100">
-
-                    <h4>View Payment</h4>
-
-                    <p>View payment details.</p>
-
-                    <p class="fw-bold text-warning">
-
-                        GET /api/v1/payments/{paymentId}
-
-                    </p>
-
-                    <input
-                            type="number"
-
-                            id="paymentId"
-
-                            class="form-control mb-3"
-
-                            placeholder="Enter Payment ID">
-
-                    <button
-                            class="btn btn-warning"
-
-                            onclick="viewPayment()">
-
-                        View
-
-                    </button>
-
-                </div>
-
-            </div>
-
-            <!-- PAYMENT HISTORY -->
-            <div class="col-md-4 mb-4">
-
-                <div class="border rounded p-4 text-center h-100">
-
-                    <h4>Payment History</h4>
-
-                    <p>User payment history.</p>
-
-                    <p class="fw-bold text-dark">
-
-                        GET /api/v1/users/{userId}/payments
-
-                    </p>
-
-                    <input
-                            type="number"
-
-                            id="historyUserId"
-
-                            class="form-control mb-3"
-
-                            placeholder="Enter User ID">
-
-                    <button
-                            class="btn btn-dark"
-
-                            onclick="paymentHistory()">
-
-                        History
-
-                    </button>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <!-- FOOTER -->
-    <div class="text-center">
-
-        <a
-                href="http://localhost:8080/swagger-ui/index.html"
-
-                class="btn btn-dark btn-lg me-3">
-
-            Open Swagger
-
+    <h2 class="section-title">🔧 Interactive Dashboard</h2>
+
+    <div class="action-grid">
+
+        <!-- WALLET BALANCE -->
+        <a href="javascript:void(0)" class="action-card" onclick="openModal('balanceWalletModal')">
+            <div class="action-card-icon">👛</div>
+            <div class="action-title">Wallet Balance</div>
+            <div class="action-endpoint">GET /api/v1/wallets/{userId}/balance</div>
+            <div class="action-desc">Check the wallet balance for a user.</div>
+            <div class="action-card-footer">Check Balance →</div>
         </a>
 
-        <a
-                th:href="@{/}"
+        <!-- CREDIT WALLET -->
+        <a href="javascript:void(0)" class="action-card" onclick="openModal('creditWalletModal')">
+            <div class="action-card-icon">➕</div>
+            <div class="action-title">Credit Wallet</div>
+            <div class="action-endpoint">POST /api/v1/wallets/{userId}/credit</div>
+            <div class="action-desc">Add funds to a user's wallet.</div>
+            <div class="action-card-footer">Credit Wallet →</div>
+        </a>
 
-                class="btn btn-secondary btn-lg">
+        <!-- DEBIT WALLET -->
+        <a href="javascript:void(0)" class="action-card" onclick="openModal('debitWalletModal')" style="--border-gold: rgba(240, 93, 122, 0.4); --shadow-gold: 0 0 20px rgba(240, 93, 122, 0.15);">
+            <div class="action-card-icon" style="color:var(--accent-payment);">➖</div>
+            <div class="action-title">Debit Wallet</div>
+            <div class="action-endpoint">POST /api/v1/wallets/{userId}/debit</div>
+            <div class="action-desc">Deduct funds from a user's wallet.</div>
+            <div class="action-card-footer" style="color:var(--accent-payment);">Debit Wallet →</div>
+        </a>
 
-            Back To Home
+        <!-- CREATE PAYMENT -->
+        <a th:href="@{/payments/create}" class="action-card">
+            <div class="action-card-icon">💳</div>
+            <div class="action-title">Initiate Payment</div>
+            <div class="action-endpoint">POST /api/v1/payments</div>
+            <div class="action-desc">Create a new payment record.</div>
+            <div class="action-card-footer">Create Payment →</div>
+        </a>
 
+        <!-- VIEW PAYMENT -->
+        <a href="javascript:void(0)" class="action-card" onclick="openModal('viewPaymentModal')">
+            <div class="action-card-icon">🧾</div>
+            <div class="action-title">Payment Details</div>
+            <div class="action-endpoint">GET /api/v1/payments/{paymentId}</div>
+            <div class="action-desc">Look up a specific payment record.</div>
+            <div class="action-card-footer">View Payment →</div>
+        </a>
+
+        <!-- PAYMENT HISTORY -->
+        <a href="javascript:void(0)" class="action-card" onclick="openModal('historyPaymentModal')">
+            <div class="action-card-icon">📋</div>
+            <div class="action-title">Payment History</div>
+            <div class="action-endpoint">GET /api/v1/users/{userId}/payments</div>
+            <div class="action-desc">View full payment history for a user.</div>
+            <div class="action-card-footer">View History →</div>
         </a>
 
     </div>
 
 </div>
 
+<!-- MODALS -->
+<div class="dgw-modal-backdrop" id="balanceWalletModal">
+    <div class="dgw-modal-card">
+        <button class="dgw-modal-close" onclick="closeModal('balanceWalletModal')">×</button>
+        <div class="dgw-modal-header">
+            <div class="dgw-modal-title">Wallet Balance</div>
+            <div class="dgw-modal-desc">Enter a User ID to check their balance.</div>
+        </div>
+        <form class="dgw-form" onsubmit="goWalletBalance(event)">
+            <div class="form-group">
+                <label class="form-label" for="balanceUserId">User ID</label>
+                <input type="number" id="balanceUserId" class="form-control" placeholder="e.g. 1" min="1" required>
+            </div>
+            <button type="submit" class="btn-gold" style="width:100%;justify-content:center;">Check Balance →</button>
+        </form>
+    </div>
+</div>
+
+<div class="dgw-modal-backdrop" id="creditWalletModal">
+    <div class="dgw-modal-card">
+        <button class="dgw-modal-close" onclick="closeModal('creditWalletModal')">×</button>
+        <div class="dgw-modal-header">
+            <div class="dgw-modal-title">Credit Wallet</div>
+            <div class="dgw-modal-desc">Enter a User ID to add funds.</div>
+        </div>
+        <form class="dgw-form" onsubmit="goCreditWallet(event)">
+            <div class="form-group">
+                <label class="form-label" for="creditUserId">User ID</label>
+                <input type="number" id="creditUserId" class="form-control" placeholder="e.g. 1" min="1" required>
+            </div>
+            <button type="submit" class="btn-gold" style="width:100%;justify-content:center;">Credit Wallet →</button>
+        </form>
+    </div>
+</div>
+
+<div class="dgw-modal-backdrop" id="debitWalletModal">
+    <div class="dgw-modal-card">
+        <button class="dgw-modal-close" onclick="closeModal('debitWalletModal')">×</button>
+        <div class="dgw-modal-header">
+            <div class="dgw-modal-title">Debit Wallet</div>
+            <div class="dgw-modal-desc">Enter a User ID to deduct funds.</div>
+        </div>
+        <form class="dgw-form" onsubmit="goDebitWallet(event)">
+            <div class="form-group">
+                <label class="form-label" for="debitUserId">User ID</label>
+                <input type="number" id="debitUserId" class="form-control" placeholder="e.g. 1" min="1" required>
+            </div>
+            <button type="submit" class="btn-danger-dgw" style="width:100%;justify-content:center;">Debit Wallet →</button>
+        </form>
+    </div>
+</div>
+
+<div class="dgw-modal-backdrop" id="viewPaymentModal">
+    <div class="dgw-modal-card">
+        <button class="dgw-modal-close" onclick="closeModal('viewPaymentModal')">×</button>
+        <div class="dgw-modal-header">
+            <div class="dgw-modal-title">Payment Details</div>
+            <div class="dgw-modal-desc">Enter a Payment ID to view the record.</div>
+        </div>
+        <form class="dgw-form" onsubmit="goViewPayment(event)">
+            <div class="form-group">
+                <label class="form-label" for="viewPaymentId">Payment ID</label>
+                <input type="number" id="viewPaymentId" class="form-control" placeholder="e.g. 1" min="1" required>
+            </div>
+            <button type="submit" class="btn-gold" style="width:100%;justify-content:center;">View Payment →</button>
+        </form>
+    </div>
+</div>
+
+<div class="dgw-modal-backdrop" id="historyPaymentModal">
+    <div class="dgw-modal-card">
+        <button class="dgw-modal-close" onclick="closeModal('historyPaymentModal')">×</button>
+        <div class="dgw-modal-header">
+            <div class="dgw-modal-title">Payment History</div>
+            <div class="dgw-modal-desc">Enter a User ID to see all payments.</div>
+        </div>
+        <form class="dgw-form" onsubmit="goPaymentHistory(event)">
+            <div class="form-group">
+                <label class="form-label" for="historyUserId">User ID</label>
+                <input type="number" id="historyUserId" class="form-control" placeholder="e.g. 1" min="1" required>
+            </div>
+            <button type="submit" class="btn-gold" style="width:100%;justify-content:center;">View History →</button>
+        </form>
+    </div>
+</div>
+
 <script>
-
-    function creditWallet() {
-
-        let id =
-            document.getElementById(
-                "creditUserId"
-            ).value;
-
-        window.location.href =
-            "/wallets/credit/" + id;
+    function openModal(id) {
+        document.getElementById(id).classList.add('show');
+    }
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('show');
+    }
+    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        if (event.target.classList.contains('dgw-modal-backdrop')) {
+            event.target.classList.remove('show');
+        }
     }
 
-    function debitWallet() {
-
-        let id =
-            document.getElementById(
-                "debitUserId"
-            ).value;
-
-        window.location.href =
-            "/wallets/debit/" + id;
+    function goWalletBalance(e) {
+        e.preventDefault();
+        const id = document.getElementById('balanceUserId').value;
+        if (id) window.location.href = '/wallets/balance/' + id;
     }
-
-    function walletBalance() {
-
-        let id =
-            document.getElementById(
-                "balanceUserId"
-            ).value;
-
-        window.location.href =
-            "/wallets/balance/" + id;
+    function goCreditWallet(e) {
+        e.preventDefault();
+        const id = document.getElementById('creditUserId').value;
+        if (id) window.location.href = '/wallets/credit/' + id;
     }
-
-    function viewPayment() {
-
-        let id =
-            document.getElementById(
-                "paymentId"
-            ).value;
-
-        window.location.href =
-            "/payments/view/" + id;
+    function goDebitWallet(e) {
+        e.preventDefault();
+        const id = document.getElementById('debitUserId').value;
+        if (id) window.location.href = '/wallets/debit/' + id;
     }
-
-    function paymentHistory() {
-
-        let id =
-            document.getElementById(
-                "historyUserId"
-            ).value;
-
-        window.location.href =
-            "/payments/history/" + id;
+    function goViewPayment(e) {
+        e.preventDefault();
+        const id = document.getElementById('viewPaymentId').value;
+        if (id) window.location.href = '/payments/view/' + id;
     }
-
+    function goPaymentHistory(e) {
+        e.preventDefault();
+        const id = document.getElementById('historyUserId').value;
+        if (id) window.location.href = '/payments/history/' + id;
+    }
 </script>
 
 </body>
-
 </html>

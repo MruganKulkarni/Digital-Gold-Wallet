@@ -21,8 +21,8 @@ import java.util.Map;
  * CUSTOM ACCESS DENIED HANDLER
  * ============================================================
  *
- * Handles:
- * 403 Forbidden
+ * For API requests (Accept: application/json) → returns JSON 403
+ * For browser/Thymeleaf requests → redirects to /403 HTML page
  *
  * ============================================================
  */
@@ -37,41 +37,65 @@ public class CustomAccessDeniedHandler
             AccessDeniedException accessDeniedException
     ) throws IOException {
 
-        response.setStatus(
-                HttpServletResponse.SC_FORBIDDEN
-        );
+        String accept = request.getHeader("Accept");
 
-        response.setContentType(
-                "application/json"
-        );
+        boolean isApiRequest = 
+                (request.getRequestURI() != null && request.getRequestURI().startsWith("/api/")) ||
+                (accept != null
+                && accept.contains("application/json")
+                && !accept.contains("text/html"));
 
-        Map<String, Object> error =
-                new HashMap<>();
+        if (isApiRequest) {
 
-        error.put(
-                "timestamp",
-                LocalDateTime.now()
-        );
+            /*
+             * REST API client — return JSON error response
+             */
+            response.setStatus(
+                    HttpServletResponse.SC_FORBIDDEN
+            );
 
-        error.put(
-                "status",
-                403
-        );
+            response.setContentType(
+                    "application/json"
+            );
 
-        error.put(
-                "error",
-                "Access Denied"
-        );
+            Map<String, Object> error =
+                    new HashMap<>();
 
-        error.put(
-                "message",
-                "You are not authorized to access this endpoint"
-        );
+            error.put(
+                    "timestamp",
+                    LocalDateTime.now().toString()
+            );
 
-        new ObjectMapper()
-                .writeValue(
-                        response.getOutputStream(),
-                        error
-                );
+            error.put(
+                    "status",
+                    403
+            );
+
+            error.put(
+                    "error",
+                    "Access Denied"
+            );
+
+            error.put(
+                    "message",
+                    "You are not authorized to access this endpoint"
+            );
+
+            new ObjectMapper()
+                    .writeValue(
+                            response.getOutputStream(),
+                            error
+                    );
+
+        } else {
+
+            /*
+             * Browser / Thymeleaf request — redirect to 403 page
+             */
+            response.sendRedirect(
+                    "/403"
+            );
+
+        }
     }
 }

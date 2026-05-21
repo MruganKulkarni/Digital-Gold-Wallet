@@ -1,73 +1,122 @@
 <!DOCTYPE html>
-
-<html xmlns:th="http://www.thymeleaf.org">
-
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
-
-    <title>Physical Gold Orders</title>
-
-    <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-            rel="stylesheet">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physical Gold Orders — Digital Gold Wallet</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
+<body>
 
-<body class="bg-light">
+<nav class="dgw-navbar">
+    <a th:href="@{/}" class="dgw-navbar-brand">
+        <div class="brand-icon">🪙</div>
+        <div class="brand-name">Digital <span>Gold</span> Wallet</div>
+    </a>
+    <div class="dgw-navbar-right">
+        <a th:href="@{/gold-module}" class="btn-ghost" style="padding:0.45rem 1rem;font-size:0.82rem;">← Gold Module</a>
+        <a th:href="@{/logout}" class="btn-ghost" style="padding:0.45rem 1rem;font-size:0.82rem;">Sign Out</a>
+    </div>
+</nav>
 
-<div class="container mt-5">
+<div class="dgw-page">
 
-    <div class="card shadow-lg p-5">
+    <div class="dgw-breadcrumb">
+        <a th:href="@{/}">Home</a><span class="sep">›</span>
+        <a th:href="@{/gold-module}">Gold Module</a><span class="sep">›</span>
+        <span class="current">Physical Gold Orders</span>
+    </div>
 
-        <h1 class="text-dark fw-bold mb-5">
+    <h1 class="page-title" style="font-size:2rem;margin-bottom:0.25rem;">Physical Gold Orders</h1>
+    <p class="page-subtitle" style="margin-bottom:2rem;">
+        <span class="method-badge method-GET" style="display:inline-flex;">GET</span>
+        &nbsp;/api/v1/users/<span th:text="${userId}"></span>/gold/physical
+    </p>
 
-            Physical Gold Orders
+    <div id="alert-error" class="alert-box alert-error" style="margin-bottom:1.5rem;"></div>
 
-        </h1>
+    <div id="loading" style="text-align:center;padding:3rem;color:var(--text-muted);">
+        <div class="spinner show" style="margin:0 auto;"></div>
+        <p style="margin-top:1rem;">Loading orders…</p>
+    </div>
 
-        <div class="row mb-4">
+    <div id="table-container" class="dgw-card" style="display:none;padding:0;overflow:hidden;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Transaction ID</th>
+                    <th>Branch ID</th>
+                    <th>Address ID</th>
+                    <th>Quantity (g)</th>
+                    <th>Created At</th>
+                </tr>
+            </thead>
+            <tbody id="orders-body"></tbody>
+        </table>
+    </div>
 
-            <div class="col-md-4 fw-bold">
+    <div id="empty-state" style="display:none;text-align:center;padding:3rem;color:var(--text-muted);">
+        <div style="font-size:3rem;margin-bottom:1rem;">📦</div>
+        <p>No physical gold orders found for this user.</p>
+    </div>
 
-                User ID:
-
-            </div>
-
-            <div class="col-md-8"
-                 th:text="${userId}">
-
-            </div>
-
-        </div>
-
-        <div class="row mb-4">
-
-            <div class="col-md-4 fw-bold">
-
-                Order Status:
-
-            </div>
-
-            <div class="col-md-8">
-
-                Delivered
-
-            </div>
-
-        </div>
-
-        <a
-                th:href="@{/gold-module}"
-
-                class="btn btn-secondary">
-
-            Back
-
-        </a>
-
+    <div class="action-bar" style="margin-top:2rem;">
+        <a th:href="@{/gold-module}" class="btn-ghost">← Back to Module</a>
     </div>
 
 </div>
 
-</body>
+<script th:inline="javascript">
+    const userId = [[${userId}]];
 
+    async function loadOrders() {
+        const errorBox = document.getElementById('alert-error');
+        try {
+            const resp = await fetch('/api/v1/users/' + userId + '/gold/physical');
+            const data = await resp.json();
+            document.getElementById('loading').style.display = 'none';
+
+            if (!resp.ok) {
+                showError(errorBox, data.message || data.error || 'Failed to load orders.');
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                document.getElementById('empty-state').style.display = 'block';
+                return;
+            }
+
+            const tbody = document.getElementById('orders-body');
+            data.forEach(o => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${o.transactionId ?? '—'}</td>
+                    <td>${o.branchId ?? '—'}</td>
+                    <td>${o.addressId ?? '—'}</td>
+                    <td style="color:var(--gold-primary);font-weight:700;">${parseFloat(o.quantity||0).toFixed(4)} g</td>
+                    <td>${formatDate(o.createdAt)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('table-container').style.display = 'block';
+        } catch(e) {
+            document.getElementById('loading').style.display = 'none';
+            showError(errorBox, 'Network error — could not reach the server.');
+        }
+    }
+
+    function showError(box, msg) {
+        box.innerHTML = '<span class="alert-icon">⚠️</span><span>' + msg + '</span>';
+        box.classList.add('show');
+    }
+    function formatDate(dt) {
+        if (!dt) return '—';
+        return new Date(dt).toLocaleString('en-IN', { dateStyle:'medium', timeStyle:'short' });
+    }
+
+    loadOrders();
+</script>
+
+</body>
 </html>

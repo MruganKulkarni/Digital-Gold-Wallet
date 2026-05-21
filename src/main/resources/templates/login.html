@@ -1,128 +1,137 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
+
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login — Digital Gold Wallet</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+    <meta name="description" content="Sign in to the Digital Gold Wallet system">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        :root {
-            --gold: #C9A84C; --gold-light: #E8C96A; --gold-dim: #8A6B28;
-            --deep: #0D0D0D; --surface: #141410; --card: #1B1B16;
-            --border: rgba(201,168,76,0.18); --border-soft: rgba(255,255,255,0.06);
-            --text: #F5F0E8; --muted: rgba(245,240,232,0.45);
+        .hint-list {
+            margin-top: 1.5rem;
+            padding: 1rem 1.25rem;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
         }
-        html, body { height: 100%; background: var(--deep); color: var(--text); font-family: 'DM Sans', sans-serif; }
-        body {
-            display: flex; align-items: center; justify-content: center;
-            min-height: 100vh; position: relative; overflow: hidden;
+        .hint-list p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.6rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        body::before {
-            content: ''; position: fixed; inset: 0;
-            background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(201,168,76,0.09) 0%, transparent 70%),
-                        radial-gradient(ellipse 40% 30% at 80% 90%, rgba(201,168,76,0.04) 0%, transparent 60%);
-            pointer-events: none;
+        .hint-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.35rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
         }
-        body::after {
-            content: ''; position: fixed; inset: 0;
-            background-image: linear-gradient(rgba(201,168,76,0.03) 1px, transparent 1px),
-                              linear-gradient(90deg, rgba(201,168,76,0.03) 1px, transparent 1px);
-            background-size: 48px 48px; pointer-events: none;
+        .hint-row:last-child { border-bottom: none; }
+        .hint-user {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
         }
-        .card {
-            position: relative; z-index: 1; width: 100%; max-width: 400px; margin: 1.5rem;
-            background: var(--card); border: 1px solid var(--border); border-radius: 16px;
-            padding: 2.75rem 2.5rem 2.5rem;
-            animation: fadeUp 0.55s cubic-bezier(0.22,1,0.36,1) both;
+        .hint-module {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.15rem 0.6rem;
+            border-radius: 100px;
         }
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-        .icon-wrap {
-            width: 52px; height: 52px; border-radius: 50%;
-            background: linear-gradient(135deg, var(--gold-dim), var(--gold));
-            display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 1.75rem; box-shadow: 0 0 32px rgba(201,168,76,0.25);
-        }
-        .icon-wrap svg { width: 26px; height: 26px; fill: var(--deep); }
-        .brand { text-align: center; margin-bottom: 2rem; }
-        .brand h1 {
-            font-family: 'Cormorant Garamond', serif; font-size: 1.7rem;
-            font-weight: 600; letter-spacing: 0.02em; line-height: 1.2;
-        }
-        .brand span { color: var(--gold); }
-        .brand p {
-            margin-top: 0.35rem; font-size: 0.78rem; font-weight: 300;
-            color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase;
-        }
-        .divider { height: 1px; background: var(--border); margin-bottom: 1.75rem; }
-        .alert {
-            background: rgba(180,60,60,0.15); border: 1px solid rgba(180,60,60,0.3);
-            border-radius: 8px; padding: 0.65rem 0.9rem; font-size: 0.82rem;
-            color: #F4A0A0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;
-        }
-        .alert-success { background: rgba(60,120,60,0.15); border-color: rgba(60,120,60,0.3); color: #9FD89F; }
-        label {
-            display: block; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.08em;
-            text-transform: uppercase; color: var(--muted); margin-bottom: 0.45rem;
-        }
-        input[type="text"], input[type="password"] {
-            width: 100%; background: var(--surface); border: 1px solid var(--border-soft);
-            border-radius: 8px; padding: 0.7rem 1rem; font-size: 0.93rem;
-            font-family: 'DM Sans', sans-serif; color: var(--text); outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s; margin-bottom: 1.1rem;
-        }
-        input[type="text"]:focus, input[type="password"]:focus {
-            border-color: rgba(201,168,76,0.5); box-shadow: 0 0 0 3px rgba(201,168,76,0.08);
-        }
-        input::placeholder { color: rgba(245,240,232,0.2); }
-        button[type="submit"] {
-            width: 100%; padding: 0.8rem; margin-top: 0.4rem;
-            background: linear-gradient(135deg, var(--gold-dim) 0%, var(--gold) 60%, var(--gold-light) 100%);
-            border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif;
-            font-size: 0.9rem; font-weight: 500; letter-spacing: 0.06em;
-            color: var(--deep); cursor: pointer; transition: opacity 0.2s, transform 0.15s;
-        }
-        button[type="submit"]:hover  { opacity: 0.88; }
-        button[type="submit"]:active { transform: scale(0.98); }
-        .footer-note {
-            text-align: center; margin-top: 1.5rem; font-size: 0.73rem;
-            color: rgba(245,240,232,0.2); letter-spacing: 0.04em;
-        }
+        .hm-user    { background: rgba(79,142,247,0.15); color: #4f8ef7; }
+        .hm-vendor  { background: rgba(62,207,142,0.15); color: #3ecf8e; }
+        .hm-gold    { background: rgba(212,168,67,0.15);  color: #d4a843; }
+        .hm-payment { background: rgba(240,93,122,0.15);  color: #f05d7a; }
     </style>
 </head>
+
 <body>
-<div class="card">
-    <div class="icon-wrap">
-        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14.93V18h-2v-1.07C9.39 16.52 8 15.28 8 13.5h2c0 .83.9 1.5 2 1.5s2-.67 2-1.5c0-.84-.78-1.17-2.38-1.59C9.86 11.44 8 10.79 8 8.5 8 6.72 9.39 5.48 11 5.07V4h2v1.07C14.61 5.48 16 6.72 16 8.5h-2c0-.83-.9-1.5-2-1.5s-2 .67-2 1.5c0 .84.78 1.17 2.38 1.59C14.14 10.56 16 11.21 16 13.5c0 1.78-1.39 3.02-3 3.43z"/></svg>
-    </div>
-    <div class="brand">
-        <h1>Digital <span>Gold</span> Wallet</h1>
-        <p>Developer Portal</p>
-    </div>
-    <div class="divider"></div>
 
-    <div th:if="${param.error}" class="alert">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-        Invalid username or password. Please try again.
-    </div>
-    <div th:if="${param.logout}" class="alert alert-success">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
-        You have been signed out successfully.
+<div class="login-page">
+
+    <div class="login-card">
+
+        <!-- LOGO -->
+        <div class="login-logo">
+            <div class="logo-icon">🪙</div>
+            <h1>Digital Gold Wallet</h1>
+            <p>Sign in to access your module</p>
+        </div>
+
+        <!-- ERROR -->
+        <div th:if="${param.error}" class="alert-box alert-error show" style="margin-bottom:1.25rem;">
+            <span class="alert-icon">⚠️</span>
+            <span>Invalid username or password. Please try again.</span>
+        </div>
+
+        <!-- LOGOUT -->
+        <div th:if="${param.logout}" class="alert-box alert-success show" style="margin-bottom:1.25rem;">
+            <span class="alert-icon">✓</span>
+            <span>You have been signed out successfully.</span>
+        </div>
+
+        <!-- FORM -->
+        <form id="login-form" method="post" th:action="@{/login}" class="dgw-form">
+
+            <div class="form-group">
+                <label class="form-label" for="username">Username</label>
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    class="form-control"
+                    placeholder="Enter your username"
+                    required
+                    autocomplete="username"
+                    autofocus>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password">Password</label>
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    class="form-control"
+                    placeholder="Enter your password"
+                    required
+                    autocomplete="current-password">
+            </div>
+
+            <button type="submit" class="btn-gold" style="width:100%; justify-content:center; margin-top:0.5rem;">
+                Sign In →
+            </button>
+
+        </form>
+
+        <!-- TEAM HINTS -->
+        <div class="hint-list">
+            <p>Team Access</p>
+            <div class="hint-row">
+                <span class="hint-user">Varsha Karthikeyan</span>
+                <span class="hint-module hm-user">User Module</span>
+            </div>
+            <div class="hint-row">
+                <span class="hint-user">Sparsh</span>
+                <span class="hint-module hm-vendor">Vendor Module</span>
+            </div>
+            <div class="hint-row">
+                <span class="hint-user">Mrugan</span>
+                <span class="hint-module hm-gold">Gold Module</span>
+            </div>
+            <div class="hint-row">
+                <span class="hint-user">Tanmay</span>
+                <span class="hint-module hm-payment">Payment Module</span>
+            </div>
+        </div>
+
     </div>
 
-    <form th:action="@{/login}" method="post">
-        <label for="username">Username</label>
-        <input type="text" id="username" name="username" placeholder="Enter your username" autocomplete="username" required />
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password" required />
-        <button type="submit">Sign In</button>
-    </form>
-    <p class="footer-note">Digital Gold Wallet &copy; 2025 &mdash; Authorised access only</p>
 </div>
+
 </body>
 </html>

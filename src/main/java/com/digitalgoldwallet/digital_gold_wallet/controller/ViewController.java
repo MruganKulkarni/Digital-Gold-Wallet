@@ -8,6 +8,15 @@ import org.springframework.web.bind.annotation.GetMapping;
  * ============================================================
  * THYMELEAF VIEW CONTROLLER
  * ============================================================
+ *
+ * Handles shared pages:
+ * - Home page
+ * - Login page
+ * - 403 Access Denied page
+ * - User module page
+ * - Reports module page
+ *
+ * ============================================================
  */
 
 @Controller
@@ -15,13 +24,35 @@ public class ViewController {
 
     /*
      * ============================================================
-     * HOME PAGE
+     * HOME PAGE / DASHBOARD
      * ============================================================
      */
-    @GetMapping("/")
+    @GetMapping({"/", "/dashboard"})
     public String homePage() {
 
         return "home";
+    }
+
+    /*
+     * ============================================================
+     * LOGIN PAGE
+     * ============================================================
+     */
+    @GetMapping("/login")
+    public String loginPage() {
+
+        return "login";
+    }
+
+    /*
+     * ============================================================
+     * 403 ACCESS DENIED PAGE
+     * ============================================================
+     */
+    @GetMapping("/403")
+    public String accessDeniedPage() {
+
+        return "403";
     }
 
     /*
@@ -34,12 +65,12 @@ public class ViewController {
 
         return "user-module";
     }
+
     /*
      * ============================================================
      * REPORTS MODULE PAGE
      * ============================================================
      */
-
     @GetMapping("/reports-module")
     public String reportsModulePage() {
 

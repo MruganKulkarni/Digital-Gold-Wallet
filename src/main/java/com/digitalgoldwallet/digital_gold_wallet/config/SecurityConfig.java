@@ -1,6 +1,7 @@
 package com.digitalgoldwallet.digital_gold_wallet.config;
 
 import com.digitalgoldwallet.digital_gold_wallet.security.CustomAccessDeniedHandler;
+import com.digitalgoldwallet.digital_gold_wallet.security.CustomAuthenticationEntryPoint;
 
 import org.springframework.beans.factory.annotation.Value;
 
@@ -391,12 +392,11 @@ public class SecurityConfig {
                         .permitAll()
                 )
 
-                /*
-                 * ====================================================
-                 * ACCESS DENIED
-                 * ====================================================
-                 */
                 .exceptionHandling(ex -> ex
+
+                        .authenticationEntryPoint(
+                                new CustomAuthenticationEntryPoint()
+                        )
 
                         .accessDeniedHandler(
                                 new CustomAccessDeniedHandler()

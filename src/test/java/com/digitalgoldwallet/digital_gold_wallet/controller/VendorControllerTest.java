@@ -149,26 +149,18 @@ public class VendorControllerTest {
     @Test // tells JUnit to run this method as a test case
     @DisplayName("Test Get All Vendors API") // readable name shown in test report
     public void testGetAllVendors() throws Exception {
-        // verifies GET /api/v1/vendors returns 200 OK with paginated vendor list
+        // verifies GET /api/v1/vendors returns 200 OK with vendor list
 
         VendorResponseDto responseDto = createMockResponseDto(); // creates mock response DTO
 
-        Page<VendorResponseDto> page = new PageImpl<>(
-                List.of(responseDto), // list with one vendor
-                PageRequest.of(0, 10), // page 0, size 10
-                1 // total elements
-        ); // creates mock Page object
-
-        when(vendorService.getAllVendors(any())) // when service is called with any pageable
-                .thenReturn(page); // return mock page
+        when(vendorService.getAllVendors()) // when service is called
+                .thenReturn(List.of(responseDto)); // return mock list
 
         mockMvc.perform(
                         get("/api/v1/vendors") // performs GET request to /api/v1/vendors
-                                .param("page", "0") // sets page query param
-                                .param("size", "10") // sets size query param
                 )
                 .andExpect(status().isOk()) // expects 200 OK
-                .andExpect(jsonPath("$.content[0].vendorName").value("Test Gold Traders")); // verifies first vendor name in page content
+                .andExpect(jsonPath("$[0].vendorName").value("Test Gold Traders")); // verifies first vendor name in array
 
         System.out.println("TEST PASSED: testGetAllVendors - GET /api/v1/vendors returned 200");
     }

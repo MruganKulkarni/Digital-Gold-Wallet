@@ -1,73 +1,200 @@
 <!DOCTYPE html>
-
-<html xmlns:th="http://www.thymeleaf.org">
-
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
-
-    <title>Sell Gold</title>
-
-    <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-            rel="stylesheet">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sell Gold — Digital Gold Wallet</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
+<body>
 
-<body class="bg-light">
+<!-- NAVBAR -->
+<nav class="dgw-navbar">
+    <a th:href="@{/}" class="dgw-navbar-brand">
+        <div class="brand-icon">🪙</div>
+        <div class="brand-name">Digital <span>Gold</span> Wallet</div>
+    </a>
+    <div class="dgw-navbar-right">
+        <a th:href="@{/gold-module}" class="btn-ghost" style="padding:0.45rem 1rem;font-size:0.82rem;">← Gold Module</a>
+        <a th:href="@{/logout}" class="btn-ghost" style="padding:0.45rem 1rem;font-size:0.82rem;">Sign Out</a>
+    </div>
+</nav>
 
-<div class="container mt-5">
+<div class="dgw-page" style="max-width:640px;">
 
-    <div class="card shadow-lg p-5">
+    <div class="dgw-breadcrumb">
+        <a th:href="@{/}">Home</a><span class="sep">›</span>
+        <a th:href="@{/gold-module}">Gold Module</a><span class="sep">›</span>
+        <span class="current">Sell Gold</span>
+    </div>
 
-        <h1 class="text-danger fw-bold mb-4">
+    <h1 class="page-title" style="font-size:2rem;margin-bottom:0.25rem;">Sell Virtual Gold</h1>
+    <p class="page-subtitle" style="margin-bottom:2rem;">
+        <span class="method-badge method-POST" style="display:inline-flex;">POST</span>
+        &nbsp;/api/v1/gold/virtual/sell
+    </p>
 
-            Sell Virtual Gold
+    <div class="dgw-card">
 
-        </h1>
+        <div id="alert-error" class="alert-box alert-error" style="margin-bottom:1.25rem;"></div>
+        <div id="alert-success" class="alert-box alert-success" style="margin-bottom:1.25rem;"></div>
 
-        <form method="post">
+        <!-- BALANCE CHECK -->
+        <div style="margin-bottom:1.5rem;">
+            <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">
+                Check Available Balance First
+            </p>
+            <div style="display:flex;gap:0.75rem;align-items:flex-end;flex-wrap:wrap;">
+                <div class="form-group" style="flex:1;min-width:120px;">
+                    <label class="form-label" for="checkUserId">User ID</label>
+                    <input type="number" id="checkUserId" class="form-control" placeholder="e.g. 1" min="1">
+                </div>
+                <div class="form-group" style="flex:1;min-width:120px;">
+                    <label class="form-label" for="checkBranchId">Branch ID</label>
+                    <input type="number" id="checkBranchId" class="form-control" placeholder="e.g. 1" min="1">
+                </div>
+                <button class="btn-ghost" onclick="checkBalance()" style="padding:0.75rem 1.25rem;white-space:nowrap;">
+                    Check Balance
+                </button>
+            </div>
+            <div id="balance-display" style="display:none;margin-top:0.75rem;padding:0.85rem 1rem;background:rgba(212,168,67,0.08);border:1px solid var(--border-gold);border-radius:8px;">
+                <span style="font-size:0.78rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">Available:</span>
+                <span id="balance-value" style="font-size:1.2rem;font-weight:800;color:var(--gold-primary);margin-left:0.5rem;"></span>
+                <span style="color:var(--text-secondary);font-size:0.85rem;"> g</span>
+            </div>
+        </div>
 
-            <div class="mb-3">
+        <hr style="border-color:var(--border-subtle);margin:1.5rem 0;">
 
-                <label class="form-label">
+        <form id="sell-form" class="dgw-form" onsubmit="submitSellGold(event)">
 
-                    User ID
-
-                </label>
-
-                <input
-                        type="number"
-                        class="form-control">
-
+            <div class="form-group">
+                <label class="form-label" for="userId">User ID *</label>
+                <input type="number" id="userId" name="userId" class="form-control"
+                       placeholder="e.g. 1" min="1" required>
             </div>
 
-            <div class="mb-4">
-
-                <label class="form-label">
-
-                    Gold Quantity
-
-                </label>
-
-                <input
-                        type="number"
-                        step="0.01"
-                        class="form-control">
-
+            <div class="form-group">
+                <label class="form-label" for="branchId">Branch ID *</label>
+                <input type="number" id="branchId" name="branchId" class="form-control"
+                       placeholder="e.g. 1" min="1" required>
             </div>
 
-            <button
-                    class="btn btn-danger">
+            <div class="form-group">
+                <label class="form-label" for="quantity">Quantity to Sell (grams) *</label>
+                <input type="number" id="quantity" name="quantity" class="form-control"
+                       placeholder="e.g. 5.0" step="0.001" min="0.001" required>
+            </div>
 
-                Sell Gold
-
-            </button>
+            <div class="action-bar" style="margin-top:0;">
+                <button type="submit" class="btn-danger-dgw">
+                    <span id="btn-text">Sell Gold</span>
+                    <span class="spinner" id="spinner"></span>
+                </button>
+                <a th:href="@{/gold-module}" class="btn-ghost">Cancel</a>
+            </div>
 
         </form>
+
+        <!-- RESULT -->
+        <div id="result-container" class="result-container" style="margin-top:2rem;">
+            <h3 style="font-size:1rem;font-weight:700;color:#3ecf8e;margin-bottom:1rem;">
+                ✓ Gold Sold Successfully
+            </h3>
+            <div class="result-card">
+                <div class="result-row">
+                    <span class="result-label">User ID</span>
+                    <span class="result-value" id="r-userId">—</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Branch ID</span>
+                    <span class="result-value" id="r-branchId">—</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Sold (g)</span>
+                    <span class="result-value gold-value" id="r-quantity">—</span>
+                </div>
+            </div>
+        </div>
 
     </div>
 
 </div>
 
-</body>
+<script>
+async function checkBalance() {
+    const uid = document.getElementById('checkUserId').value;
+    const bid = document.getElementById('checkBranchId').value;
+    if (!uid || !bid) {
+        alert('Enter both User ID and Branch ID to check balance.');
+        return;
+    }
+    try {
+        const resp = await fetch('/api/v1/users/' + uid + '/gold/virtual');
+        const data = await resp.json();
+        if (!resp.ok) {
+            alert(data.message || 'Could not fetch holdings.');
+            return;
+        }
+        const holdings = Array.isArray(data) ? data : [];
+        const forBranch = holdings.filter(h => h.branchId == bid);
+        const total = forBranch.reduce((sum, h) => sum + parseFloat(h.quantity || 0), 0);
+        document.getElementById('balance-value').textContent = total.toFixed(4);
+        document.getElementById('balance-display').style.display = 'block';
+        // Auto-fill sell form
+        document.getElementById('userId').value   = uid;
+        document.getElementById('branchId').value = bid;
+    } catch(e) {
+        alert('Network error fetching balance.');
+    }
+}
 
+async function submitSellGold(e) {
+    e.preventDefault();
+    const errorBox   = document.getElementById('alert-error');
+    const resultBox  = document.getElementById('result-container');
+    const spinner    = document.getElementById('spinner');
+    const btnText    = document.getElementById('btn-text');
+
+    errorBox.classList.remove('show');
+    resultBox.classList.remove('show');
+    spinner.classList.add('show');
+    btnText.textContent = 'Processing…';
+
+    const payload = {
+        userId:   parseInt(document.getElementById('userId').value),
+        branchId: parseInt(document.getElementById('branchId').value),
+        quantity: parseFloat(document.getElementById('quantity').value)
+    };
+
+    try {
+        const resp = await fetch('/api/v1/gold/virtual/sell', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await resp.json();
+        if (!resp.ok) {
+            showError(errorBox, data.message || data.error || 'Failed to sell gold.');
+        } else {
+            document.getElementById('r-userId').textContent   = data.userId ?? '—';
+            document.getElementById('r-branchId').textContent = data.branchId ?? '—';
+            document.getElementById('r-quantity').textContent = (data.quantity ?? '—') + ' g';
+            resultBox.classList.add('show');
+        }
+    } catch(err) {
+        showError(errorBox, 'Network error — could not reach the server.');
+    } finally {
+        spinner.classList.remove('show');
+        btnText.textContent = 'Sell Gold';
+    }
+}
+
+function showError(box, msg) {
+    box.innerHTML = '<span class="alert-icon">⚠️</span><span>' + msg + '</span>';
+    box.classList.add('show');
+}
+</script>
+
+</body>
 </html>

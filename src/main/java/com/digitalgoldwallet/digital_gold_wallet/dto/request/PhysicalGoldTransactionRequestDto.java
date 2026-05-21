@@ -5,41 +5,42 @@ import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 /*
  * ============================================================
  * Physical Gold Transaction Request DTO
  * ============================================================
  */
-
+@Schema(description = "Request body for physical gold conversion")
 public class PhysicalGoldTransactionRequestDto {
 
     /*
      * User ID
      */
-
+    @Schema(description = "User ID", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message="User ID required")
     private Integer userId;
 
     /*
      * Branch ID
      */
-
+    @Schema(description = "Branch ID", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message="Branch ID required")
     private Integer branchId;
 
     /*
      * Delivery address
      */
-
+    @Schema(description = "Address ID", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message="Address required")
     private Integer addressId;
 
     /*
      * Quantity
      */
-
+    @Schema(description = "Quantity of gold in grams", example = "10.0", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message="Quantity required")
-
     @DecimalMin(
             value="0.0",
             inclusive=false,
