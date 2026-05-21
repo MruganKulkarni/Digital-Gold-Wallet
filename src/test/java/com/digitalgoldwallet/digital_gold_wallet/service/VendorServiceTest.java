@@ -197,26 +197,20 @@ public class VendorServiceTest {
     @Test // tells JUnit to run this method as a test case
     @DisplayName("Test Get All Vendors - Success") // readable name shown in test report
     public void testGetAllVendors_Success() {
-        // verifies that getAllVendors returns paginated list of vendors
+        // verifies that getAllVendors returns list of vendors
 
         Vendor mockVendor = createMockVendor(); // creates mock vendor entity
 
-        Page<Vendor> mockPage = new PageImpl<>( // creates mock Page object
-                List.of(mockVendor), // list with one vendor
-                PageRequest.of(0, 10), // page 0, size 10
-                1 // total elements
-        );
+        when(vendorRepository.findAll()) // when repository fetches all vendors
+                .thenReturn(List.of(mockVendor)); // return mock list
 
-        when(vendorRepository.findAll(any(PageRequest.class))) // when repository fetches all vendors with any pageable
-                .thenReturn(mockPage); // return mock page
-
-        Page<VendorResponseDto> response = vendorService.getAllVendors(PageRequest.of(0, 10)); // calls service method
+        List<VendorResponseDto> response = vendorService.getAllVendors(); // calls service method
 
         assertNotNull(response); // confirms response is not null
-        assertFalse(response.getContent().isEmpty()); // confirms page has at least one vendor
-        assertEquals("Test Gold Traders", response.getContent().get(0).getVendorName()); // confirms first vendor name
+        assertFalse(response.isEmpty()); // confirms list has at least one vendor
+        assertEquals("Test Gold Traders", response.get(0).getVendorName()); // confirms first vendor name
 
-        System.out.println("TEST PASSED: testGetAllVendors_Success - Total vendors = " + response.getTotalElements());
+        System.out.println("TEST PASSED: testGetAllVendors_Success - Total vendors = " + response.size());
     }
 
     // ================================================================

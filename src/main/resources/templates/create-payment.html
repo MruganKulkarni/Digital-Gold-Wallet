@@ -1,91 +1,184 @@
 <!DOCTYPE html>
-
-<html xmlns:th="http://www.thymeleaf.org">
-
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
-
-    <title>Create Payment</title>
-
-    <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-            rel="stylesheet">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Payment — Digital Gold Wallet</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
+<body>
 
-<body class="bg-light">
+<nav class="dgw-navbar">
+    <a th:href="@{/}" class="dgw-navbar-brand">
+        <div class="brand-icon">🪙</div>
+        <div class="brand-name">Digital <span>Gold</span> Wallet</div>
+    </a>
+    <div class="dgw-navbar-right">
+        <a th:href="@{/payment-module}" class="btn-ghost" style="padding:0.45rem 1rem;font-size:0.82rem;">← Payment Module</a>
+        <a th:href="@{/logout}" class="btn-ghost" style="padding:0.45rem 1rem;font-size:0.82rem;">Sign Out</a>
+    </div>
+</nav>
 
-<div class="container mt-5">
+<div class="dgw-page" style="max-width:640px;">
 
-    <div class="card shadow-lg p-5">
+    <div class="dgw-breadcrumb">
+        <a th:href="@{/}">Home</a><span class="sep">›</span>
+        <a th:href="@{/payment-module}">Payment Module</a><span class="sep">›</span>
+        <span class="current">Create Payment</span>
+    </div>
 
-        <h1 class="text-primary fw-bold mb-4">
+    <h1 class="page-title" style="font-size:2rem;margin-bottom:0.25rem;">Initiate Payment</h1>
+    <p class="page-subtitle" style="margin-bottom:2rem;">
+        <span class="method-badge method-POST" style="display:inline-flex;">POST</span>
+        &nbsp;/api/v1/payments
+    </p>
 
-            Create Payment
+    <div class="dgw-card">
 
-        </h1>
+        <div id="alert-error" class="alert-box alert-error" style="margin-bottom:1.25rem;"></div>
 
-        <form method="post">
+        <form id="payment-form" class="dgw-form" onsubmit="submitPayment(event)">
 
-            <div class="mb-3">
-
-                <label class="form-label">
-
-                    User ID
-
-                </label>
-
-                <input
-                        type="number"
-
-                        class="form-control">
-
+            <div class="form-group">
+                <label class="form-label" for="userId">User ID *</label>
+                <input type="number" id="userId" class="form-control" placeholder="e.g. 1" min="1" required>
             </div>
 
-            <div class="mb-3">
-
-                <label class="form-label">
-
-                    Amount
-
-                </label>
-
-                <input
-                        type="number"
-
-                        step="0.01"
-
-                        class="form-control">
-
+            <div class="form-group">
+                <label class="form-label" for="amount">Amount *</label>
+                <input type="number" id="amount" class="form-control" placeholder="e.g. 1500.00" step="0.01" min="1.0" required>
             </div>
 
-            <div class="mb-4">
-
-                <label class="form-label">
-
-                    Payment Method
-
-                </label>
-
-                <input
-                        type="text"
-
-                        class="form-control">
-
+            <div class="form-group">
+                <label class="form-label" for="paymentMethod">Payment Method *</label>
+                <select id="paymentMethod" class="form-control" required>
+                    <option value="" disabled selected>Select a method</option>
+                    <option value="Credit Card">Credit Card</option>
+                    <option value="Bank Transfer">Bank Transfer</option>
+                    <option value="Google Pay">Google Pay</option>
+                    <option value="PhonePe">PhonePe</option>
+                </select>
             </div>
 
-            <button
-                    class="btn btn-primary">
+            <div class="form-group">
+                <label class="form-label" for="transactionType">Transaction Type *</label>
+                <select id="transactionType" class="form-control" required>
+                    <option value="" disabled selected>Select a type</option>
+                    <option value="Credited to wallet">Credited to wallet</option>
+                    <option value="Debited from wallet">Debited from wallet</option>
+                </select>
+            </div>
 
-                Create Payment
+            <div class="form-group">
+                <label class="form-label" for="paymentStatus">Payment Status *</label>
+                <select id="paymentStatus" class="form-control" required>
+                    <option value="Success" selected>Success</option>
+                    <option value="Failed">Failed</option>
+                </select>
+            </div>
 
-            </button>
+            <div class="action-bar" style="margin-top:0;">
+                <button type="submit" class="btn-gold" style="background:var(--accent-payment);color:#fff;">
+                    <span id="btn-text">Create Payment</span>
+                    <span class="spinner" id="spinner"></span>
+                </button>
+                <a th:href="@{/payment-module}" class="btn-ghost">Cancel</a>
+            </div>
 
         </form>
+
+        <!-- RESULT -->
+        <div id="result-container" class="result-container" style="margin-top:2rem;">
+            <h3 style="font-size:1rem;font-weight:700;color:#3ecf8e;margin-bottom:1rem;">
+                ✓ Payment Created
+            </h3>
+            <div class="result-card">
+                <div class="result-row">
+                    <span class="result-label">Payment ID</span>
+                    <span class="result-value" id="r-paymentId">—</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">User ID</span>
+                    <span class="result-value" id="r-userId">—</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Amount</span>
+                    <span class="result-value" style="color:var(--accent-payment);font-weight:700;" id="r-amount">—</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Status</span>
+                    <span class="result-value" id="r-status">—</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Created At</span>
+                    <span class="result-value" id="r-createdAt">—</span>
+                </div>
+            </div>
+        </div>
 
     </div>
 
 </div>
 
-</body>
+<script>
+async function submitPayment(e) {
+    e.preventDefault();
+    const errorBox  = document.getElementById('alert-error');
+    const resultBox = document.getElementById('result-container');
+    const spinner   = document.getElementById('spinner');
+    const btnText   = document.getElementById('btn-text');
 
+    errorBox.classList.remove('show');
+    resultBox.classList.remove('show');
+    spinner.classList.add('show');
+    btnText.textContent = 'Processing…';
+
+    const payload = {
+        userId: parseInt(document.getElementById('userId').value),
+        amount: parseFloat(document.getElementById('amount').value),
+        paymentMethod: document.getElementById('paymentMethod').value,
+        transactionType: document.getElementById('transactionType').value,
+        paymentStatus: document.getElementById('paymentStatus').value
+    };
+
+    try {
+        const resp = await fetch('/api/v1/payments', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await resp.json();
+        if (!resp.ok) {
+            let msg = data.message || data.error || 'Creation failed.';
+            if (data.errors && typeof data.errors === 'object') {
+                msg = Object.values(data.errors).join(', ');
+            }
+            showError(errorBox, msg);
+        } else {
+            document.getElementById('r-paymentId').textContent = data.paymentId ?? '—';
+            document.getElementById('r-userId').textContent    = (data.user && data.user.userId) ? data.user.userId : '—';
+            document.getElementById('r-amount').textContent    = (data.amount ?? '—');
+            document.getElementById('r-status').textContent    = data.paymentStatus ?? '—';
+            document.getElementById('r-createdAt').textContent = formatDate(data.createdAt);
+            resultBox.classList.add('show');
+        }
+    } catch(err) {
+        showError(errorBox, 'Network error — could not reach the server.');
+    } finally {
+        spinner.classList.remove('show');
+        btnText.textContent = 'Create Payment';
+    }
+}
+
+function showError(box, msg) {
+    box.innerHTML = '<span class="alert-icon">⚠️</span><span>' + msg + '</span>';
+    box.classList.add('show');
+}
+function formatDate(dt) {
+    if (!dt) return '—';
+    return new Date(dt).toLocaleString('en-IN', { dateStyle:'medium', timeStyle:'short' });
+}
+</script>
+
+</body>
 </html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error — Digital Gold Wallet</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<nav class="dgw-navbar">
+    <a th:href="@{/}" class="dgw-navbar-brand">
+        <div class="brand-icon">🪙</div>
+        <div class="brand-name">Digital <span>Gold</span> Wallet</div>
+    </a>
+</nav>
+
+<div class="dgw-page" style="max-width:600px;text-align:center;padding-top:4rem;">
+    <div style="font-size:4rem;margin-bottom:1rem;">⚠️</div>
+    <h1 class="page-title" style="font-size:2rem;margin-bottom:1rem;">Oops! Something went wrong</h1>
+    <p style="color:var(--text-secondary);margin-bottom:2rem;">
+        <span th:if="${message}" th:text="${message}">An unexpected error occurred.</span>
+        <span th:unless="${message}">An unexpected error occurred.</span>
+    </p>
+    <div class="action-bar" style="justify-content:center;">
+        <a href="javascript:history.back()" class="btn-ghost">← Go Back</a>
+        <a th:href="@{/}" class="btn-gold">Go to Dashboard</a>
+    </div>
+</div>
+
+</body>
+</html>

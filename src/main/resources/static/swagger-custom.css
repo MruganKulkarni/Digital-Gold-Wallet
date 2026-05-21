@@ -1,0 +1,28 @@
+/* Custom CSS for Swagger UI */
+
+/* Make the accessible ones pop out more */
+.swagger-ui .opblock-tag-section {
+    transition: all 0.3s ease;
+}
+
+.swagger-ui .opblock-tag-section:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    background-color: #fafafa;
+}
+
+/* Base lock style */
+.swagger-ui .opblock-tag-section[style*="opacity: 0.4"] {
+    background-color: #f0f0f0 !important;
+}
+
+.swagger-ui .opblock-tag-section[style*="opacity: 0.4"]:hover {
+    box-shadow: none;
+    background-color: #f0f0f0 !important;
+}
+
+/* Ensure the lock icon stays right */
+.swagger-ui .opblock-tag span[style*="float:right"] {
+    position: absolute;
+    right: 10px;
+    top: 15px;
+}

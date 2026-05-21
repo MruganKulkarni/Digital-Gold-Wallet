@@ -1,348 +1,234 @@
 <!DOCTYPE html>
-
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
 
 <head>
-
-    <title>Digital Gold Wallet</title>
-
-    <!-- Bootstrap CSS -->
-    <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-            rel="stylesheet">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home — Digital Gold Wallet</title>
+    <meta name="description" content="Digital Gold Wallet System — team module dashboard">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .home-hero {
+            text-align: center;
+            padding: 3.5rem 1.5rem 2.5rem;
+        }
+        .home-hero .subtitle {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 0.75rem;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1.5rem;
+            padding: 0 1.5rem 4rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .your-module-label {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+        .your-module-label .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(212,168,67,0.1);
+            border: 1px solid var(--border-gold);
+            border-radius: 100px;
+            padding: 0.4rem 1rem;
+            font-size: 0.8rem;
+            color: var(--gold-primary);
+            font-weight: 600;
+        }
+    </style>
 </head>
 
-<body class="bg-light">
+<body>
 
-<div class="container mt-5">
+<!-- NAVBAR -->
+<nav class="dgw-navbar">
+    <a th:href="@{/}" class="dgw-navbar-brand">
+        <div class="brand-icon">🪙</div>
+        <div class="brand-name">Digital <span>Gold</span> Wallet</div>
+    </a>
+    <div class="dgw-navbar-right">
+        <div class="dgw-user-chip">
+            <span sec:authentication="name">User</span>
+            <span class="role-badge"
+                  sec:authorize="hasRole('USER_DEV')">User Dev</span>
+            <span class="role-badge"
+                  sec:authorize="hasRole('VENDOR_DEV')">Vendor Dev</span>
+            <span class="role-badge"
+                  sec:authorize="hasRole('GOLD_DEV')">Gold Dev</span>
+            <span class="role-badge"
+                  sec:authorize="hasRole('PAYMENT_DEV')">Payment Dev</span>
+        </div>
+        <a th:href="@{/logout}" class="btn-ghost"
+           style="padding:0.45rem 1rem;font-size:0.82rem;">
+            Sign Out
+        </a>
+    </div>
+</nav>
 
-    <!-- ===================================================== -->
-    <!-- HEADER -->
-    <!-- ===================================================== -->
-    <div class="text-center mb-5">
+<!-- HERO -->
+<div class="home-hero">
+    <h1 class="page-title">Digital Gold Wallet</h1>
+    <p class="subtitle">
+        Spring Boot · Thymeleaf · REST APIs<br>
+        <span style="color:var(--text-muted);font-size:0.8rem;">
+            Only your assigned module is accessible. Others are locked.
+        </span>
+    </p>
+</div>
 
-        <h1 class="display-3 text-primary fw-bold">
+<!-- YOUR MODULE indicator -->
+<div class="your-module-label">
+    <span class="pill">
+        ✦ Signed in as <strong style="margin:0 0.2rem;" sec:authentication="name"></strong>
+        — your module is highlighted below
+    </span>
+    <div style="margin-top:1.5rem;">
+        <a th:href="@{/swagger-ui/index.html}" class="btn-gold" style="padding:0.6rem 1.5rem; font-weight:600; text-decoration:none;">
+            📖 Open Swagger Documentation
+        </a>
+    </div>
+</div>
 
-            Digital Gold Wallet System
+<!-- MODULE CARDS GRID -->
+<div class="module-grid">
 
-        </h1>
+    <!-- ================================================= -->
+    <!-- VARSHA — USER MODULE -->
+    <!-- ================================================= -->
+    <div th:class="${'module-card user-card' + (#authorization.expression('hasRole(''USER_DEV'')') ? ' active' : ' locked')}">
 
-        <p class="lead">
+        <img th:src="@{/images/varsha.jpeg}"
+             class="card-photo"
+             alt="Varsha Karthikeyan">
 
-            Spring Boot + Thymeleaf + REST APIs
-
-        </p>
+        <div class="card-body">
+            <div class="card-name">Varsha Karthikeyan</div>
+            <div class="card-role">User Module</div>
+            <div class="card-desc">
+                User APIs · Address APIs · Testing · Validation · Thymeleaf UI
+            </div>
+            <a th:href="@{/user-module}" class="card-btn"
+               sec:authorize="hasRole('USER_DEV')">
+                Open Module →
+            </a>
+            <span class="card-btn" style="justify-content:center;opacity:0.5;cursor:not-allowed;"
+                  sec:authorize="!hasRole('USER_DEV')">
+                🔒 Restricted
+            </span>
+        </div>
 
     </div>
 
-    <!-- ===================================================== -->
-    <!-- TEAM MEMBER CARDS -->
-    <!-- ===================================================== -->
-    <div class="row justify-content-center">
+    <!-- ================================================= -->
+    <!-- SPARSH — VENDOR MODULE -->
+    <!-- ================================================= -->
+    <div th:class="${'module-card vendor-card' + (#authorization.expression('hasRole(''VENDOR_DEV'')') ? ' active' : ' locked')}">
 
-        <!-- ================================================= -->
-        <!-- VARSHA CARD -->
-        <!-- ================================================= -->
-        <div class="col-md-6 col-lg-3 mb-4">
+        <img th:src="@{/images/sparsh.jpeg}"
+             class="card-photo"
+             alt="Sparsh">
 
-            <div class="card shadow-lg h-100">
-
-                <!-- IMAGE -->
-                <img
-                        th:src="@{/images/varsha.jpeg}"
-
-                        class="card-img-top"
-
-                        style="
-                            height: 250px;
-                            object-fit: cover;
-                        "
-
-                        alt="Varsha">
-
-                <!-- CARD BODY -->
-                <div class="card-body text-center">
-
-                    <h4>
-
-                        Varsha Karthikeyan
-
-                    </h4>
-
-                    <p class="text-primary fw-bold">
-
-                        USER MODULE
-
-                    </p>
-
-                    <p>
-
-                        User APIs,
-                        Address APIs,
-                        Testing,
-                        Validation,
-                        Thymeleaf UI
-
-                    </p>
-
-                    <!-- BUTTON -->
-                    <a
-                            th:href="@{/user-module}"
-
-                            class="btn btn-primary">
-
-                        View Module
-
-                    </a>
-
-                </div>
-
+        <div class="card-body">
+            <div class="card-name">Sparsh</div>
+            <div class="card-role">Vendor Module</div>
+            <div class="card-desc">
+                Vendor APIs · Vendor Branch APIs · Service Layer · Repository Layer
             </div>
-
+            <a th:href="@{/vendor-module}" class="card-btn"
+               sec:authorize="hasRole('VENDOR_DEV')">
+                Open Module →
+            </a>
+            <span class="card-btn" style="justify-content:center;opacity:0.5;cursor:not-allowed;"
+                  sec:authorize="!hasRole('VENDOR_DEV')">
+                🔒 Restricted
+            </span>
         </div>
 
-        <!-- ================================================= -->
-        <!-- SPARSH CARD -->
-        <!-- ================================================= -->
-        <div class="col-md-6 col-lg-3 mb-4">
+    </div>
 
-            <div class="card shadow-lg h-100">
+    <!-- ================================================= -->
+    <!-- MRUGAN — GOLD MODULE -->
+    <!-- ================================================= -->
+    <div th:class="${'module-card gold-card' + (#authorization.expression('hasRole(''GOLD_DEV'')') ? ' active' : ' locked')}">
 
-                <!-- IMAGE -->
-                <img
-                        th:src="@{/images/sparsh.jpeg}"
+        <img th:src="@{/images/mrugan.jpeg}"
+             class="card-photo"
+             alt="Mrugan">
 
-                        class="card-img-top"
-
-                        style="
-                            height: 250px;
-                            object-fit: cover;
-                        "
-
-                        alt="Sparsh">
-
-                <!-- CARD BODY -->
-                <div class="card-body text-center">
-
-                    <h4>
-
-                        Sparsh
-
-                    </h4>
-
-                    <p class="text-success fw-bold">
-
-                        VENDOR MODULE
-
-                    </p>
-
-                    <p>
-
-                        Vendor APIs,
-                        Vendor Branch APIs,
-                        Service Layer,
-                        Repository Layer
-
-                    </p>
-
-                    <!-- BUTTON -->
-                    <a
-                            th:href="@{/vendor-module}"
-
-                            class="btn btn-success">
-
-                        View Module
-
-                    </a>
-
-                </div>
-
+        <div class="card-body">
+            <div class="card-name">Mrugan</div>
+            <div class="card-role">Gold Module</div>
+            <div class="card-desc">
+                Gold APIs · Holdings · Physical Transactions · Business Logic
             </div>
-
+            <a th:href="@{/gold-module}" class="card-btn"
+               sec:authorize="hasRole('GOLD_DEV')">
+                Open Module →
+            </a>
+            <span class="card-btn" style="justify-content:center;opacity:0.5;cursor:not-allowed;"
+                  sec:authorize="!hasRole('GOLD_DEV')">
+                🔒 Restricted
+            </span>
         </div>
 
-        <!-- ================================================= -->
-        <!-- MRUGAN CARD -->
-        <!-- ================================================= -->
-        <div class="col-md-6 col-lg-3 mb-4">
+    </div>
 
-            <div class="card shadow-lg h-100">
+    <!-- ================================================= -->
+    <!-- TANMAY — PAYMENT MODULE -->
+    <!-- ================================================= -->
+    <div th:class="${'module-card payment-card' + (#authorization.expression('hasRole(''PAYMENT_DEV'')') ? ' active' : ' locked')}">
 
-                <!-- IMAGE -->
-                <img
-                        th:src="@{/images/mrugan.jpeg}"
+        <img th:src="@{/images/tanmay.jpeg}"
+             class="card-photo"
+             alt="Tanmay">
 
-                        class="card-img-top"
-
-                        style="
-                            height: 250px;
-                            object-fit: cover;
-                        "
-
-                        alt="Mrugan">
-
-                <!-- CARD BODY -->
-                <div class="card-body text-center">
-
-                    <h4>
-
-                        Mrugan
-
-                    </h4>
-
-                    <p class="text-warning fw-bold">
-
-                        GOLD MODULE
-
-                    </p>
-
-                    <p>
-
-                        Gold APIs,
-                        Gold Holdings,
-                        Transactions,
-                        Business Logic
-
-                    </p>
-
-                    <!-- BUTTON -->
-                    <a
-                            th:href="@{/gold-module}"
-
-                            class="btn btn-warning">
-
-                        View Module
-
-                    </a>
-
-                </div>
-
+        <div class="card-body">
+            <div class="card-name">Tanmay</div>
+            <div class="card-role">Payment Module</div>
+            <div class="card-desc">
+                Payment APIs · Wallet APIs · Transaction Management · Testing
             </div>
-
+            <a th:href="@{/payment-module}" class="card-btn"
+               sec:authorize="hasRole('PAYMENT_DEV')">
+                Open Module →
+            </a>
+            <span class="card-btn" style="justify-content:center;opacity:0.5;cursor:not-allowed;"
+                  sec:authorize="!hasRole('PAYMENT_DEV')">
+                🔒 Restricted
+            </span>
         </div>
 
-        <!-- ================================================= -->
-        <!-- TANMAY CARD -->
-        <!-- ================================================= -->
-        <div class="col-md-6 col-lg-3 mb-4">
+    </div>
 
-            <div class="card shadow-lg h-100">
+    <!-- ================================================= -->
+    <!-- REPORTS — All team members can access -->
+    <!-- ================================================= -->
+    <div class="module-card reports-card active">
 
-                <!-- IMAGE -->
-                <img
-                        th:src="@{/images/tanmay.jpeg}"
+        <img th:src="@{/images/reports.jpeg}"
+             class="card-photo"
+             alt="Reports">
 
-                        class="card-img-top"
-
-                        style="
-                            height: 250px;
-                            object-fit: cover;
-                        "
-
-                        alt="Tanmay">
-
-                <!-- CARD BODY -->
-                <div class="card-body text-center">
-
-                    <h4>
-
-                        Tanmay
-
-                    </h4>
-
-                    <p class="text-danger fw-bold">
-
-                        PAYMENT MODULE
-
-                    </p>
-
-                    <p>
-
-                        Payment APIs,
-                        Wallet APIs,
-                        Transaction Management,
-                        Testing
-
-                    </p>
-
-                    <!-- BUTTON -->
-                    <a
-                            th:href="@{/payment-module}"
-
-                            class="btn btn-danger">
-
-                        View Module
-
-                    </a>
-
-                </div>
-
+        <div class="card-body">
+            <div class="card-name">Reports</div>
+            <div class="card-role">Reports Module</div>
+            <div class="card-desc">
+                Vendor Performance · Top Investors · Branch Inventory · Analytics
             </div>
-
-        </div>
-
-        <!-- ================================================= -->
-        <!-- REPORTS CARD -->
-        <!-- ===================
-
-
-        ============================== -->
-        <div class="col-md-6 col-lg-3 mb-4">
-
-            <div class="card shadow-lg h-100 border-dark">
-
-                <!-- IMAGE -->
-                <img
-                        th:src="@{/images/reports.jpeg}"
-
-                        class="card-img-top"
-
-                        style="
-                            height: 250px;
-                            object-fit: cover;
-                        "
-
-                        alt="Reports">
-
-                <!-- CARD BODY -->
-                <div class="card-body text-center">
-
-                    <h4>
-
-                        Reports
-
-                    </h4>
-
-                    <p class="text-dark fw-bold">
-
-                        REPORTS MODULE
-
-                    </p>
-
-                    <p>
-
-                        Vendor Performance,
-                        Top Investors,
-                        Branch Inventory Reports,
-                        Analytics Dashboard
-
-                    </p>
-
-                    <!-- BUTTON -->
-                    <a
-                            th:href="@{/reports-module}"
-
-                            class="btn btn-dark">
-
-                        View Module
-
-                    </a>
-
-                </div>
-
-            </div>
-
+            <a th:href="@{/reports-module}" class="card-btn">
+                View Reports →
+            </a>
         </div>
 
     </div>
@@ -350,5 +236,4 @@
 </div>
 
 </body>
-
 </html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>403 — Access Denied | Digital Gold Wallet</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="dgw-navbar">
+    <a th:href="@{/}" class="dgw-navbar-brand">
+        <div class="brand-icon">🪙</div>
+        <div class="brand-name">Digital <span>Gold</span> Wallet</div>
+    </a>
+    <div class="dgw-navbar-right">
+        <a th:href="@{/logout}" class="btn-ghost" style="padding:0.45rem 1rem;font-size:0.82rem;">
+            Sign Out
+        </a>
+    </div>
+</nav>
+
+<div class="error-page">
+    <div class="error-card">
+        <div class="error-code">403</div>
+        <h2 class="error-title">Access Denied</h2>
+        <p class="error-message">
+            You don't have permission to access this module.<br>
+            Each module is restricted to its assigned developer.
+        </p>
+        <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+            <a th:href="@{/}" class="btn-gold">← Back to Home</a>
+            <a th:href="@{/logout}" class="btn-ghost">Sign in as another user</a>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

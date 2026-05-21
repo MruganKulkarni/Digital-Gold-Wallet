@@ -15,7 +15,10 @@ import com.digitalgoldwallet.digital_gold_wallet.repository.VirtualGoldHoldingRe
 import com.digitalgoldwallet.digital_gold_wallet.service.VirtualGoldHoldingService;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -98,15 +101,119 @@ public class VirtualGoldHoldingServiceImpl
     /*
      * ============================================================
      * Sell gold
+     *
+     * Deducts the requested quantity from the user's existing
+     * VirtualGoldHolding rows at the given branch.
+     *
+     * Uses FIFO order (oldest holding rows consumed first).
+     * Rows that reach 0 are deleted.
+     * Throws IllegalArgumentException if holdings are insufficient.
      * ============================================================
      */
     @Override
+    @Transactional
     public VirtualGoldHoldingResponseDto sellGold(
             VirtualGoldHoldingRequestDto dto
     ) {
 
-        return buyGold(dto);
+        /*
+         * Validate user exists
+         */
+        if (!userRepository.existsById(dto.getUserId())) {
+            throw new UserNotFoundException(
+                    "User not found with ID: " + dto.getUserId()
+            );
+        }
 
+        /*
+         * Validate branch exists
+         */
+        if (!branchRepository.existsById(dto.getBranchId())) {
+            throw new VendorBranchNotFoundException(
+                    "Branch not found with ID: " + dto.getBranchId()
+            );
+        }
+
+        /*
+         * Check total holdings cover the sell quantity
+         */
+        BigDecimal totalHoldings =
+                repository.sumQuantityByUserIdAndBranchId(
+                        dto.getUserId(),
+                        dto.getBranchId()
+                );
+
+        if (totalHoldings == null) {
+            totalHoldings = BigDecimal.ZERO;
+        }
+
+        BigDecimal quantityToSell = dto.getQuantity();
+
+        if (quantityToSell.compareTo(totalHoldings) > 0) {
+            throw new IllegalArgumentException(
+                    "Insufficient virtual gold holdings. "
+                            + "Requested: " + quantityToSell
+                            + ", Available: " + totalHoldings
+            );
+        }
+
+        /*
+         * Fetch all holding rows for this user+branch (oldest first)
+         * and deduct FIFO
+         */
+        List<VirtualGoldHolding> holdings =
+                repository.findByUserUserIdAndBranchBranchId(
+                        dto.getUserId(),
+                        dto.getBranchId()
+                );
+
+        BigDecimal remaining = quantityToSell;
+        VirtualGoldHolding lastModified = null;
+
+        for (VirtualGoldHolding holding : holdings) {
+
+            if (remaining.compareTo(BigDecimal.ZERO) <= 0) {
+                break;
+            }
+
+            BigDecimal rowQty = holding.getQuantity();
+
+            if (rowQty.compareTo(remaining) <= 0) {
+
+                /*
+                 * Entire row consumed — delete it
+                 */
+                remaining = remaining.subtract(rowQty);
+                repository.delete(holding);
+
+            } else {
+
+                /*
+                 * Partial deduction — update and keep row
+                 */
+                holding.setQuantity(rowQty.subtract(remaining));
+                lastModified = repository.save(holding);
+                remaining = BigDecimal.ZERO;
+
+            }
+        }
+
+        /*
+         * Build a synthetic response representing the sold amount
+         */
+        VirtualGoldHoldingResponseDto response =
+                new VirtualGoldHoldingResponseDto();
+
+        response.setUserId(dto.getUserId());
+        response.setBranchId(dto.getBranchId());
+        response.setQuantity(quantityToSell);
+        response.setCreatedAt(LocalDateTime.now());
+
+        if (lastModified != null) {
+            response.setHoldingId(lastModified.getHoldingId());
+        }
+
+        return response;
     }
 
 

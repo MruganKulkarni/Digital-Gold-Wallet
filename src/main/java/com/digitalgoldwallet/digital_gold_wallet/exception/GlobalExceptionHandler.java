@@ -26,7 +26,9 @@ import java.util.NoSuchElementException;
  * ============================================================
  */
 
-@RestControllerAdvice
+import org.springframework.web.bind.annotation.RestController;
+
+@RestControllerAdvice(annotations = RestController.class)
 public class GlobalExceptionHandler {
 
     /*

@@ -1,97 +1,71 @@
 <!DOCTYPE html>
-
-<html xmlns:th="http://www.thymeleaf.org">
-
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
-
-    <title>View Address</title>
-
-    <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-            rel="stylesheet">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Address — Digital Gold Wallet</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
+<body>
 
-<body class="bg-light">
+<nav class="dgw-navbar">
+    <a th:href="@{/}" class="dgw-navbar-brand">
+        <div class="brand-icon">🪙</div>
+        <div class="brand-name">Digital <span>Gold</span> Wallet</div>
+    </a>
+    <div class="dgw-navbar-right">
+        <a th:href="@{/user-module}" class="btn-ghost" style="padding:0.45rem 1rem;font-size:0.82rem;">← User Module</a>
+        <a th:href="@{/logout}" class="btn-ghost" style="padding:0.45rem 1rem;font-size:0.82rem;">Sign Out</a>
+    </div>
+</nav>
 
-<div class="container mt-5">
+<div class="dgw-page" style="max-width:680px;">
 
-    <div class="card shadow-lg p-5">
+    <div class="dgw-breadcrumb">
+        <a th:href="@{/}">Home</a><span class="sep">›</span>
+        <a th:href="@{/user-module}">User Module</a><span class="sep">›</span>
+        <span class="current">Address Details</span>
+    </div>
 
-        <h1 class="text-primary mb-4">
+    <h1 class="page-title" style="font-size:2rem;margin-bottom:0.25rem;">Address Details</h1>
+    <p class="page-subtitle" style="margin-bottom:2rem;">
+        <span class="method-badge method-GET" style="display:inline-flex;">GET</span>
+        &nbsp;/api/v1/addresses/<span th:text="${address.addressId}"></span>
+    </p>
 
-            Address Details
-
-        </h1>
-
-        <table class="table table-bordered">
-
-            <tr>
-
-                <th>Address ID</th>
-
-                <td th:text="${address.addressId}"></td>
-
-            </tr>
-
-            <tr>
-
-                <th>Street</th>
-
-                <td th:text="${address.street}"></td>
-
-            </tr>
-
-            <tr>
-
-                <th>City</th>
-
-                <td th:text="${address.city}"></td>
-
-            </tr>
-
-            <tr>
-
-                <th>State</th>
-
-                <td th:text="${address.state}"></td>
-
-            </tr>
-
-            <tr>
-
-                <th>Postal Code</th>
-
-                <td th:text="${address.postalCode}"></td>
-
-            </tr>
-
-            <tr>
-
-                <th>Country</th>
-
-                <td th:text="${address.country}"></td>
-
-            </tr>
-
-        </table>
-
-        <div class="mt-4">
-
-            <a
-                    th:href="@{/user-module}"
-                    class="btn btn-secondary">
-
-                Back
-
-            </a>
-
+    <div class="dgw-card">
+        <div class="result-row">
+            <span class="result-label">Address ID</span>
+            <span class="result-value" th:text="${address.addressId}">—</span>
         </div>
+        <div class="result-row">
+            <span class="result-label">Street</span>
+            <span class="result-value" style="font-weight:700;color:var(--text-primary);" th:text="${address.street}">—</span>
+        </div>
+        <div class="result-row">
+            <span class="result-label">City</span>
+            <span class="result-value" th:text="${address.city}">—</span>
+        </div>
+        <div class="result-row">
+            <span class="result-label">State</span>
+            <span class="result-value" th:text="${address.state}">—</span>
+        </div>
+        <div class="result-row">
+            <span class="result-label">Postal Code</span>
+            <span class="result-value" th:text="${address.postalCode}">—</span>
+        </div>
+        <div class="result-row">
+            <span class="result-label">Country</span>
+            <span class="result-value" th:text="${address.country}">—</span>
+        </div>
+    </div>
 
+    <div class="action-bar" style="margin-top:2rem;">
+        <a th:href="@{/user-module}" class="btn-ghost">← Back to Module</a>
+        <a th:href="@{/users/addresses/update/{id}(id=${address.addressId})}" class="btn-gold" style="background:var(--accent-user);color:#fff;">Edit Address</a>
     </div>
 
 </div>
 
 </body>
-
 </html>
