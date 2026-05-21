@@ -10,9 +10,6 @@ import com.digitalgoldwallet.digital_gold_wallet.repository.VendorRepository; //
 import com.digitalgoldwallet.digital_gold_wallet.service.VendorService; // service interface
 
 import org.springframework.beans.factory.annotation.Autowired; // used for dependency injection
-import org.springframework.data.domain.Page; // used for paginated results
-import org.springframework.data.domain.PageImpl; // used to construct Page from list
-import org.springframework.data.domain.Pageable; // used for pagination parameters
 import org.springframework.stereotype.Service; // marks this class as a Spring service bean
 import org.springframework.transaction.annotation.Transactional; // keeps Hibernate session open for all methods
 
@@ -75,19 +72,16 @@ public class VendorServiceImpl implements VendorService { // implements VendorSe
     }
 
     /*
-     * Fetches all vendors with pagination
+     * Fetches all vendors — no pagination
+     * Returns complete list of all vendors
      */
     @Override // overrides getAllVendors from VendorService interface
-    public Page<VendorResponseDto> getAllVendors(Pageable pageable) { // accepts pagination parameters
+    public List<VendorResponseDto> getAllVendors() { // no pagination parameters needed
 
-        Page<Vendor> vendorPage = vendorRepository.findAll(pageable); // fetches paginated vendors from DB
-
-        List<VendorResponseDto> vendorResponseDtos = vendorPage.getContent() // gets list of vendors from page
+        return vendorRepository.findAll() // fetches all vendors from DB
                 .stream() // converts to stream for mapping
                 .map(VendorMapper::toResponseDto) // maps each Vendor entity to VendorResponseDto using mapper
                 .collect(Collectors.toList()); // collects mapped DTOs into a list
-
-        return new PageImpl<>(vendorResponseDtos, pageable, vendorPage.getTotalElements()); // wraps list back into Page object
     }
 
     /*
