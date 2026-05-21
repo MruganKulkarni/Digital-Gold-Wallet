@@ -1,0 +1,303 @@
+/*
+ * ============================================================
+ * DIGITAL GOLD WALLET — SWAGGER THEME
+ * ============================================================
+ */
+
+:root {
+
+    --gold: #C9A84C;
+    --gold-light: #E8C96A;
+    --gold-dim: #8A6B28;
+
+    --deep: #0D0D0D;
+    --surface: #141410;
+    --card: #1B1B16;
+    --card-hover: #1F1F19;
+
+    --border: rgba(201,168,76,0.18);
+
+    --text: #F5F0E8;
+    --muted: rgba(245,240,232,0.45);
+}
+
+/*
+ * ============================================================
+ * BODY
+ * ============================================================
+ */
+
+body {
+    background: var(--deep) !important;
+    color: var(--text) !important;
+}
+
+/*
+ * ============================================================
+ * TOP BAR
+ * ============================================================
+ */
+
+.topbar {
+    background: rgba(13,13,13,0.90) !important;
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(10px);
+}
+
+/*
+ * ============================================================
+ * SWAGGER LOGO AREA
+ * ============================================================
+ */
+
+.topbar-wrapper img {
+    display: none !important;
+}
+
+.topbar-wrapper::before {
+
+    content: "Digital Gold Wallet API";
+
+    color: var(--gold);
+
+    font-size: 24px;
+
+    font-weight: 600;
+
+    font-family: "Cormorant Garamond", serif;
+}
+
+/*
+ * ============================================================
+ * MAIN CONTAINER
+ * ============================================================
+ */
+
+.swagger-ui {
+    color: var(--text) !important;
+}
+
+/*
+ * ============================================================
+ * API BLOCKS
+ * ============================================================
+ */
+
+.opblock {
+
+    background: var(--card) !important;
+
+    border: 1px solid var(--border) !important;
+
+    border-radius: 12px !important;
+
+    margin-bottom: 20px !important;
+
+    overflow: hidden;
+}
+
+/*
+ * ============================================================
+ * GET
+ * ============================================================
+ */
+
+.opblock.opblock-get {
+
+    border-color: rgba(201,168,76,0.35) !important;
+}
+
+.opblock.opblock-get .opblock-summary-method {
+
+    background: var(--gold-dim) !important;
+}
+
+/*
+ * ============================================================
+ * POST
+ * ============================================================
+ */
+
+.opblock.opblock-post {
+
+    border-color: rgba(201,168,76,0.35) !important;
+}
+
+.opblock.opblock-post .opblock-summary-method {
+
+    background: var(--gold) !important;
+
+    color: black !important;
+}
+
+/*
+ * ============================================================
+ * PUT
+ * ============================================================
+ */
+
+.opblock.opblock-put .opblock-summary-method {
+
+    background: #7d6a2d !important;
+}
+
+/*
+ * ============================================================
+ * DELETE
+ * ============================================================
+ */
+
+.opblock.opblock-delete .opblock-summary-method {
+
+    background: #5c1f1f !important;
+}
+
+/*
+ * ============================================================
+ * TEXT COLORS
+ * ============================================================
+ */
+
+.swagger-ui,
+.swagger-ui .opblock-summary-path,
+.swagger-ui .opblock-description-wrapper p,
+.swagger-ui .responses-inner h4,
+.swagger-ui .responses-inner h5,
+.swagger-ui table thead tr td,
+.swagger-ui table thead tr th {
+    color: var(--text) !important;
+}
+
+/*
+ * ============================================================
+ * SECTION HEADINGS
+ * ============================================================
+ */
+
+.swagger-ui .opblock-tag {
+
+    color: var(--gold) !important;
+
+    border-bottom: 1px solid var(--border) !important;
+
+    font-size: 22px;
+}
+
+/*
+ * ============================================================
+ * BUTTONS
+ * ============================================================
+ */
+
+.swagger-ui .btn.execute {
+
+    background: linear-gradient(
+        135deg,
+        var(--gold-dim),
+        var(--gold)
+    ) !important;
+
+    border: none !important;
+
+    color: black !important;
+
+    border-radius: 8px !important;
+}
+
+.swagger-ui .btn.execute:hover {
+
+    opacity: 0.9;
+}
+
+/*
+ * ============================================================
+ * INPUTS
+ * ============================================================
+ */
+
+.swagger-ui input,
+.swagger-ui textarea {
+
+    background: #111 !important;
+
+    color: var(--text) !important;
+
+    border: 1px solid var(--border) !important;
+}
+
+/*
+ * ============================================================
+ * RESPONSE BLOCK
+ * ============================================================
+ */
+
+.responses-wrapper {
+
+    background: rgba(255,255,255,0.02) !important;
+}
+
+/*
+ * ============================================================
+ * MODEL BOX
+ * ============================================================
+ */
+
+.model-box {
+
+    background: #111 !important;
+}
+
+/*
+ * ============================================================
+ * SCROLLBAR
+ * ============================================================
+ */
+
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #111;
+}
+
+::-webkit-scrollbar-thumb {
+
+    background: var(--gold-dim);
+
+    border-radius: 20px;
+}
+
+/*
+ * ============================================================
+ * LOGOUT BUTTON
+ * ============================================================
+ */
+
+#custom-logout-btn {
+
+    background: linear-gradient(
+        135deg,
+        #7a1f1f,
+        #b02a37
+    ) !important;
+
+    color: white !important;
+
+    border: none !important;
+
+    border-radius: 8px !important;
+
+    padding: 7px 16px !important;
+
+    font-weight: 500;
+
+    transition: 0.2s;
+}
+
+#custom-logout-btn:hover {
+
+    opacity: 0.9;
+
+    transform: translateY(-1px);
+}

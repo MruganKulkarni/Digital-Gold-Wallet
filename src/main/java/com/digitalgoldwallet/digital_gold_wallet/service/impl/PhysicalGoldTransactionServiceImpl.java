@@ -6,6 +6,7 @@ import com.digitalgoldwallet.digital_gold_wallet.entity.Address;
 import com.digitalgoldwallet.digital_gold_wallet.entity.PhysicalGoldTransaction;
 import com.digitalgoldwallet.digital_gold_wallet.entity.User;
 import com.digitalgoldwallet.digital_gold_wallet.entity.VendorBranch;
+import com.digitalgoldwallet.digital_gold_wallet.entity.VirtualGoldHolding;
 import com.digitalgoldwallet.digital_gold_wallet.exception.AddressNotFoundException;
 import com.digitalgoldwallet.digital_gold_wallet.exception.PhysicalGoldTransactionNotFoundException;
 import com.digitalgoldwallet.digital_gold_wallet.exception.UserNotFoundException;
@@ -19,6 +20,7 @@ import com.digitalgoldwallet.digital_gold_wallet.repository.VirtualGoldHoldingRe
 import com.digitalgoldwallet.digital_gold_wallet.service.PhysicalGoldTransactionService;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -53,34 +55,115 @@ public class PhysicalGoldTransactionServiceImpl
 
     }
 
+    /*
+     * ============================================================
+     * Convert virtual gold to physical
+     *
+     * Steps:
+     * 1. Validate user has enough virtual holdings at the branch
+     * 2. Create the PhysicalGoldTransaction record
+     * 3. Deduct the converted quantity from VirtualGoldHolding rows
+     *    (FIFO — oldest rows consumed first)
+     * ============================================================
+     */
     @Override
+    @Transactional
     public PhysicalGoldTransactionResponseDto convertToPhysical(
             PhysicalGoldTransactionRequestDto dto
     ) {
 
-        BigDecimal totalHoldings=
+        /*
+         * Step 1 — Validate sufficient virtual holdings
+         */
+        BigDecimal totalHoldings =
                 virtualGoldHoldingRepository
                         .sumQuantityByUserIdAndBranchId(
                                 dto.getUserId(),
                                 dto.getBranchId()
                         );
 
-        if(totalHoldings==null){
-
-            totalHoldings=BigDecimal.ZERO;
-
+        if (totalHoldings == null) {
+            totalHoldings = BigDecimal.ZERO;
         }
 
-        if(dto.getQuantity().compareTo(totalHoldings)>0){
-
+        if (dto.getQuantity().compareTo(totalHoldings) > 0) {
             throw new IllegalArgumentException(
-                    "Insufficient virtual gold holdings"
+                    "Insufficient virtual gold holdings. "
+                            + "Requested: " + dto.getQuantity()
+                            + ", Available: " + totalHoldings
             );
-
         }
 
-        return createTransaction(dto);
+        /*
+         * Step 2 — Create the physical transaction record
+         */
+        PhysicalGoldTransactionResponseDto response = createTransaction(dto);
 
+        /*
+         * Step 3 — Deduct from VirtualGoldHolding rows (FIFO)
+         */
+        deductVirtualHoldings(
+                dto.getUserId(),
+                dto.getBranchId(),
+                dto.getQuantity()
+        );
+
+        return response;
+
+    }
+
+    private void deductVirtualHoldings(
+            Integer userId,
+            Integer branchId,
+            BigDecimal quantityToDeduct
+    ) {
+
+        /*
+         * Fetch all holding rows for this user+branch,
+         * sorted oldest-first for FIFO deduction.
+         */
+        List<VirtualGoldHolding> holdings =
+                virtualGoldHoldingRepository
+                        .findByUserUserIdAndBranchBranchId(
+                                userId,
+                                branchId
+                        );
+
+        holdings.sort((a, b) -> {
+            if (a.getCreatedAt() == null) return -1;
+            if (b.getCreatedAt() == null) return 1;
+            return a.getCreatedAt().compareTo(b.getCreatedAt());
+        });
+
+        BigDecimal remainingToDeduct = quantityToDeduct;
+
+        for (VirtualGoldHolding holding : holdings) {
+
+            if (remainingToDeduct.compareTo(BigDecimal.ZERO) <= 0) {
+                break;
+            }
+
+            BigDecimal rowQty = holding.getQuantity();
+
+            if (rowQty.compareTo(remainingToDeduct) <= 0) {
+
+                /*
+                 * Entire row consumed — delete it
+                 */
+                remainingToDeduct = remainingToDeduct.subtract(rowQty);
+                virtualGoldHoldingRepository.delete(holding);
+
+            } else {
+
+                /*
+                 * Partial deduction — update and keep row
+                 */
+                holding.setQuantity(rowQty.subtract(remainingToDeduct));
+                virtualGoldHoldingRepository.save(holding);
+                remainingToDeduct = BigDecimal.ZERO;
+
+            }
+        }
     }
 
     @Override

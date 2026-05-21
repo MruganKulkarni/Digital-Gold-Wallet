@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 
 import org.springframework.security.core.userdetails.User;
@@ -19,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 
 @Configuration
 public class SecurityConfig {
@@ -164,11 +164,6 @@ public class SecurityConfig {
                  * AUTHORIZATION RULES
                  * ====================================================
                  */
-                /*
-                 * ====================================================
-                 * AUTHORIZATION RULES
-                 * ====================================================
-                 */
                 .authorizeHttpRequests(auth -> auth
 
                         /*
@@ -180,6 +175,21 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**"
+                        ).authenticated()
+
+
+
+
+                        /*
+                         * ====================================================
+                         * LOGIN PAGE
+                         * ====================================================
+                         */
+                        .requestMatchers(
+                                "/login",
+                                "/css/**",
+                                "/js/**",
+                                "/api/auth/me"
                         ).permitAll()
 
 
@@ -317,10 +327,69 @@ public class SecurityConfig {
 
                 /*
                  * ====================================================
-                 * HTTP BASIC AUTH
+                 * FORM LOGIN
                  * ====================================================
                  */
-                .httpBasic(Customizer.withDefaults())
+                .formLogin(form -> form
+
+                        /*
+                         * Custom login page
+                         */
+                        .loginPage("/login")
+
+                        /*
+                         * Spring Security handles POST /login
+                         */
+                        .loginProcessingUrl("/login")
+
+                        /*
+                         * Redirect after successful login
+                         */
+                        .defaultSuccessUrl("/dashboard")
+
+                        /*
+                         * Login failure URL
+                         */
+                        .failureUrl("/login?error=true")
+
+                        /*
+                         * Permit login page
+                         */
+                        .permitAll()
+                )
+
+                /*
+                 * ====================================================
+                 * LOGOUT
+                 * ====================================================
+                 */
+                .logout(logout -> logout
+
+                        /*
+                         * Logout endpoint
+                         */
+                        .logoutUrl("/logout")
+
+                        /*
+                         * Redirect after logout
+                         */
+                        .logoutSuccessUrl("/login?logout=true")
+
+                        /*
+                         * Invalidate session
+                         */
+                        .invalidateHttpSession(true)
+
+                        /*
+                         * Delete session cookie
+                         */
+                        .deleteCookies("JSESSIONID")
+
+                        /*
+                         * Permit logout
+                         */
+                        .permitAll()
+                )
 
                 /*
                  * ====================================================

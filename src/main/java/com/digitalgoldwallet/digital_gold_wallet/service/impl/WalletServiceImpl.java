@@ -18,6 +18,7 @@ import com.digitalgoldwallet.digital_gold_wallet.service.PaymentService;
 import com.digitalgoldwallet.digital_gold_wallet.service.WalletService;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 
@@ -84,6 +85,7 @@ public class WalletServiceImpl
      * ============================================================
      */
     @Override
+    @Transactional
     public PaymentResponseDto
     creditWallet(
             Integer userId,
@@ -146,6 +148,7 @@ public class WalletServiceImpl
      * ============================================================
      */
     @Override
+    @Transactional
     public PaymentResponseDto
     debitWallet(
             Integer userId,

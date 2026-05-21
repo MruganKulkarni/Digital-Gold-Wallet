@@ -26,12 +26,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+
 import java.util.Arrays;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+
+import static org.mockito.Mockito.*;
 
 /*
  * ============================================================
@@ -42,19 +45,39 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class PaymentServiceTest {
 
+    /*
+     * ============================================================
+     * MOCK REPOSITORIES
+     * ============================================================
+     */
     @Mock
     private PaymentRepository paymentRepository;
 
     @Mock
     private UserRepository userRepository;
 
+    /*
+     * ============================================================
+     * INJECT MOCKS
+     * ============================================================
+     */
     @InjectMocks
     private PaymentServiceImpl paymentService;
 
+    /*
+     * ============================================================
+     * COMMON ENTITIES
+     * ============================================================
+     */
     private User user;
 
     private Payment payment;
 
+    /*
+     * ============================================================
+     * SETUP
+     * ============================================================
+     */
     @BeforeEach
     void setUp() {
 
@@ -95,13 +118,10 @@ public class PaymentServiceTest {
 
     /*
      * ============================================================
-     * TEST CREATE PAYMENT SUCCESS
+     * COMMON REQUEST DTO
      * ============================================================
      */
-
-    @Test
-    @DisplayName("Test Create Payment Success")
-    void testCreatePaymentSuccess() {
+    private PaymentRequestDto buildRequestDto() {
 
         PaymentRequestDto dto =
                 new PaymentRequestDto();
@@ -123,6 +143,21 @@ public class PaymentServiceTest {
         dto.setPaymentStatus(
                 "Success"
         );
+
+        return dto;
+    }
+
+    /*
+     * ============================================================
+     * TEST CREATE PAYMENT SUCCESS
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Create Payment Success")
+    void testCreatePaymentSuccess() {
+
+        PaymentRequestDto dto =
+                buildRequestDto();
 
         when(userRepository.findById(1))
                 .thenReturn(Optional.of(user));
@@ -152,15 +187,12 @@ public class PaymentServiceTest {
      * TEST INSUFFICIENT BALANCE
      * ============================================================
      */
-
     @Test
     @DisplayName("Test Insufficient Balance")
     void testInsufficientBalance() {
 
         PaymentRequestDto dto =
-                new PaymentRequestDto();
-
-        dto.setUserId(1);
+                buildRequestDto();
 
         dto.setAmount(
                 new BigDecimal("50000")
@@ -175,8 +207,10 @@ public class PaymentServiceTest {
 
         assertThrows(
                 InsufficientBalanceException.class,
-                () -> paymentService
-                        .createPayment(dto)
+
+                () ->
+                        paymentService
+                                .createPayment(dto)
         );
     }
 
@@ -185,7 +219,6 @@ public class PaymentServiceTest {
      * TEST GET PAYMENT BY ID
      * ============================================================
      */
-
     @Test
     @DisplayName("Test Get Payment By ID")
     void testGetPaymentById() {
@@ -214,7 +247,6 @@ public class PaymentServiceTest {
      * TEST PAYMENT NOT FOUND
      * ============================================================
      */
-
     @Test
     @DisplayName("Test Payment Not Found")
     void testPaymentNotFound() {
@@ -224,8 +256,10 @@ public class PaymentServiceTest {
 
         assertThrows(
                 PaymentNotFoundException.class,
-                () -> paymentService
-                        .getPaymentById(1)
+
+                () ->
+                        paymentService
+                                .getPaymentById(1)
         );
     }
 
@@ -234,7 +268,6 @@ public class PaymentServiceTest {
      * TEST GET PAYMENTS BY USER
      * ============================================================
      */
-
     @Test
     @DisplayName("Test Get Payments By User ID")
     void testGetPaymentsByUserId() {
@@ -254,4 +287,172 @@ public class PaymentServiceTest {
                         .size()
         );
     }
+
+    /*
+     * ============================================================
+     * TEST NULL PAYMENT METHOD
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Null Payment Method")
+    void testNullPaymentMethod() {
+
+        PaymentRequestDto dto =
+                buildRequestDto();
+
+        dto.setPaymentMethod(null);
+
+        assertNull(
+                dto.getPaymentMethod()
+        );
+    }
+
+    /*
+     * ============================================================
+     * TEST NULL TRANSACTION TYPE
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Null Transaction Type")
+    void testNullTransactionType() {
+
+        PaymentRequestDto dto =
+                buildRequestDto();
+
+        dto.setTransactionType(null);
+
+        assertNull(
+                dto.getTransactionType()
+        );
+    }
+
+    /*
+     * ============================================================
+     * TEST NEGATIVE PAYMENT AMOUNT
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Negative Payment Amount")
+    void testNegativePaymentAmount() {
+
+        PaymentRequestDto dto =
+                buildRequestDto();
+
+        dto.setAmount(
+                new BigDecimal("-1000")
+        );
+
+        assertEquals(
+                new BigDecimal("-1000"),
+                dto.getAmount()
+        );
+    }
+
+    /*
+     * ============================================================
+     * TEST ZERO PAYMENT AMOUNT
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Zero Payment Amount")
+    void testZeroPaymentAmount() {
+
+        PaymentRequestDto dto =
+                buildRequestDto();
+
+        dto.setAmount(
+                BigDecimal.ZERO
+        );
+
+        assertEquals(
+                BigDecimal.ZERO,
+                dto.getAmount()
+        );
+    }
+
+    /*
+     * ============================================================
+     * TEST NULL USER ID
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Null User Id")
+    void testNullUserId() {
+
+        PaymentRequestDto dto =
+                buildRequestDto();
+
+        dto.setUserId(null);
+
+        assertNull(
+                dto.getUserId()
+        );
+    }
+
+    /*
+     * ============================================================
+     * TEST SAVE METHOD CALLED
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Save Method Called")
+    void testSaveMethodCalled() {
+
+        PaymentRequestDto dto =
+                buildRequestDto();
+
+        when(userRepository.findById(1))
+                .thenReturn(Optional.of(user));
+
+        when(paymentRepository.save(
+                any(Payment.class)
+        )).thenReturn(payment);
+
+        paymentService.createPayment(dto);
+
+        verify(paymentRepository, times(1))
+                .save(any(Payment.class));
+    }
+
+    /*
+     * ============================================================
+     * TEST FIND PAYMENT BY ID CALLED
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Find Payment By Id Called")
+    void testFindPaymentByIdCalled() {
+
+        when(paymentRepository.findById(1))
+                .thenReturn(Optional.of(payment));
+
+        paymentService.getPaymentById(1);
+
+        verify(paymentRepository, times(1))
+                .findById(1);
+    }
+
+    /*
+     * ============================================================
+     * TEST FIND PAYMENTS BY USER ID CALLED
+     * ============================================================
+     */
+    @Test
+    @DisplayName("Test Find Payments By User Id Called")
+    void testFindPaymentsByUserIdCalled() {
+
+        when(userRepository.existsById(1))
+                .thenReturn(true);
+
+        when(paymentRepository.findPaymentsByUserId(1))
+                .thenReturn(
+                        Arrays.asList(payment)
+                );
+
+        paymentService.getPaymentsByUserId(1);
+
+        verify(paymentRepository, times(1))
+                .findPaymentsByUserId(1);
+    }
+
 }
