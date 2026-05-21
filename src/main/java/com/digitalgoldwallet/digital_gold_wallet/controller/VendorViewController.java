@@ -1,27 +1,23 @@
 package com.digitalgoldwallet.digital_gold_wallet.controller;
 
-import com.digitalgoldwallet.digital_gold_wallet.dto.response.VendorResponseDto;
+import com.digitalgoldwallet.digital_gold_wallet.dto.response.VendorResponseDto; // response DTO for vendor
 
-import com.digitalgoldwallet.digital_gold_wallet.entity.VendorBranch;
+import com.digitalgoldwallet.digital_gold_wallet.entity.VendorBranch; // VendorBranch entity
 
-import com.digitalgoldwallet.digital_gold_wallet.repository.VendorBranchRepository;
+import com.digitalgoldwallet.digital_gold_wallet.repository.VendorBranchRepository; // repository for branch operations
 
-import com.digitalgoldwallet.digital_gold_wallet.service.VendorService;
+import com.digitalgoldwallet.digital_gold_wallet.service.VendorService; // service interface for vendor operations
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Autowired; // used for dependency injection
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Controller; // marks this as a Thymeleaf controller
 
-import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model; // used to pass data to Thymeleaf templates
 
-import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping; // maps GET requests
+import org.springframework.web.bind.annotation.PathVariable; // binds URL path variable to method parameter
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-
-import java.util.List;
+import java.util.List; // used for list of vendors and branches
 
 /*
  * ============================================================
@@ -29,24 +25,24 @@ import java.util.List;
  * ============================================================
  */
 
-@Controller
+@Controller // marks this as a Thymeleaf controller — returns view names not JSON
 public class VendorViewController {
 
     @Autowired
-    private VendorService vendorService;
+    private VendorService vendorService; // injects VendorService for vendor operations
 
     @Autowired
-    private VendorBranchRepository vendorBranchRepository;
+    private VendorBranchRepository vendorBranchRepository; // injects VendorBranchRepository for branch operations
 
     /*
      * ============================================================
      * VENDOR MODULE PAGE
      * ============================================================
      */
-    @GetMapping("/vendor-module")
+    @GetMapping("/vendor-module") // maps GET /vendor-module
     public String vendorModule() {
 
-        return "vendor-module";
+        return "vendor-module"; // returns vendor-module.html template
     }
 
     /*
@@ -54,23 +50,20 @@ public class VendorViewController {
      * VIEW ALL VENDORS
      * ============================================================
      */
-    @GetMapping("/vendors")
+    @GetMapping("/vendors") // maps GET /vendors
     public String viewVendors(
             Model model
     ) {
 
-        Pageable pageable =
-                PageRequest.of(0, 10);
-
-        Page<VendorResponseDto> vendorPage =
-                vendorService.getAllVendors(pageable);
+        List<VendorResponseDto> vendors =
+                vendorService.getAllVendors(); // calls updated service method — no pageable needed — returns all vendors
 
         model.addAttribute(
                 "vendors",
-                vendorPage.getContent()
+                vendors // passes complete vendor list directly to Thymeleaf model
         );
 
-        return "vendors";
+        return "vendors"; // returns vendors.html template
     }
 
     /*
@@ -78,10 +71,10 @@ public class VendorViewController {
      * CREATE VENDOR PAGE
      * ============================================================
      */
-    @GetMapping("/vendors/create")
+    @GetMapping("/vendors/create") // maps GET /vendors/create
     public String createVendorPage() {
 
-        return "create-vendor";
+        return "create-vendor"; // returns create-vendor.html template
     }
 
     /*
@@ -89,9 +82,9 @@ public class VendorViewController {
      * VIEW SINGLE VENDOR
      * ============================================================
      */
-    @GetMapping("/vendors/view/{id}")
+    @GetMapping("/vendors/view/{id}") // maps GET /vendors/view/{id}
     public String viewVendor(
-            @PathVariable Integer id,
+            @PathVariable Integer id, // binds {id} from URL
             Model model
     ) {
 
@@ -100,7 +93,7 @@ public class VendorViewController {
         try {
 
             vendor =
-                    vendorService.getVendorById(id);
+                    vendorService.getVendorById(id); // fetches vendor by ID
 
             System.out.println(
                     "VENDOR DATA = " + vendor
@@ -110,15 +103,15 @@ public class VendorViewController {
 
             e.printStackTrace();
 
-            vendor = null;
+            vendor = null; // sets vendor to null if not found
         }
 
         model.addAttribute(
                 "vendor",
-                vendor
+                vendor // passes vendor to Thymeleaf model
         );
 
-        return "view-vendor";
+        return "view-vendor"; // returns view-vendor.html template
     }
 
     /*
@@ -126,21 +119,21 @@ public class VendorViewController {
      * EDIT VENDOR PAGE
      * ============================================================
      */
-    @GetMapping("/vendors/update/{id}")
+    @GetMapping("/vendors/update/{id}") // maps GET /vendors/update/{id}
     public String editVendor(
-            @PathVariable Integer id,
+            @PathVariable Integer id, // binds {id} from URL
             Model model
     ) {
 
         VendorResponseDto vendor =
-                vendorService.getVendorById(id);
+                vendorService.getVendorById(id); // fetches vendor by ID for pre-filling edit form
 
         model.addAttribute(
                 "vendor",
-                vendor
+                vendor // passes vendor to Thymeleaf model
         );
 
-        return "edit-vendor";
+        return "edit-vendor"; // returns edit-vendor.html template
     }
 
     /*
@@ -148,21 +141,21 @@ public class VendorViewController {
      * VENDOR PRICE PAGE
      * ============================================================
      */
-    @GetMapping("/vendors/price/{id}")
+    @GetMapping("/vendors/price/{id}") // maps GET /vendors/price/{id}
     public String vendorPrice(
-            @PathVariable Integer id,
+            @PathVariable Integer id, // binds {id} from URL
             Model model
     ) {
 
         VendorResponseDto vendor =
-                vendorService.getVendorById(id);
+                vendorService.getVendorById(id); // fetches vendor by ID for price display
 
         model.addAttribute(
                 "vendor",
-                vendor
+                vendor // passes vendor to Thymeleaf model
         );
 
-        return "vendor-price";
+        return "vendor-price"; // returns vendor-price.html template
     }
 
     /*
@@ -170,20 +163,20 @@ public class VendorViewController {
      * VIEW ALL BRANCHES
      * ============================================================
      */
-    @GetMapping("/branches")
+    @GetMapping("/branches") // maps GET /branches
     public String viewBranches(
             Model model
     ) {
 
         List<VendorBranch> branches =
-                vendorBranchRepository.findAll();
+                vendorBranchRepository.findAll(); // fetches all branches from DB
 
         model.addAttribute(
                 "branches",
-                branches
+                branches // passes branch list to Thymeleaf model
         );
 
-        return "branches";
+        return "branches"; // returns branches.html template
     }
 
     /*
@@ -191,10 +184,10 @@ public class VendorViewController {
      * CREATE BRANCH PAGE
      * ============================================================
      */
-    @GetMapping("/branches/create")
+    @GetMapping("/branches/create") // maps GET /branches/create
     public String createBranchPage() {
 
-        return "create-branch";
+        return "create-branch"; // returns create-branch.html template
     }
 
     /*
@@ -202,23 +195,23 @@ public class VendorViewController {
      * VIEW BRANCH
      * ============================================================
      */
-    @GetMapping("/branches/view/{id}")
+    @GetMapping("/branches/view/{id}") // maps GET /branches/view/{id}
     public String viewBranch(
-            @PathVariable Integer id,
+            @PathVariable Integer id, // binds {id} from URL
             Model model
     ) {
 
         VendorBranch branch =
                 vendorBranchRepository
                         .findById(id)
-                        .orElse(null);
+                        .orElse(null); // fetches branch by ID — returns null if not found
 
         model.addAttribute(
                 "branch",
-                branch
+                branch // passes branch to Thymeleaf model
         );
 
-        return "view-branch";
+        return "view-branch"; // returns view-branch.html template
     }
 
     /*
@@ -226,22 +219,22 @@ public class VendorViewController {
      * BRANCH INVENTORY
      * ============================================================
      */
-    @GetMapping("/branches/inventory/{id}")
+    @GetMapping("/branches/inventory/{id}") // maps GET /branches/inventory/{id}
     public String branchInventory(
-            @PathVariable Integer id,
+            @PathVariable Integer id, // binds {id} from URL
             Model model
     ) {
 
         VendorBranch branch =
                 vendorBranchRepository
                         .findById(id)
-                        .orElse(null);
+                        .orElse(null); // fetches branch by ID — returns null if not found
 
         model.addAttribute(
                 "branch",
-                branch
+                branch // passes branch to Thymeleaf model
         );
 
-        return "branch-inventory";
+        return "branch-inventory"; // returns branch-inventory.html template
     }
 }
